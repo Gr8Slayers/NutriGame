@@ -2,19 +2,28 @@
   "name": "frontend-js",
   "version": "1.0.0",
   "main": "index.js",
+  "private": true,
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "clean-install": "rm -rf node_modules && npm cache clean --force && npm install",
+    "clean-install-win": "rmdir /s /q node_modules && npm cache clean --force && npm install",
+    "clear-cache": "npx expo start -c"
   },
   "dependencies": {
+    "@react-navigation/native": "^7.1.19",
+    "@react-navigation/native-stack": "^7.6.0",
+    "dotenv": "^17.2.3",
     "expo": "~54.0.20",
+    "expo-constants": "^18.0.10",
     "expo-status-bar": "~3.0.8",
     "react": "19.1.0",
-    "react-native": "0.81.5"
+    "react-native": "0.81.5",
+    "react-native-safe-area-context": "^5.6.1",
+    "react-native-screens": "~4.16.0"
   },
-  "private": true,
   "devDependencies": {
     "@types/react": "~19.1.10",
     "typescript": "~5.9.2"

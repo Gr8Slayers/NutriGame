@@ -15,6 +15,14 @@ app.get('/api', (req, res) => {
   res.json({ message: 'Nutrigame API Çalışıyor!' });
 });
 
+app.get('/api/auth/register', (req, res) => {
+  res.json({ message: 'Register started' });
+});
+
+app.get('/api/auth/login', (req, res) => {
+  res.json({ message: 'Login started' });
+});
+
 app.listen(port, () => {
-  console.log(`🚀 Sunucu http://localhost:${port} adresinde başlatıldı`);
+  console.log(` Sunucu http://localhost:${port} adresinde başlatıldı`);
 });
