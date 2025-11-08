@@ -15,9 +15,11 @@ app.get('/api', (req, res) => {
   res.json({ message: 'Nutrigame API Çalışıyor!' });
 });
 
-app.get('/api/auth/register', (req, res) => {
-  res.json({ message: 'Register started' });
+app.post('/api/auth/register', (req, res) => {
+  const { name, email, password } = req.body;
+  res.json({ message: `Kayıt başarılı: ${name}` });
 });
+
 
 app.get('/api/auth/login', (req, res) => {
   res.json({ message: 'Login started' });
