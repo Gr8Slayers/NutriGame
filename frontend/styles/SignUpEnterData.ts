@@ -1,25 +1,11 @@
 import { StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
-  container: {
+    container: {
     flex: 1,
     backgroundColor: '#473c33',
   },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 30,
-  },
-
-logoIcon: {
-  position: 'absolute',
-  width: 270,
-  height: 250,
-  resizeMode: 'contain'
-},
-
-  circle1: {
+   circle1: {
     position: 'absolute',
     left:-168,
     top:378,
@@ -48,18 +34,11 @@ logoIcon: {
     justifyContent: 'center',
     alignItems: 'center',
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#ffffffff',
-    textAlign: 'center',
-  },
-  logInTitle: {
-    fontSize: 24,
-    textAlign: 'center',
-    marginBottom: 20,
-    color: '#FFFFFF',
-    fontWeight: 'bold',
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 30,
   },
   input: {
     backgroundColor: '#f7e5c5ff',
@@ -69,6 +48,7 @@ logoIcon: {
     elevation: 5,
     marginVertical: 16,
     paddingLeft: 8,
+    paddingRight: 8,
     paddingTop: 4,
     paddingBottom: 8,
     backgroundColor: '#f7e5c5ff',
@@ -84,17 +64,44 @@ logoIcon: {
     paddingTop: 8,
     marginBottom: 8-5
   },
-  linkText: {
-    marginTop: 20,
-    textAlign: 'center',
-    color: '#efeacd',
+  options: {
+    zIndex: 1,
+    flexDirection: 'row',
+    gap: 30,
+  },
+  option: {
+    zIndex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  circle: {
+    zIndex: 1,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#000000ff',
+    marginRight: 8,
+  },
+  selected: {
+    zIndex: 1,
+    backgroundColor: '#47dd7caf',
+    borderColor: '#47dd7caf',
+  },
+  optionText: {
+    zIndex: 1,
+    color: '#000000ff',
     fontSize: 16,
   },
-  signUpLinkText:{
-    marginTop: 20,
-    textAlign: 'center',
-    color: '#db5b23',
+  goalButton: {
+    backgroundColor: '#fc8500',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  goalButtonText:{
+    color: '#FFFFFF',
     fontSize: 16,
+    fontWeight: 'bold',
   },
   button: {
   backgroundColor: '#fc8500',
@@ -109,39 +116,4 @@ logoIcon: {
     fontSize: 16,
     fontWeight: 'bold',
   },
-  divider: {
-  height: 1,
-  backgroundColor: '#ddd', 
-  marginVertical: 20,       // üst-alt boşluk
-},
-rememberContainer: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  marginBottom: 10,
-},
-
-checkbox: {
-  width: 22,
-  height: 22,
-  borderWidth: 2,
-  borderColor: '#ccc',
-  borderRadius: 5,
-  marginRight: 8,
-  justifyContent: 'center',
-  alignItems: 'center',
-},
-checkboxChecked: {
-  backgroundColor: '#4caf50',
-  borderColor: '#4caf50',
-},
-checkMark: {
-  color: 'white',
-  fontSize: 14,
-  fontWeight: 'bold',
-},
-
-rememberText: {
-  fontSize: 16,
-  color: '#efeacd',
-},
-});
+  });

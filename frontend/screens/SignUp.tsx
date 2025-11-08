@@ -3,9 +3,9 @@ import {
   View, Text, TextInput, Button, Alert, TouchableOpacity, ScrollView 
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import styles from '../styles/SignUpStyle';
+import { IP_ADDRESS } from '@env';
 
 const ip= process.env.IP_ADDRESS;
 const API_URL = `http://${ip}:3000`; 
@@ -13,6 +13,8 @@ const API_URL = `http://${ip}:3000`;
 type RootStackParamList = {
   Login: undefined;
   SignUp: undefined;
+  SignUpEnterData: undefined;
+  CreateAvatar: undefined;
 };
 type Props = NativeStackScreenProps<RootStackParamList, 'SignUp'>;
 
@@ -20,27 +22,23 @@ function SignUp({ navigation }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [age, setAge] = useState('');
-  const [height, setHeight] = useState('');
-  const [weight, setWeight] = useState('');
   const [loading, setLoading] = useState<boolean>(false); 
 
   const handleSignUp = async () => {
     if (loading) return;
     setLoading(true);
-
     try {
       const res = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, name, age, height, weight }),
+        body: JSON.stringify({ email, password, name}),
       });
 
       const data = await res.json();
-
+      
+      
       if (res.ok) {
-        Alert.alert('Başarılı', 'Hesabınız oluşturuldu! Lütfen giriş yapın.');
-        navigation.navigate('Login');
+        navigation.navigate('SignUpEnterData');
       } else {
         Alert.alert('Hata', data.message || 'Kayıt yapılamadı');
       }
@@ -54,63 +52,50 @@ function SignUp({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
+       <View style={styles.circle1}/>
+          <View style={styles.circle2}/>
+            <View style={styles.circle3}></View>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.title}>Hesap Oluştur</Text>
+        <Text style={styles.title}>Create Account</Text>
 
-        <TextInput
-          style={styles.input}
-          placeholder="İsim (Opsiyonel)"
-          value={name}
-          onChangeText={setName}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Email (Zorunlu)"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Şifre (Zorunlu)"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry={false}
-        />
-
-        <Text style={styles.subtitle}>Diyet Bilgileri</Text>
-
-        <TextInput
-          style={styles.input}
-          placeholder="Yaş (Zorunlu)"
-          value={age}
-          onChangeText={setAge}
-          keyboardType="numeric"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Boy (cm olarak) (Zorunlu)"
-          value={height}
-          onChangeText={setHeight}
-          keyboardType="numeric"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Kilo (kg olarak) (Zorunlu)"
-          value={weight}
-          onChangeText={setWeight}
-          keyboardType="numeric"
-        />
-
-        <Button
-          title={loading ? 'Kayıt Olunuyor...' : 'Kayıt Ol'}
-          onPress={handleSignUp}
-          disabled={loading} 
-        />
-
+      <View style={styles.inputContainer}>
+                  <Text style = {styles.label}>Name *</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Name"
+                value={name}
+                onChangeText={setName}
+              />
+            </View>
+            <View style={styles.inputContainer}>
+                      <Text style = {styles.label}>Email *</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Email *"
+                      value={email}
+                      onChangeText={setEmail}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                    />
+              </View>
+            <View style={styles.inputContainer}>
+                  <Text style = {styles.label}>Password *</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Password"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={false}
+                />
+                </View>
+        <TouchableOpacity style={styles.button} onPress={handleSignUp}>
+          <Text style={styles.buttonText}>
+            {loading ? 'Continuing...' : 'Continue'}
+          </Text>
+        </TouchableOpacity>
+        <View style={styles.divider} /> 
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.linkText}>Zaten hesabın var mı? Giriş Yap</Text>
+          <Text style={styles.linkText}>Already have an account? <Text style={styles.signUpLinkText}>Log in</Text></Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
