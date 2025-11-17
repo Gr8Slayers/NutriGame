@@ -1,33 +1,44 @@
-NutriGame Backend - Dosya Yapısı ve Katmanlar
+# NutriGame Backend - Proje Yapısı ve Katman Açıklamaları
 
-Şema:
--------
+## Şema
+
 backend/
 ├── src/
-│   ├── controllers/
-│   │   └── auth.controller.ts   # Giriş/kayıt işlemlerinin iş mantığı ve HTTP işlemleri
-│   ├── models/
-│   │   └── user.model.ts        # Veritabanında kullanıcı (User) ile ilgili tüm işlemler
-│   ├── routes/
-│   │   └── auth.routes.ts       # Auth endpointlerinin (register, login) adres tanımları
-│   └── index.ts                 # Uygulama giriş dosyası, server başlatma ve temel ayarlar
-├── package.json                 # Proje bağımlılıklarını ve scriptlerini tanımlar
-├── tsconfig.json                # TypeScript yapılandırması
-└── .env                         # Ortama özel değişkenler (örn. PORT, SECRET)
+│ ├── controllers/
+│ │ └── auth.controller.ts
+│ ├── models/
+│ │ └── user.model.ts
+│ ├── routes/
+│ │ └── auth.routes.ts
+│ └── index.ts
+├── package.json
+├── tsconfig.json
+└── .env
 
-Açıklamalar:
-------------
-controllers/  →  Her bir endpoint (ör: auth) için iş mantığı ve HTTP'ye yanıt döner. Burada login ve register işlemleri yapılır.
-models/       →  Veritabanı işlemlerini yönetir. Örneğin user.model.ts kullanıcı oluşturma, veritabanında kullanıcıyı arama gibi tüm database işlemlerini içerir.
-routes/       →  API endpoint adreslerini (hangi URL neye yönlendirir?) tanımlar. Örneğin POST /api/auth/login çağrısını ilgili controller fonksiyonuna yönlendirir.
-index.ts      →  Uygulamanın başlama noktasıdır. Express serverı başlatır, route'ları ekler, middleware ve error handler tanımlar.
 
-Diğer dosyalar:
-package.json      →  Projedeki bağımlılıkları, scriptleri ve temel bilgileri tutar.
-tsconfig.json     →  TypeScript ayarları yer alır.
-.env              →  (Varsa) Ortama/çevreye özel (PORT, SECRET gibi) değişkenler burada tutulur.
+## Açıklamalar
 
-Kısacası: 
-- FRONTEND'den gelen istek önce ROUTES dosyasına, sonra ilgili CONTROLLER'a yönlenir.
-- CONTROLLER işini yapmak için (kullanıcıyı bul, şifreyi kontrol et, json yanıt hazırla vs.) MODELS katmanındaki fonksiyonları çağırır.
-- Sonuç controller'dan frontend'e döner.
+- **controllers/**  
+  Endpointlerin iş mantığını ve HTTP yanıtlarını barındırır.  
+  Örneğin `auth.controller.ts`, kullanıcının kayıt ve giriş işlemlerini yönetir.
+
+- **models/**  
+  Veritabanı CRUD işlemlerinden sorumlu katmandır.  
+  `user.model.ts` dosyasında kullanıcıyı bulma, oluşturma gibi database fonksiyonları yer alır.
+
+- **routes/**  
+  Tüm endpoint URL adreslerini ve hangi controller fonksiyonlarına yönleneceğini belirler.  
+  `auth.routes.ts` dosyası örneğin POST `/api/auth/login` REST çağrısını, ilgili controller fonksiyonuna iletir.
+
+- **index.ts**  
+  Sunucunun başlama noktasıdır. Express uygulamasını yaratır, route'ları ekler ve sunucuyu dinlemeye başlatır.
+
+---
+
+## Kısaca Akış
+
+1. Frontend'den bir istek geldiğinde, önce **routes** tan uygun controller fonksiyonuna yönlendirilir.
+2. **Controller**, işi için gerekli verileri **model** üzerinden veritabanından çeker ya da günceller.
+3. Controller sonucu doğrudan **HTTP yanıtı** olarak frontend'e döner.
+
+Bu yapı küçük ve orta ölçekli backend projeleri için idealdir. Yeni bir özellik eklemek için sadece ilgili model, controller ve route dosyasını açıp eklemek yeterlidir.
