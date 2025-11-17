@@ -2,6 +2,7 @@
 
 ## Şema
 
+```
 backend/
 ├── src/
 │ ├── controllers/
@@ -14,7 +15,7 @@ backend/
 ├── package.json
 ├── tsconfig.json
 └── .env
-
+```
 
 ## Açıklamalar
 
