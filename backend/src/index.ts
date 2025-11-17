@@ -1,30 +1,29 @@
+// src/index.ts
 import express from 'express';
 import dotenv from 'dotenv';
+import authRoutes from './routes/auth.routes';
 
-// .env dosyasındaki değişkenleri yükle
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Gelen istekleri JSON olarak işle
 app.use(express.json());
 
-// Basit bir test endpoint'i
+// Health Check
 app.get('/api', (req, res) => {
-  res.json({ message: 'Nutrigame API Çalışıyor!' });
+    res.json({ message: 'Nutrigame API Çalışıyor!' });
 });
 
-app.post('/api/auth/register', (req, res) => {
-  const { name, email, password } = req.body;
-  res.json({ message: `Kayıt başarılı: ${name}` });
-});
+app.use('/api/auth', authRoutes);
 
-
-app.get('/api/auth/login', (req, res) => {
-  res.json({ message: 'Login started' });
-});
-
+// Server başlat
 app.listen(port, () => {
-  console.log(` Sunucu http://localhost:${port} adresinde başlatıldı`);
+    console.log(`
+╔══════════════════════════════════════════╗
+    🎮 NutriGame Backend Server Started
+    🚀 Server: http://localhost:${port}
+    📱 Network: http://[YOUR_IP]:${port}
+╚══════════════════════════════════════════╝`
+    )
 });
