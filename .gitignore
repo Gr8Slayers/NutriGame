@@ -39,8 +39,8 @@ ENV/
 *.caffemodel
 
 # Data files
-*.json
-!**/annotations/*.json
+# *.json
+# !**/annotations/*.json
 *.csv
 *.txt
 !requirements.txt
@@ -49,10 +49,10 @@ ENV/
 *.zip
 *.tar
 *.gz
-*.jpg
-*.jpeg
-*.png
-*.bmp
+# *.jpg
+# *.jpeg
+# *.png
+# *.bmp
 *.tiff
 *.mp4
 *.avi
