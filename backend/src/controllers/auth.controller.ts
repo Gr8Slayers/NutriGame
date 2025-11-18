@@ -30,7 +30,7 @@ export class AuthController {
             if (!email || !password) {
                 return res.status(400).json({ success: false, message: 'Email ve şifre gerekli.' });
             }
-            const user = await userModel.findByEmail();
+            const user = await userModel.findByEmail(email);
             if (!user) {
                 return res.status(401).json({ success: false, message: 'Geçersiz email veya şifre.' });
             }

@@ -1,13 +1,11 @@
-// src/models/user.model.ts
+import prisma from '../config/prisma';
 
-export class UserModel {
-    async findByEmail() {
-        return false;
-    }
+export const userModel = {
+  findByEmail: async (email: string) => {
+    return prisma.user.findUnique({ where: { email } });
+  },
 
-    async createUser() {
-
-    }
-}
-
-export const userModel = new UserModel();
+  createUser: async (data: { name: string; email: string; password: string }) => {
+    return prisma.user.create({ data });
+  }
+};
