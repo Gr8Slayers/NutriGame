@@ -21,8 +21,9 @@ app.post('/api/auth/register', (req, res) => {
 });
 
 
-app.get('/api/auth/login', (req, res) => {
-  res.json({ message: 'Login started' });
+app.post('/api/auth/login', (req, res) => {
+  const {  email, password } = req.body;
+  res.json({ message: `Kayıt başarılı: ${email}` });
 });
 
 app.listen(port, () => {

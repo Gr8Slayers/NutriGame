@@ -4,18 +4,14 @@ import { View, Image, TouchableOpacity, StyleSheet, Text, ScrollView ,Button} fr
 import { Menu} from 'react-native-paper';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
+import { RootStackParamList } from '../App';
 
 import styles from '../styles/CreateAvatar';
+import { IP_ADDRESS } from "@env";
 
-const ip= process.env.IP_ADDRESS;
-const API_URL = `http://${ip}:3000`; 
+const API_URL = `http://${IP_ADDRESS}:3000`; 
 
-type RootStackParamList = {
-  Login: undefined;
-  SignUp: undefined;
-  SignUpEnterData: undefined;
-  CreateAvatar: undefined;
-};
+
 type Props = NativeStackScreenProps<RootStackParamList, 'CreateAvatar'>;
 
 function CreateAvatar({ navigation }: Props) {

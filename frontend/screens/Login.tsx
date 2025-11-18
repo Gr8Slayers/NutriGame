@@ -5,17 +5,14 @@ import {
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'react-native';
+import { RootStackParamList } from '../App';
 
 import styles from '../styles/LoginStyle';
 
+import { IP_ADDRESS } from "@env";
 
-const ip= process.env.IP_ADDRESS;
-const API_URL = `http://${ip}:3000`; 
+const API_URL = `http://${IP_ADDRESS}:3000`; 
 
-type RootStackParamList = {
-  Login: undefined;
-  SignUp: undefined;
-};
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -39,7 +36,10 @@ function Login({ navigation }: Props) {
       const data = await res.json();
 
       if (res.ok) {
-        Alert.alert('Başarılı', `Giriş yapıldı! Token: ${data.token.substring(0, 20)}...`);
+        Alert.alert('Success',data.message);
+        navigation.navigate('MainPage');
+        //const token = data.token || "No Token";
+        //Alert.alert('Başarılı', `Giriş yapıldı! Token: ${data.token.substring(0, 20)}...`);
       } else {
         Alert.alert('Hata', data.message || 'Giriş yapılamadı');
       }

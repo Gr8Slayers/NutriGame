@@ -3,19 +3,12 @@ import {
   View, Text, TextInput, Button, Alert, TouchableOpacity, ScrollView 
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-
+import type { RootStackParamList } from '../App';
 import styles from '../styles/SignUpStyle';
-import { IP_ADDRESS } from '@env';
+import { IP_ADDRESS } from "@env";
 
-const ip= process.env.IP_ADDRESS;
-const API_URL = `http://${ip}:3000`; 
+const API_URL = `http://${IP_ADDRESS}:3000`; 
 
-type RootStackParamList = {
-  Login: undefined;
-  SignUp: undefined;
-  SignUpEnterData: undefined;
-  CreateAvatar: undefined;
-};
 type Props = NativeStackScreenProps<RootStackParamList, 'SignUp'>;
 
 function SignUp({ navigation }: Props) {
@@ -27,6 +20,7 @@ function SignUp({ navigation }: Props) {
   const handleSignUp = async () => {
     if (loading) return;
     setLoading(true);
+    console.log(API_URL);
     try {
       const res = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
