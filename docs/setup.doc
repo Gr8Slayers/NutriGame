@@ -1,0 +1,81 @@
+﻿NUTRIGAME PROJESİ - KURULUM TALİMATLARI
+Bu döküman, 'nutrigame' projesini (backend ve frontend) bir geliştirici bilgisayarına kurmak ve çalıştırmak için gereken adımları içerir.
+
+Proje Yapısı:
+• /backend: Node.js + TypeScript + Prisma API
+• /frontend: React Native (Expo) + TypeScript Mobil Uygulama
+• /ai_service: (Gelecek geliştirme)
+
+1. GEREKLİ YAZILIMLAR
+Kuruluma başlamadan önce bilgisayarınızda aşağıdaki yazılımların kurulu olduğundan emin olun:
+1. Git: Versiyon kontrol sistemi. (https://git-scm.com/)
+2. Node.js (LTS): Projenin hem backend'i hem de frontend'i Node.js üzerinde çalışır. Mutlaka LTS (Uzun Süreli Destek) sürümünü kurun. (https://nodejs.org/)
+o (Node.js'i kurduğunuzda 'npm' otomatik olarak yüklenecektir).
+3. Bir Kod Editörü: VS Code tavsiye edilir. (https://code.visualstudio.com/)
+4. Expo Go (Mobil Uygulama): Geliştirme yapacağınız telefonunuza (Android veya iOS) marketten "Expo Go" uygulamasını indirin.
+2. PROJEYİ İNDİRME (CLONE)
+1. Terminali (veya Git Bash/PowerShell) açın.
+2. Projeyi klonlamak istediğiniz klasöre gidin (Örn: cd Desktop).
+3. Projeyi Git'ten klonlayın (URL'i kendi Git reponuzun adresiyle değiştirin):
+4. git clone [https://github.com/kullanici-adiniz/nutrigame.git](https://github.com/kullanici-adiniz/nutrigame.git)
+şuan kendi branchimde
+
+5. Proje klasörüne girin:
+6. cd nutrigame
+
+3. BACKEND KURULUMU (Node.js Sunucusu)
+Backend API'sini (sunucuyu) kurmak için:
+1. Terminalde backend klasörüne gidin:
+2. cd backend
+
+3. Gerekli tüm Node.js paketlerini (Express, Prisma, Zod vb.) kurun:
+4. npm install
+
+5. Veritabanını (SQLite) kurun. Bu komut, prisma/schema.prisma dosyasını okuyacak ve prisma/dev.db adında bir veritabanı dosyası oluşturacaktır:
+6. npx prisma db push
+
+Backend kurulumu tamamlandı.
+4. FRONTEND KURULUMU (Mobil Uygulama)
+Frontend (mobil uygulama) için gerekli paketleri kurmak için:
+1. Ana proje klasörüne geri dönün:
+2. cd ..
+
+3. Şimdi frontend klasörüne gidin:
+4. cd frontend
+
+5. Gerekli tüm Node.js paketlerini (React, Expo, Navigation vb.) kurun:
+6. npm install
+
+!! ÇOK ÖNEMLİ: IP ADRESİ AYARI !!
+Mobil uygulamanızın (telefon), backend sunucunuza (bilgisayar) bağlanabilmesi için bilgisayarınızın YEREL IP ADRESİNİ bilmesi gerekir.
+1. Bilgisayarınızın IP adresini bulun:
+o Windows'ta: Terminale ipconfig yazın. "IPv4 Address" satırını bulun (Genellikle 192.168.1.XX veya 192.168.56.1 gibi görünür).
+o Mac/Linux'ta: Terminale ifconfig veya ip addr yazın.
+2. Bulduğunuz IP adresini, frontend projesindeki şu iki dosyada güncelleyin:
+o frontend/screens/LoginScreen.tsx
+o frontend/screens/SignUpScreen.tsx
+3. Bu dosyaların içindeki const API_URL = '...'; satırını bulun ve IP adresini kendi adresinizle değiştirin.
+Örnek:
+const API_URL = 'http://192.168.1.34:3000';
+5. UYGULAMAYI ÇALIŞTIRMA
+Uygulamayı çalıştırmak için İKİ (2) AYRI TERMİNAL açmanız gerekmektedir.
+Terminal 1 - BACKEND:
+1. backend klasörüne gidin: cd backend
+2. Sunucuyu "development" modunda başlatın:
+3. npm run dev
+
+4. Terminalde  Sunucu http://localhost:3000 adresinde başlatıldı mesajını gördüğünüzde backend hazır demektir.
+Terminal 2 - FRONTEND:
+1. frontend klasörüne gidin: cd frontend
+2. Expo sunucusunu başlatın:
+3. npm start
+
+hepsini başlatan backend+frontend => launch.bat
+
+4. Terminalde bir QR KOD görünecektir.
+Son Adım:
+1. Telefonunuzun ve bilgisayarınızın AYNI WI-FI AĞINDA olduğundan emin olun.
+2. Telefonunuzdan Expo Go uygulamasını açın.
+3. "Scan QR Code" seçeneği ile Terminal 2'deki QR kodu okutun.
+4. Uygulama telefonunuza yüklenecek ve Login ekranı görünecektir.
+

@@ -1,0 +1,2 @@
+DATABASE_URL="postgresql://postgres:nutrigame123@localhost:5432/nutrigame"
+JWT_SECRET="123456"

@@ -1,0 +1,100 @@
+import { StyleSheet } from 'react-native';
+
+export default StyleSheet.create({
+    container: {
+    flex: 1,
+    backgroundColor: '#473c33',
+  },
+   circle1: {
+    position: 'absolute',
+    left:-168,
+    top:378,
+    width:650,
+    height:650,
+    borderRadius: 350,
+    backgroundColor:'#1f5809',
+  },
+  circle2: {
+    position: 'absolute',
+    left:73,
+    top:177,
+    width:400,
+    height:400,
+    borderRadius: 200,
+    backgroundColor:'#8db654',
+  },
+  circle3: {
+    position: 'absolute',
+    left:30,
+    top:50,
+    width:200,
+    height:200,
+    borderRadius: 100,
+    backgroundColor:'#e2f0bd',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 30,
+  },
+  input: {
+    backgroundColor: '#f7e5c5ff',
+    fontSize: 16,
+  },
+   inputContainer: {
+    elevation: 5,
+    marginVertical: 16,
+    paddingLeft: 8,
+    paddingRight: 8,
+    paddingTop: 4,
+    paddingBottom: 8,
+    backgroundColor: '#f7e5c5ff',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#0a0701ff',
+  },
+  label: {
+    zIndex: 1,
+    fontWeight:'bold',
+    fontSize: 18,
+    color: '#080808ff',
+    paddingTop: 8,
+    marginBottom: 8-5
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 15,
+  },
+  avatarContainer: {
+    borderRadius: 60,
+    padding: 5,
+  },
+  avatar: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+  },
+  selected: {
+    borderWidth: 3,
+    borderColor: '#47dd7c',
+    backgroundColor: '#1a3b2e90',
+  },
+  button: {
+  backgroundColor: '#fc8500',
+  paddingHorizontal: 15,
+  paddingVertical: 12,
+  borderRadius: 8,
+  alignItems: 'center',
+  marginBottom: 15,
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+});
