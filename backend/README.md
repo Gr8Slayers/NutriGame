@@ -2,6 +2,7 @@
 
 ## Şema
 
+```
 backend/
 ├── src/
 │ ├── controllers/
@@ -14,7 +15,7 @@ backend/
 ├── package.json
 ├── tsconfig.json
 └── .env
-
+```
 
 ## Açıklamalar
 
@@ -40,5 +41,3 @@ backend/
 1. Frontend'den bir istek geldiğinde, önce **routes** tan uygun controller fonksiyonuna yönlendirilir.
 2. **Controller**, işi için gerekli verileri **model** üzerinden veritabanından çeker ya da günceller.
 3. Controller sonucu doğrudan **HTTP yanıtı** olarak frontend'e döner.
-
-Bu yapı küçük ve orta ölçekli backend projeleri için idealdir. Yeni bir özellik eklemek için sadece ilgili model, controller ve route dosyasını açıp eklemek yeterlidir.
