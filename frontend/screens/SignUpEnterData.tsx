@@ -8,16 +8,11 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import styles from '../styles/SignUpEnterData';
 import GenderSelector from '../components/genderSelection'
 import GoalDropdown from '../components/goalSelection'
+import { RootStackParamList } from '../App';
+import { IP_ADDRESS } from "@env";
 
-const ip= process.env.IP_ADDRESS;
-const API_URL = `http://${ip}:3000`; 
+const API_URL = `http://${IP_ADDRESS}:3000`; 
 
-type RootStackParamList = {
-  Login: undefined;
-  SignUp: undefined;
-  SignUpEnterData: undefined;
-  CreateAvatar: undefined;
-};
 type Props = NativeStackScreenProps<RootStackParamList, 'SignUpEnterData'>;
 
 function SignUpEnterData({ navigation }: Props) {

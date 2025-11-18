@@ -8,13 +8,15 @@ import Login from './screens/Login';
 import SignUp from './screens/SignUp';
 import SignUpEnterData from './screens/SignUpEnterData';
 import CreateAvatar from './screens/CreateAvatar';
+import MainPage from './screens/MainPage';
 
 // Navigation tipi
-type RootStackParamList = {
+export type RootStackParamList = {
   Login: undefined;
   SignUp: undefined;
   SignUpEnterData: undefined;
   CreateAvatar: undefined;
+  MainPage: undefined;
 };
 
 const theme = {
@@ -46,6 +48,8 @@ export default function App() {
           <Stack.Screen name="SignUp" component={SignUp} />
           <Stack.Screen name="SignUpEnterData" component={SignUpEnterData} />
           <Stack.Screen name="CreateAvatar" component={CreateAvatar} />
+
+          <Stack.Screen name="MainPage" component={MainPage} />
         </Stack.Navigator>
       </NavigationContainer>
     </PaperProvider>
