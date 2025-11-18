@@ -1,6 +1,7 @@
 // src/controllers/auth.controller.ts
 
 import { Request, Response, NextFunction } from 'express';
+import { userModel } from '../models/user.model';
 
 export class AuthController {
     async register(req: Request, res: Response, next: NextFunction) {
@@ -10,7 +11,7 @@ export class AuthController {
                 return res.status(400).json({ success: false, message: 'Tüm alanlar zorunludur.' });
             }
 
-            const existingUser = false /*await userModel.findByEmail(email)*/; // database baglanmali
+            const existingUser = false/*await userModel.findByEmail()*/; // database baglanmali
             if (existingUser) {
                 return res.status(409).json({ success: false, message: 'Bu email zaten kayıtlı.' });
             }
@@ -29,7 +30,7 @@ export class AuthController {
             if (!email || !password) {
                 return res.status(400).json({ success: false, message: 'Email ve şifre gerekli.' });
             }
-            const user = { id: 1234, name: 'zeynep', email: 'zeynep@zeynep' } /*await userModel.findByEmail(email)*/;
+            const user = await userModel.findByEmail();
             if (!user) {
                 return res.status(401).json({ success: false, message: 'Geçersiz email veya şifre.' });
             }
@@ -43,7 +44,7 @@ export class AuthController {
                 success: true,
                 message: 'Giriş başarılı.',
                 token,
-                user: { id: user.id, name: user.name, email: user.email }
+                user: {}
             });
         } catch (error) {
             next(error);
