@@ -1,2 +1,2 @@
-DATABASE_URL="postgresql://postgres:nutrigame123@localhost:5432/nutrigame"
+DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@db.whkojsamejjicxukibpm.supabase.co:5432/postgres"
 JWT_SECRET="123456"

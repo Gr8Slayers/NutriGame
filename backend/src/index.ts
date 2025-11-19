@@ -2,6 +2,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes';
+import prisma from './config/prisma'; // 🔹 PRİSMA BAĞLANTISI
 
 dotenv.config();
 
@@ -10,20 +11,24 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json());
 
+prisma.$connect()
+  .then(() => console.log('📦 Database bağlantısı başarılı'))
+  .catch((err) => console.error('❌ Database bağlantı hatası:', err));
+
 // Health Check
 app.get('/api', (req, res) => {
-    res.json({ message: 'Nutrigame API Çalışıyor!' });
+  res.json({ message: 'Nutrigame API Çalışıyor!' });
 });
 
 app.use('/api/auth', authRoutes);
 
 // Server başlat
 app.listen(port, () => {
-    console.log(`
+  console.log(`
 ╔══════════════════════════════════════════╗
     🎮 NutriGame Backend Server Started
     🚀 Server: http://localhost:${port}
     📱 Network: http://[YOUR_IP]:${port}
 ╚══════════════════════════════════════════╝`
-    )
+  );
 });
