@@ -11,13 +11,13 @@ export class AuthController {
                 return res.status(400).json({ success: false, message: 'Tüm alanlar zorunludur.' });
             }
 
-            const existingUser = false/*await userModel.findByEmail()*/; // database baglanmali
+            const existingUser = false/*await userModel.findByEmail(email)*/; // database baglanmali
             if (existingUser) {
                 return res.status(409).json({ success: false, message: 'Bu email zaten kayıtlı.' });
             }
 
             //const hashedPassword = await bcrypt.hash(password, 10);
-            //await userModel.createUser({ name, email, password: hashedPassword });
+            await userModel.createUser({ name, email, password });
             return res.status(201).json({ success: true, message: 'Kayıt başarılı.' });
         } catch (error) {
             next(error);
