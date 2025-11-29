@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { 
-  View, Text, TextInput, Button, Alert, TouchableOpacity, ScrollView 
+  View, Text, TextInput, Button,Image, Alert, TouchableOpacity, ScrollView 
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../App';
@@ -17,39 +17,49 @@ function SignUp({ navigation }: Props) {
   const [name, setName] = useState('');
   const [loading, setLoading] = useState<boolean>(false); 
 
+  const Leaf = () => {
+  return (
+    <View style={styles.leafContainer}>
+      {/* Sağdaki koyu yeşil büyük yaprak */}
+      <View style={styles.leaf1} />
+      {/* Soldaki açık yeşil küçük yaprak */}
+      <View style={styles.leaf2} />
+    </View>
+  );
+};
+
+const handleBackButton = () => {
+  navigation.goBack();
+}
+
   const handleSignUp = async () => {
     if (loading) return;
-    setLoading(true);
-    console.log(API_URL);
-    try {
-      const res = await fetch(`${API_URL}/api/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, name}),
-      });
-
-      const data = await res.json();
-      
-      
-      if (res.ok) {
-        navigation.navigate('SignUpEnterData');
-      } else {
-        Alert.alert('Hata', data.message || 'Kayıt yapılamadı');
-      }
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Hata', 'Sunucuya bağlanılamadı. IP adresinizi kontrol edin.');
-    } finally {
+    if(!name || !name || !password){
+      Alert.alert("Error","please fill all areas.");
       setLoading(false);
+      return;
     }
+    const initialData = {
+      username: name,
+      email: email,
+      password: password,
+    };
+    navigation.navigate('SignUpEnterData',{initialData});
+     
   };
 
   return (
     <View style={styles.container}>
-       <View style={styles.circle1}/>
-          <View style={styles.circle2}/>
-            <View style={styles.circle3}></View>
+      <TouchableOpacity style={styles.backButton} onPress={handleBackButton}>
+          <Image 
+            source={require("../assets/goback.png")}
+            style={{width:25}}
+        />
+        </TouchableOpacity>
+      <Leaf />
+      <View style={styles.dataContainer}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
+
         <Text style={styles.title}>Create Account</Text>
 
       <View style={styles.inputContainer}>
@@ -79,7 +89,7 @@ function SignUp({ navigation }: Props) {
                   placeholder="Password"
                   value={password}
                   onChangeText={setPassword}
-                  secureTextEntry={false}
+                  secureTextEntry={true}
                 />
                 </View>
         <TouchableOpacity style={styles.button} onPress={handleSignUp}>
@@ -92,6 +102,7 @@ function SignUp({ navigation }: Props) {
           <Text style={styles.linkText}>Already have an account? <Text style={styles.signUpLinkText}>Log in</Text></Text>
         </TouchableOpacity>
       </ScrollView>
+    </View>
     </View>
   );
 }

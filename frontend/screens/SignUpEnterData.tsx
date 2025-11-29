@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { 
-  View, Text, TextInput, Button, Alert, TouchableOpacity, ScrollView 
+  View, Text, TextInput, Button,Image, Alert, TouchableOpacity, ScrollView 
 } from 'react-native';
 import { Menu} from 'react-native-paper';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useRoute } from '@react-navigation/native';
 
 import styles from '../styles/SignUpEnterData';
 import GenderSelector from '../components/genderSelection'
@@ -14,48 +15,67 @@ import { IP_ADDRESS } from "@env";
 const API_URL = `http://${IP_ADDRESS}:3000`; 
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SignUpEnterData'>;
+function SignUpEnterData({ navigation, route }: Props) {
 
-function SignUpEnterData({ navigation }: Props) {
+  const { initialData } = route.params;
   const [age, setAge] = useState('');
-  const [gender, setGender] = useState('');
+  const [gender, setGender] = useState<'male' | 'female' | null>(null);
   const [weight, setWeight] = useState('');
   const [height, setHeight] = useState('');
   const [goal, setGoal] = useState('');
+  const [target_weight, setTargetWeight] = useState('');
   
   
   const [loading, setLoading] = useState<boolean>(false); 
+  const handleBackButton = () => {
+  navigation.goBack();
+}
+
+  const Leaf = () => {
+    return (
+      <View style={styles.leafContainer}>
+        {/* Sağdaki koyu yeşil büyük yaprak */}
+        <View style={styles.leaf1} />
+        {/* Soldaki açık yeşil küçük yaprak */}
+        <View style={styles.leaf2} />
+      </View>
+    );
+  };
   
   const handleSignUpData = async () => {
       if (loading) return;
       setLoading(true);
   
-      try {
-        const res = await fetch(`${API_URL}/api/auth/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ age, gender, weight,height}),
-        });
-  
-        const data = await res.json();
-  
-        if (res.ok) {
-          navigation.navigate('CreateAvatar');
-        } else {
-          Alert.alert('Hata', data.message || 'Kayıt yapılamadı');
-        }
-      } catch (error) {
-        console.error(error);
-        Alert.alert('Hata', 'Sunucuya bağlanılamadı. IP adresinizi kontrol edin.');
-      } finally {
+      if(!age || !gender || !weight || !height || !goal){
+        Alert.alert("Hata","Please Enter All Infos.");
         setLoading(false);
+        return;
       }
-    };
+      const secondData = {
+        ...initialData,
+        age: parseInt(age),
+        gender,
+        weight: parseFloat(weight),
+        height: parseFloat(height),
+        reason_to_diet: goal,
+        target_weight: 0,
+
+      }
+      navigation.navigate('CreateAvatar', {finalData:secondData});
+      setLoading(false);
+        };
+        
  
 return (
     <View style={styles.container}>
-       <View style={styles.circle1}/>
-          <View style={styles.circle2}/>
-            <View style={styles.circle3}></View>
+      <TouchableOpacity style={styles.backButton} onPress={handleBackButton}>
+          <Image 
+            source={require("../assets/goback.png")}
+            style={{width:25}}
+        />
+        </TouchableOpacity>
+      <Leaf />
+        <View style={styles.dataContainer}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.inputContainer}>
             <Text style = {styles.label}>Age *</Text>
@@ -63,6 +83,7 @@ return (
                 style={styles.input}
                 placeholder="Age"
                 value={age}
+                keyboardType="numeric"
                 onChangeText={setAge}
             />
        </View>
@@ -95,6 +116,7 @@ return (
                  </Text>
                </TouchableOpacity>
       </ScrollView>
+    </View>
     </View>
   );
 }

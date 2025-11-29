@@ -14,6 +14,7 @@ export default StyleSheet.create({
     borderTopRightRadius: 25,
     borderBottomLeftRadius: 80,
     borderBottomRightRadius: 80,  
+    alignItems: "center", 
   },
     scrollContent: {
     flexGrow: 1,
@@ -55,11 +56,25 @@ export default StyleSheet.create({
     alignItems: 'center',
     justifyContent: "center",
   },
+  
   plus: {
   fontSize: 40,  
   fontWeight: "bold",
   lineHeight: 40,
 },
+dateSelector: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    marginBottom: 16,
+  },
+  dateText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fffbfbff',
+  },
   iconContainer: {
   justifyContent: "center",
   width: 50,

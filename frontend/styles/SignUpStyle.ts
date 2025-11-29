@@ -3,50 +3,75 @@ import { StyleSheet } from 'react-native';
 export default StyleSheet.create({
     container: {
     flex: 1,
-    backgroundColor: '#473c33',
+    backgroundColor: '#473C33',
+    flexDirection: 'column',
   },
-   circle1: {
-    position: 'absolute',
-    left:-168,
-    top:378,
-    width:650,
-    height:650,
-    borderRadius: 350,
-    backgroundColor:'#1f5809',
+
+leafContainer:{
+    position:'absolute',
+    top: '13%',
+    left: '50%', 
+    marginLeft: -50,
+    width: 100,
+    height: 100,
+    zIndex: 10,
+
+  },
+  
+  leaf1:{ // Koyu Yeşil Yaprak
+    position: 'absolute', // MUTLAKA EKLE
+    left: 50, // Container içinde sağa kaydır
+    width: 90,
+    height: 100,
+    backgroundColor: '#2e7d32', // Koyu yeşil
+    borderTopLeftRadius: 120,
+    borderBottomRightRadius: 120,
+    borderTopRightRadius: 20, 
+    borderBottomLeftRadius: 20,
+    transform: [{ rotate: '0deg' }],
+    zIndex: 2,
+  },
+  leaf2:{ // Açık Yeşil Yaprak
+    position: 'absolute', // MUTLAKA EKLE
+    right: 55, // Container içinde sola kaydır
+    top:10,
+    width: 70,
+    height: 85,
+    backgroundColor: '#8bc34a', // Açık yeşil
+    borderTopLeftRadius: 110,
+    borderBottomRightRadius: 110,
+    borderTopRightRadius: 15,
+    borderBottomLeftRadius: 15,
+    
+    transform: [{ rotate: '-80deg' }], // Hafif eğim
+    zIndex: 2,
+  },
+  backButton:{
+     alignSelf: 'flex-start',
+     left: 20,
+     top:"5%"
   },
-  circle2: {
-    position: 'absolute',
-    left:73,
-    top:177,
-    width:400,
-    height:400,
-    borderRadius: 200,
-    backgroundColor:'#8db654',
-  },
-  circle3: {
-    position: 'absolute',
-    left:30,
-    top:50,
-    width:200,
-    height:200,
-    borderRadius: 100,
-    backgroundColor:'#e2f0bd',
-    justifyContent: 'center',
-    alignItems: 'center',
+  
+
+  dataContainer:{
+    marginTop:'48%',
+    flex: 1,
+    backgroundColor: '#ABC270',
+    borderRadius:40,
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: 'center',
+    //justifyContent: 'center',
     paddingHorizontal: 20,
     paddingVertical: 30,
   },
   
   title: {
-    fontSize: 20,
+    fontSize: 30,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 15,
-    color: '#FFFFFF',
+    color: '#463C33',
   },
   input: {
     backgroundColor: '#f7e5c5ff',
@@ -67,14 +92,14 @@ export default StyleSheet.create({
     zIndex: 1,
     fontWeight:'bold',
     fontSize: 18,
-    color: '#080808ff',
+    color: '#463C33',
     paddingTop: 8,
     marginBottom: 8-5
   },
    linkText: {
     marginTop: 20,
     textAlign: 'center',
-    color: '#f7e5c5ff',
+    color: '#463C33',
     fontSize: 16,
   },
   signUpLinkText:{
@@ -84,21 +109,21 @@ export default StyleSheet.create({
     fontSize: 16,
   },
   button: {
-  backgroundColor: '#fc8500',
+  backgroundColor: '#Db5B23',
   paddingHorizontal: 15,
   paddingVertical: 12,
-  borderRadius: 8,
+  borderRadius: 20,
   alignItems: 'center',
   marginBottom: 15,
   },
   buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
+    color: '#ebe8e7ff',
+    fontSize: 25,
     fontWeight: 'bold',
   },
   divider: {
   height: 1,
-  backgroundColor: '#ddd', 
+  backgroundColor: '#463C33', 
   marginVertical: 20,       // üst-alt boşluk
 },
   subtitle: {
@@ -108,7 +133,7 @@ export default StyleSheet.create({
     marginTop: 15,
     marginBottom: 10,
     borderTopWidth: 1,
-    borderTopColor: '#eee',
+    borderTopColor: '#463C33',
     paddingTop: 15,
   
   },

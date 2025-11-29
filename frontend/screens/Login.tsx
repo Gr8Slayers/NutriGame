@@ -3,7 +3,7 @@ import {
   View, Text, TextInput, Button, Alert, TouchableOpacity, ScrollView 
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import * as SecureStore from 'expo-secure-store';
 import { Image } from 'react-native';
 import { RootStackParamList } from '../App';
 
@@ -18,9 +18,21 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
 function Login({ navigation }: Props) {
   const [email, setEmail] = useState('');
+  const [userName, setUserName] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState<boolean>(false); 
   const [remember, setRemember] = useState(false);
+
+  const Leaf = () => {
+    return (
+      <View style={styles.leafContainer}>
+        {/* Sağdaki koyu yeşil büyük yaprak */}
+        <View style={styles.leaf1} />
+        {/* Soldaki açık yeşil küçük yaprak */}
+        <View style={styles.leaf2} />
+      </View>
+    );
+  };
 
   const handleLogin = async () => {
     if (loading) return;
@@ -30,7 +42,7 @@ function Login({ navigation }: Props) {
       const res = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email,userName, password }),
       });
 
       const data = await res.json();
@@ -38,7 +50,14 @@ function Login({ navigation }: Props) {
       if (res.ok) {
         Alert.alert('Success',data.message);
         navigation.navigate('MainPage');
-        //const token = data.token || "No Token";
+        const token = data.token || "No Token";
+        await SecureStore.setItemAsync('userToken', token);
+        if(remember){
+          await SecureStore.setItemAsync('rememberMeFlag', 'true');
+        }
+        else{
+          await SecureStore.deleteItemAsync('rememberMeFlag');
+        }
         //Alert.alert('Başarılı', `Giriş yapıldı! Token: ${data.token.substring(0, 20)}...`);
       } else {
         Alert.alert('Hata', data.message || 'Giriş yapılamadı');
@@ -53,19 +72,17 @@ function Login({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.circle1}/>
-        <View style={styles.circle2}/>
-        <View style={styles.circle3}/>
-          
+     <Leaf />
+           <View style={styles.dataContainer}>
           <ScrollView contentContainerStyle={styles.scrollContent}>
-            <Text style={styles.logInTitle}>Log In</Text>
+            <Text style={styles.logInTitle}>LOG IN</Text>
 
             <View style={styles.inputContainer}>
-                    <Text style = {styles.label}>Email *</Text>
+                    <Text style = {styles.label}>Email or Username *</Text>
                     <TextInput
                       style={styles.input}
-                      placeholder="Email"
-                      value={email}
+                      placeholder="Email or Username"
+                      value={email||userName}
                       onChangeText={setEmail}
                       keyboardType="email-address"
                       autoCapitalize="none"
@@ -78,7 +95,7 @@ function Login({ navigation }: Props) {
                   placeholder="Password"
                   value={password}
                   onChangeText={setPassword}
-                  secureTextEntry={false}
+                  secureTextEntry={true}
                 />
                </View>
             <TouchableOpacity
@@ -87,7 +104,7 @@ function Login({ navigation }: Props) {
                 disabled={loading}
               >
                 <Text style={styles.buttonText}>
-                  {loading ? 'Entering...' : 'LOG IN'}
+                  {loading ? 'Entering...' : 'Log In'}
                 </Text>
           </TouchableOpacity>
           <View style={styles.rememberContainer}>
@@ -105,6 +122,7 @@ function Login({ navigation }: Props) {
               <Text style={styles.linkText}>Don't have an account? <Text style={styles.signUpLinkText}>Sign Up</Text></Text>
             </TouchableOpacity>
           </ScrollView>
+      </View>
       </View>
   );
 }

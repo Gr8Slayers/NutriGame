@@ -12,7 +12,7 @@ export default function CalorieCircle({calories,goal}:CalorieCircleProps) {
   const fill = (calories / goal) * 100; 
 
   return (
-    <View style={{ alignItems: 'center' }}>
+    <View style={{ alignItems: 'center' ,justifyContent: 'center' }}>
 
       <AnimatedCircularProgress
         size={200}
