@@ -82,7 +82,7 @@ export default function App() {
         rememberMeFlag = await SecureStore.getItemAsync('rememberMeFlag');
 
         if(token && rememberMeFlag=='true'){
-          setIsAuthenticated(false);
+          setIsAuthenticated(true);
         }
 
       }
