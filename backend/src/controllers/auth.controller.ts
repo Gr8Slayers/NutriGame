@@ -1,23 +1,27 @@
 // src/controllers/auth.controller.ts
 
 import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
 import { userModel } from '../models/user.model';
+
+// .env dosyasından JWT secret al
+const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
 
 export class AuthController {
     async register(req: Request, res: Response, next: NextFunction) {
         try {
-            const { name, email, password } = req.body;
-            if (!name || !email || !password) {
-                return res.status(400).json({ success: false, message: 'Tüm alanlar zorunludur.' });
+            const { username, email, password, age, gender, height, weight, target_weight, reason_to_diet, avatar_url } = req.body;
+            if (!username || !email || !password || !age || !gender || !height || !weight) {
+                return res.status(400).json({ success: false, message: 'Zorunlu alanları doldurunuz.' });
             }
 
-            const existingUser = false/*await userModel.findByEmail(email)*/; // database baglanmali
+            const existingUser = await userModel.findByEmailorUsername(email, username);
             if (existingUser) {
-                return res.status(409).json({ success: false, message: 'Bu email zaten kayıtlı.' });
+                return res.status(409).json({ success: false, message: 'Bu email ya da username zaten kayıtlı.' });
             }
 
             //const hashedPassword = await bcrypt.hash(password, 10);
-            await userModel.createUser({ name, email, password });
+            await userModel.createUser({ username, email, password, age, gender, height, weight, target_weight, reason_to_diet, avatar_url });
             return res.status(201).json({ success: true, message: 'Kayıt başarılı.' });
         } catch (error) {
             next(error);
@@ -26,20 +30,20 @@ export class AuthController {
 
     async login(req: Request, res: Response, next: NextFunction) {
         try {
-            const { email, password } = req.body;
-            if (!email || !password) {
-                return res.status(400).json({ success: false, message: 'Email ve şifre gerekli.' });
+            const { email, username, password } = req.body;
+            if (!(email || username) || !password) {
+                return res.status(400).json({ success: false, message: 'Email/username ve şifre gerekli.' });
             }
-            const user = await userModel.findByEmail(email);
+            const user = await userModel.findByEmailorUsername(email, username);
             if (!user) {
-                return res.status(401).json({ success: false, message: 'Geçersiz email veya şifre.' });
+                return res.status(401).json({ success: false, message: 'Geçersiz email/username veya şifre.' });
             }
-            const passwordMatch = true/*await bcrypt.compare(password, user.password);*/
+            const passwordMatch = user.password == password;/*await bcrypt.compare(password, user.password);*/
             if (!passwordMatch) {
-                return res.status(401).json({ success: false, message: 'Geçersiz email veya şifre.' });
+                return res.status(401).json({ success: false, message: 'Geçersiz email/username veya şifre.' });
             }
             // JWT token oluştur
-            const token = 1234/*jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' })*/;
+            const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
             return res.status(200).json({
                 success: true,
                 message: 'Giriş başarılı.',

@@ -2,6 +2,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes';
+import userRoutes from './routes/user.routes';
 import prisma from './config/prisma'; // 🔹 PRİSMA BAĞLANTISI
 
 dotenv.config();
@@ -11,9 +12,9 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json());
 
-prisma.$connect()
+/*prisma.$connect()
   .then(() => console.log('📦 Database bağlantısı başarılı'))
-  .catch((err) => console.error('❌ Database bağlantı hatası:', err));
+  .catch((err: any) => console.error('❌ Database bağlantı hatası:', err));*/
 
 // Health Check
 app.get('/api', (req, res) => {
@@ -21,6 +22,7 @@ app.get('/api', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoutes);
 
 // Server başlat
 app.listen(port, () => {
