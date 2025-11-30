@@ -15,13 +15,13 @@ export class AuthController {
                 return res.status(400).json({ success: false, message: 'Zorunlu alanları doldurunuz.' });
             }
 
-            const existingUser = await userModel.findByEmailorUsername(email, username);
+            const existingUser = await userModel.findUser(email, username);
             if (existingUser) {
                 return res.status(409).json({ success: false, message: 'Bu email ya da username zaten kayıtlı.' });
             }
 
             //const hashedPassword = await bcrypt.hash(password, 10);
-            await userModel.createUser({ username, email, password, age, gender, height, weight, target_weight, reason_to_diet, avatar_url });
+            await userModel.createUser(username, email, password, age, gender, height, weight, target_weight, reason_to_diet, avatar_url);
             return res.status(201).json({ success: true, message: 'Kayıt başarılı.' });
         } catch (error) {
             next(error);
@@ -34,7 +34,7 @@ export class AuthController {
             if (!(email || username) || !password) {
                 return res.status(400).json({ success: false, message: 'Email/username ve şifre gerekli.' });
             }
-            const user = await userModel.findByEmailorUsername(email, username);
+            const user = await userModel.findUser(email, username);
             if (!user) {
                 return res.status(401).json({ success: false, message: 'Geçersiz email/username veya şifre.' });
             }
