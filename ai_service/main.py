@@ -3,6 +3,11 @@ from fastapi import FastAPI, File, UploadFile
 from PIL import Image
 from ultralytics import YOLO
 import os
+from pydantic import BaseModel
+from dotenv import load_dotenv
+
+# .env dosyasındaki değişkenleri yükle
+load_dotenv()
 
 # FastAPI uygulamasını başlat
 app = FastAPI(title="NutriGame AI Service")
@@ -60,3 +65,31 @@ async def detect_objects(file: UploadFile = File(...)):
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the NutriGame AI Service. Use the /detect endpoint to get predictions."}
+
+from transformers import pipeline, Conversation
+
+# --- CHATBOT (Hugging Face) ---
+# Sunucu başladığında modeli ve "conversational pipeline"ı bir kereliğine yüklüyoruz.
+# Not: İlk çalıştırmada model indirileceği için bu işlem uzun sürebilir.
+chatbot = pipeline("conversational", model="microsoft/DialoGPT-medium")
+
+# İstek gövdesi için Pydantic modeli
+class ChatRequest(BaseModel):
+    message: str
+
+@app.post("/chat")
+async def chat_with_bot(request: ChatRequest):
+    """
+    Kullanıcıdan bir mesaj alır, bunu yerel Hugging Face modeline gönderir ve
+    chatbot'un yanıtını geri döndürür.
+    """
+    try:
+        # Gelen mesajı bir "Conversation" objesine koyarak pipeline'a veriyoruz.
+        conv = Conversation(request.message)
+        chatbot(conv)
+        # Modelin ürettiği son yanıtı alıyoruz.
+        response_message = conv.generated_responses[-1]
+        return {"response": response_message}
+    
+    except Exception as e:
+        return {"error": f"An error occurred with the local model: {str(e)}"}

@@ -4,3 +4,5 @@ ultralytics
 Pillow
 python-multipart
 numpy<2.0
+python-dotenv
+transformers
