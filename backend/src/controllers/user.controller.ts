@@ -9,6 +9,8 @@ export class UserController {
         try {
             const userId = req.user!.id; // Assuming jwt/auth middleware sets req.user
 
+            // ATTENTION: burada elimdeki user id ye sahip bir user var mi kontrolu yapmali miyim emin degilim, zaten giris yapabildiysek user vardir vs. bir hata alirsak bu ihtimal aklimizda bulunsun.
+
             const { age, gender, weight, height, target_weight, reason_to_diet, avatar_url, ...extra } = req.body; // sadece belli ozelliklerin degismesini mumkun kiliyor
 
             const updates: any = {};
@@ -25,16 +27,52 @@ export class UserController {
             }
 
             const updatedUser = await userModel.updateUserProfileById(userId, updates);
-            return res.status(200).json({ success: true, user: req.user!.id/*updatedUser*/ });
+            return res.status(200).json({ success: true, message: 'User Profile is updated successfully.', user: req.user!.id/*updatedUser*/ });
         } catch (err) {
             next(err);
         }
     }
 
     async getUserProfile(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = req.user!.id; // Assuming jwt/auth middleware sets req.user
+
+            const fetchedUser = await userModel.fetchUser(userId);
+
+            if (!fetchedUser) {
+                return res.status(401).json({ success: false, message: 'User is not found.' });
+            }
+
+            return res.status(200).json({
+                success: true,
+                message: 'User is fetched successfully.',
+                username: fetchedUser.username,
+                email: fetchedUser.email,
+                age: fetchedUser.profile?.age,
+                gender: fetchedUser.profile?.gender,
+                height: fetchedUser.profile?.height,
+                weight: fetchedUser.profile?.weight,
+                target_weight: fetchedUser.profile?.target_weight,
+                reason_to_diet: fetchedUser.profile?.reason_to_diet,
+                avatar_url: fetchedUser.profile?.avatar_url
+            });
+        } catch (err) {
+            next(err);
+        }
     }
 
     async deleteAccount(req: Request, res: Response, next: NextFunction) {
+        // TO DO: bu istekten sonra user giris sayfasina yonlendirilmeli degil mi frontend tarfindan
+        try {
+            const userId = req.user!.id; // Assuming jwt/auth middleware sets req.user
+
+            // ATTENTION: burada elimdeki user id ye sahip bir user var mi kontrolu yapmali miyim emin degilim, zaten giris yapabildiysek user vardir vs. bir hata alirsak bu ihtimal aklimizda bulunsun.
+
+            const updatedUser = await userModel.deleteUser(userId);
+            return res.status(200).json({ success: true, message: 'User is deleted successfully.', user: req.user!.id/*updatedUser*/ });
+        } catch (err) {
+            next(err);
+        }
     }
 }
 

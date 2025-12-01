@@ -7,7 +7,7 @@ export const userModel = {
       where: {
         OR: [
           { email: email },
-          { username: username },
+          { username: username }
         ],
       },
     });
@@ -36,9 +36,23 @@ export const userModel = {
 
   updateUserProfileById: async (userId: number, updates: { age?: number, gender?: string, weight?: number, height?: number, target_weight?: number, reason_to_diet?: string, avatar_url?: string }) => {
     const updatedProfile = await prisma.userProfile.update({
-      where: { userId },          // userId üzerinden profili bul
+      where: { userId: userId },          // userId üzerinden profili bul
       data: updates,              // hangi alan geldiyse onu güncelle
     });
     return updatedProfile;
-  }
+  },
+
+  deleteUser: async (userId: number) => {
+    return await prisma.user.delete({
+      where: { id: userId }
+    });
+  },
+
+  fetchUser: async (userId: number) => {
+    return await prisma.user.findFirst({
+      where: { id: userId },
+      include: { profile: true },
+    });
+  },
+
 };
