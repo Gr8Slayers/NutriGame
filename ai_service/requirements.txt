@@ -1,0 +1,6 @@
+fastapi
+uvicorn[standard]
+ultralytics
+Pillow
+python-multipart
+numpy<2.0
