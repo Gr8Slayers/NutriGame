@@ -80,3 +80,24 @@ Thumbs.db
 *.log
 logs/
 events.out*
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Prisma
+/backend/prisma/dev.db
+/backend/prisma/dev.db-journal
+
+# Environment variables
+.env
+.env*.local
+
+# AI Service specific
+/ai_service/models/
+/ai_service/mock_data/
+/ai_service/dist/
+/ai_service/node_modules/
+/ai_service/venv/

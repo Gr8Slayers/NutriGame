@@ -41,3 +41,9 @@ def run_test():
 
 if __name__ == "__main__":
     run_test()
+
+
+"""
+Başarılı! Sunucudan gelen yanıt:
+{'predictions': [{'class_name': 'banana', 'confidence': 0.8596363067626953, 'bounding_box': {'x1': 78.22000885009766, 'y1': 35.93109893798828, 'x2': 191.0722198486328, 'y2': 119.45285034179688}}]}
+"""
