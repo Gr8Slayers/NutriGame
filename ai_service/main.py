@@ -10,7 +10,7 @@ app = FastAPI(title="NutriGame AI Service")
 # --- MODEL YÜKLEME ---
 # Modelin yolunu belirliyoruz. 'models' klasörünün içine koyacağınız
 # fine-tune edilmiş modelin adını buraya yazın.
-MODEL_PATH = os.path.join('models', 'best.pt')
+MODEL_PATH = r"D:\Datalarım\Desktop\Bitirme\NutriGame\ai_service\models\yolov8n.pt"
 
 # Modeli yükle
 # Eğer model dosyası yoksa, bir hata fırlatacak.

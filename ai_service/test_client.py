@@ -2,7 +2,7 @@ import requests
 import os
 
 # Test edilecek resmin yolu (bu dosyayı ai_service klasörüne koymalısınız)
-TEST_IMAGE_PATH = 'test_image.jpg'
+TEST_IMAGE_PATH = r'D:\Datalarım\Desktop\Bitirme\NutriGame\ai_service\mock_data\banana.jpg'
 
 # AI servisinin adresi
 API_URL = 'http://127.0.0.1:8001/detect'
