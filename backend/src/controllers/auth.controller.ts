@@ -9,6 +9,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
 
 export class AuthController {
     async register(req: Request, res: Response, next: NextFunction) {
+        console.log('POST api/auth/register')
         try {
             const { username, email, password, age, gender, height, weight, target_weight, reason_to_diet, avatar_url } = req.body;
             if (!username || !email || !password || !age || !gender || !height || !weight) {
@@ -29,8 +30,10 @@ export class AuthController {
     }
 
     async login(req: Request, res: Response, next: NextFunction) {
+        console.log('POST api/auth/login')
         try {
             const { email, username, password } = req.body;
+            console.log(req.body);
             if (!(email || username) || !password) {
                 return res.status(400).json({ success: false, message: 'Email/username ve şifre gerekli.' });
             }
