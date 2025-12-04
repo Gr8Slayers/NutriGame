@@ -106,9 +106,9 @@ leafContainer:{
   
   },
   avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
   },
   selected: {
     borderWidth: 3,
