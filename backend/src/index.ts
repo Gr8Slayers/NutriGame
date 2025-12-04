@@ -12,9 +12,9 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json());
 
-/*prisma.$connect()
+prisma.$connect()
   .then(() => console.log('📦 Database bağlantısı başarılı'))
-  .catch((err: any) => console.error('❌ Database bağlantı hatası:', err));*/
+  .catch((err: any) => console.error('❌ Database bağlantı hatası:', err));
 
 // Health Check
 app.get('/api', (req, res) => {

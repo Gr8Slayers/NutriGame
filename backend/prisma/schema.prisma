@@ -12,21 +12,27 @@ datasource db {
 
 // === KULLANICI MODELİ ===
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  password  String   // Hashlenmiş şifre
-  createdAt DateTime @default(now())
+  id        Int       @id @default(autoincrement())
+  username  String    @unique
+  email     String    @unique
+  password  String
+  createdAt DateTime  @default(now())
+  profile   UserProfile?  // sadece Prisma için, DB kolonu değil
 }
 
 model UserProfile {
-  id        Int      @id @default(autoincrement())
-  age       Int
-  gender    String
-  weight    Int
-  height    Int
-  target_weight Int
+  id             Int      @id @default(autoincrement())
+  userId         Int      @unique
+  age            Int
+  gender         String
+  weight         Int
+  height         Int
+  target_weight  Int
   reason_to_diet String
+  avatar_url     String
+
+  // her UserProfile in bir User a bagli olmasini sagliyor, user da bir row silindiginde burada ilgili user in profili siliniyor
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 //npx prisma db push yapılmalı
