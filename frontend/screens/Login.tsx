@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  View, Text, TextInput, Button, Alert, TouchableOpacity, ScrollView
+  View, Text, TextInput, Button, Alert, TouchableOpacity, ScrollView,KeyboardAvoidingView, Platform
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as SecureStore from 'expo-secure-store';
@@ -16,14 +16,7 @@ const API_URL = `http://${IP_ADDRESS}:3000`;
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
-function Login({ navigation }: Props) {
-  const [email, setEmail] = useState('');
-  const [username, setUserName] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState<boolean>(false);
-  const [remember, setRemember] = useState(false);
-
-  const Leaf = () => {
+ const Leaf = () => {
     return (
       <View style={styles.leafContainer}>
         {/* Sağdaki koyu yeşil büyük yaprak */}
@@ -33,6 +26,15 @@ function Login({ navigation }: Props) {
       </View>
     );
   };
+
+function Login({ navigation }: Props) {
+  const [email, setEmail] = useState('');
+  const [username, setUserName] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [remember, setRemember] = useState(false);
+
+ 
 
   const handleLogin = async () => {
     if (loading) return;
@@ -74,8 +76,15 @@ function Login({ navigation }: Props) {
   return (
     <View style={styles.container}>
       <Leaf />
+      <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1 }}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20} // Android'de bazen azıcık pay gerekir
+    >
+      
       <View style={styles.dataContainer}>
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView contentContainerStyle={styles.scrollContent}keyboardShouldPersistTaps="handled">
+          
           <Text style={styles.logInTitle}>LOG IN</Text>
 
           <View style={styles.inputContainer}>
@@ -132,6 +141,7 @@ function Login({ navigation }: Props) {
           </TouchableOpacity>
         </ScrollView>
       </View>
+      </KeyboardAvoidingView>
     </View>
   );
 }

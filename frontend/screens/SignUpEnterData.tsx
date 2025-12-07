@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { 
-  View, Text, TextInput, Button,Image, Alert, TouchableOpacity, ScrollView 
+  View, Text, TextInput, Button,Image, Alert, TouchableOpacity, ScrollView ,KeyboardAvoidingView, Platform
 } from 'react-native';
 import { Menu} from 'react-native-paper';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -15,6 +15,16 @@ import { IP_ADDRESS } from "@env";
 const API_URL = `http://${IP_ADDRESS}:3000`; 
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SignUpEnterData'>;
+  const Leaf = () => {
+    return (
+      <View style={styles.leafContainer}>
+        {/* Sağdaki koyu yeşil büyük yaprak */}
+        <View style={styles.leaf1} />
+        {/* Soldaki açık yeşil küçük yaprak */}
+        <View style={styles.leaf2} />
+      </View>
+    );
+  };
 function SignUpEnterData({ navigation, route }: Props) {
 
   const { initialData } = route.params;
@@ -31,16 +41,7 @@ function SignUpEnterData({ navigation, route }: Props) {
   navigation.goBack();
 }
 
-  const Leaf = () => {
-    return (
-      <View style={styles.leafContainer}>
-        {/* Sağdaki koyu yeşil büyük yaprak */}
-        <View style={styles.leaf1} />
-        {/* Soldaki açık yeşil küçük yaprak */}
-        <View style={styles.leaf2} />
-      </View>
-    );
-  };
+
   
   const handleSignUpData = async () => {
       if (loading) return;
@@ -75,6 +76,11 @@ return (
         />
         </TouchableOpacity>
       <Leaf />
+       <KeyboardAvoidingView
+                  behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                  style={{ flex: 1 }}
+                  keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20} // Android'de bazen azıcık pay gerekir
+                >
         <View style={styles.dataContainer}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.inputContainer}>
@@ -117,6 +123,7 @@ return (
                </TouchableOpacity>
       </ScrollView>
     </View>
+    </KeyboardAvoidingView>
     </View>
   );
 }

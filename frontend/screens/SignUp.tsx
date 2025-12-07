@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { 
-  View, Text, TextInput, Button,Image, Alert, TouchableOpacity, ScrollView 
+  View, Text, TextInput, Button,Image, Alert, TouchableOpacity, ScrollView,KeyboardAvoidingView, Platform
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../App';
@@ -10,14 +10,7 @@ import { IP_ADDRESS } from "@env";
 const API_URL = `http://${IP_ADDRESS}:3000`; 
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SignUp'>;
-
-function SignUp({ navigation }: Props) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-  const [loading, setLoading] = useState<boolean>(false); 
-
-  const Leaf = () => {
+ const Leaf = () => {
   return (
     <View style={styles.leafContainer}>
       {/* Sağdaki koyu yeşil büyük yaprak */}
@@ -27,6 +20,14 @@ function SignUp({ navigation }: Props) {
     </View>
   );
 };
+
+function SignUp({ navigation }: Props) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [loading, setLoading] = useState<boolean>(false); 
+
+ 
 
 const handleBackButton = () => {
   navigation.goBack();
@@ -57,8 +58,13 @@ const handleBackButton = () => {
         />
         </TouchableOpacity>
       <Leaf />
+      <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={{ flex: 1 }}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20} // Android'de bazen azıcık pay gerekir
+          >
       <View style={styles.dataContainer}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={styles.scrollContent}keyboardShouldPersistTaps="handled">
 
         <Text style={styles.title}>Create Account</Text>
 
@@ -103,6 +109,7 @@ const handleBackButton = () => {
         </TouchableOpacity>
       </ScrollView>
     </View>
+    </KeyboardAvoidingView>
     </View>
   );
 }

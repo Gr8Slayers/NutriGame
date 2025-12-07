@@ -58,10 +58,11 @@ leafContainer:{
   
 
   dataContainer:{
-    marginTop: Platform.OS === 'ios' ? height * 0.25 : height * 0.20,
+    marginTop: Platform.OS === 'ios' ? height*0.25 : height*0.20,
     flex: 1,
     backgroundColor: '#ABC270',
-    borderRadius:40,
+    borderTopLeftRadius:40,
+    borderTopRightRadius:40,
     overflow: 'hidden',
   },
   scrollContent: {

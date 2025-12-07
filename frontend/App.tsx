@@ -11,7 +11,6 @@ import SignUp from './screens/SignUp';
 import SignUpEnterData from './screens/SignUpEnterData';
 import CreateAvatar from './screens/CreateAvatar';
 import MainPage from './screens/MainPage';
-import AddBreakfast from './screens/AddMeal';
 import AddMeal from './screens/AddMeal';
 
 interface UpdatedMealParams {
