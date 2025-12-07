@@ -57,7 +57,7 @@ function MainPage({ navigation }: Props) {
                 <CalorieCircle calories={totalCalories} goal={dailyGoal} />
             </View>
 
-            <ScrollView contentContainerStyle={styles.scrollContent}>
+            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                 <View style={styles.dateSelector}>
                     <TouchableOpacity onPress={() => changeDate(-1)}>
                         <Text style={{ fontSize: 24, padding: 10, color: "#ffff" }}>{"<"}</Text>
@@ -73,6 +73,7 @@ function MainPage({ navigation }: Props) {
                     <Image
                         source={require("../assets/breakfast.png")}
                         style={styles.iconContainer}
+                        resizeMode="contain"
                     />
                     <View style={styles.labelContainer}>
                         <Text style={styles.mealTitle}>Add Breakfast</Text>
@@ -90,6 +91,7 @@ function MainPage({ navigation }: Props) {
                     <Image
                         source={require("../assets/lunch.png")}
                         style={styles.iconContainer}
+                        resizeMode="contain"
                     />
                     <View style={styles.labelContainer}>
                         <Text style={styles.mealTitle}>Add Lunch</Text>
@@ -107,6 +109,7 @@ function MainPage({ navigation }: Props) {
                     <Image
                         source={require("../assets/dinner.png")}
                         style={styles.iconContainer}
+                        resizeMode="contain"
                     />
                     <View style={styles.labelContainer}>
                         <Text style={styles.mealTitle}>Add Dinner</Text>
@@ -124,6 +127,7 @@ function MainPage({ navigation }: Props) {
                     <Image
                         source={require("../assets/snack.png")}
                         style={styles.iconContainer}
+                        resizeMode="contain"
                     />
                     <View style={styles.labelContainer}>
                         <Text style={styles.mealTitle}>Add Snack</Text>
@@ -143,18 +147,21 @@ function MainPage({ navigation }: Props) {
                     <Image
                         source={require("../assets/spoon.png")}
                         style={{ width: 70, height: 70 }}
+                        resizeMode="contain"
                     />
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.chatButton}>
                     <Image
                         source={require("../assets/plate.png")}
                         style={{ width: 100, height: 100 }}
+                        resizeMode="contain"
                     />
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.recipeButton}>
                     <Image
                         source={require("../assets/fork.png")}
                         style={{ width: 70, height: 70 }}
+                        resizeMode="contain"
                     />
                 </TouchableOpacity>
             </View>

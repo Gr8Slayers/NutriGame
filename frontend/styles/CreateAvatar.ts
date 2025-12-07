@@ -1,15 +1,17 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StatusBar, Dimensions,StyleSheet } from 'react-native';
+const { height } = Dimensions.get('window');
 
 export default StyleSheet.create({
     container: {
     flex: 1,
     backgroundColor: '#473C33',
     flexDirection: 'column',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
 
 leafContainer:{
     position:'absolute',
-    top: '13%',
+    top: height * 0.13,
     left: '50%', 
     marginLeft: -50,
     width: 100,
@@ -48,15 +50,17 @@ leafContainer:{
   },
 
   dataContainer:{
-    marginTop:'48%',
+    marginTop: Platform.OS === 'ios' ? height * 0.25 : height * 0.20,
     flex: 1,
     backgroundColor: '#ABC270',
     borderRadius:40,
   },
   backButton:{
-     alignSelf: 'flex-start',
-     left: 20,
-     top:"5%"
+     position: 'absolute', // ARTIK AKIŞI BOZMAZ (Yer kaplamaz)
+    left: 20,
+    // iOS ve Android için güvenli tepe boşluğu
+    top: Platform.OS === 'ios' ? 50 : 20, 
+    zIndex: 20, // En üstte görünsün
   },
   
    
@@ -65,22 +69,30 @@ leafContainer:{
     justifyContent: 'center',
     paddingHorizontal: 20,
     paddingVertical: 30,
+    paddingBottom: 50,
   },
   input: {
     backgroundColor: '#f7e5c5ff',
     fontSize: 16,
   },
    inputContainer: {
-    elevation: 5,
     marginVertical: 16,
     paddingLeft: 8,
     paddingRight: 8,
-    paddingTop: 4,
-    paddingBottom: 8,
+    paddingVertical: 8,
     backgroundColor: '#f7e5c5ff',
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#0a0701ff',
+     // Android için gölge
+    elevation: 5,
+
+    // iOS için gölge (Bu kısmı eklersen iOS'te de derinlik olur)
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    }
   },
   label: {
     zIndex: 1,
@@ -122,11 +134,16 @@ leafContainer:{
   borderRadius: 20,
   alignItems: 'center',
   marginBottom: 15,
-  marginTop: 15,
+  marginTop: 25,
+   elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
   },
   buttonText: {
     color: '#ebe8e7ff',
     fontSize: 25,
     fontWeight: 'bold',
-  },
+  }
 });
