@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState,useCallback } from 'react';
 import {
     View, Image, Text, TextInput, Button, Alert, TouchableOpacity, ScrollView
 } from 'react-native';
-import { useRoute } from '@react-navigation/native';
+import { useRoute,useFocusEffect } from '@react-navigation/native';
 import { useEffect } from 'react';
 import { Menu } from 'react-native-paper';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { RootStackParamList } from '../App';
 import styles from '../styles/MainPage';
 import CalorieCircle from '../components/calorieCircle';
+import { Ionicons } from '@expo/vector-icons';
 import { IP_ADDRESS } from "@env";
 
 
@@ -35,23 +37,49 @@ function MainPage({ navigation }: Props) {
     const [protein, setProtein] = useState('');
     const [fat, setFat] = useState('');
     const [selectedDate, setSelectedDate] = useState(new Date());
+    const [showDatePicker, setShowDatePicker] = useState(false);
 
-    //changing date
     const changeDate = (days: number) => {
         const newDate = new Date(selectedDate);
         newDate.setDate(newDate.getDate() + days);
         setSelectedDate(newDate);
     };
 
-    const formattedDate = selectedDate.toISOString().split("T")[0]; // "YYYY-MM-DD" formatı
-    const todayMeals = mealsData[formattedDate] || {}; // Seçili tarihe ait tüm öğünler
 
+    const formattedDate = selectedDate.toISOString().split("T")[0]; // "YYYY-MM-DD" formatı
+    const fetchDailyData = async () => {
+        try{
+            const res = await fetch(`${API_URL}/api/meals?date=${formattedDate}`)
+            const data = await res.json();
+            if (res.ok) {
+                setMealsData(prev => ({ ...prev, [formattedDate]: data }));
+            }
+        }
+        catch (error) {
+            console.log("Veri çekme hatası:", error);
+        }
+    };
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchDailyData(); 
+                    }, [selectedDate]) //date değiştikçe çalışsın
+    );
+    const todayMeals = mealsData[formattedDate] || {};
     const totalCalories = Object.values(todayMeals).reduce((sum, meal: any) => sum + meal.calories, 0);
     const dailyGoal = 2000; // Hedef kaloriniz
+
+    const handleMenuButton = () => {
+
+     }
 
 
     return (
         <View style={styles.container}>
+
+            <TouchableOpacity style={styles.menuButton} onPress={handleMenuButton}>
+              <Ionicons name="menu" size={20} color="#5c544d" style={styles.menuButton} />
+             </TouchableOpacity>
 
             <View style={styles.mainChart}>
                 <CalorieCircle calories={totalCalories} goal={dailyGoal} />
@@ -59,16 +87,25 @@ function MainPage({ navigation }: Props) {
 
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                 <View style={styles.dateSelector}>
-                    <TouchableOpacity onPress={() => changeDate(-1)}>
-                        <Text style={{ fontSize: 24, padding: 10, color: "#ffff" }}>{"<"}</Text>
-                    </TouchableOpacity>
-                    <Text style={styles.dateText}>
-                        {selectedDate.toLocaleDateString('en-EN', { weekday: 'short', month: 'short', day: 'numeric' })}
-                    </Text>
-                    <TouchableOpacity onPress={() => changeDate(1)}>
-                        <Text style={{ fontSize: 24, padding: 10, color: "#ffff" }}>{">"}</Text>
-                    </TouchableOpacity>
-                </View>
+                        <View style={styles.datePill}>
+                            <TouchableOpacity onPress={() => changeDate(-1)} style={styles.arrowButton}>
+                                <Ionicons name="chevron-back" size={20} color="#fff" />
+                            </TouchableOpacity>
+                            <View 
+                                style={styles.dateContent} 
+                            >
+                                <Ionicons name="calendar-outline" size={18} color="#f7e5c5" style={{marginRight: 6}} />
+                                <Text style={styles.dateText}>
+                                    {selectedDate.toLocaleDateString('en-EN', { weekday: 'short', month: 'short', day: 'numeric' })}
+                                </Text>
+                            </View>
+                            <TouchableOpacity onPress={() => changeDate(1)} style={styles.arrowButton}>
+                                <Ionicons name="chevron-forward" size={20} color="#fff" />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
+                    
                 <View style={styles.addMealCard}>
                     <Image
                         source={require("../assets/breakfast.png")}

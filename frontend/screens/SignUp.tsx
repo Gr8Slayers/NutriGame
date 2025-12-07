@@ -69,10 +69,10 @@ const handleBackButton = () => {
         <Text style={styles.title}>Create Account</Text>
 
       <View style={styles.inputContainer}>
-                  <Text style = {styles.label}>Name *</Text>
+              <Text style = {styles.label}>Username *</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Name"
+                placeholder="Username"
                 value={name}
                 onChangeText={setName}
               />

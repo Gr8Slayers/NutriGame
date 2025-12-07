@@ -1,0 +1,283 @@
+import { StyleSheet, Platform, StatusBar, Dimensions } from 'react-native';
+
+const { height, width } = Dimensions.get('window');
+
+export default StyleSheet.create({
+    container: {
+    flex: 1,
+    backgroundColor: '#473C33',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+  },
+  backButton:{
+     position: 'absolute', 
+    left: 10,
+    top: Platform.OS === 'ios' ? 30 : 20, 
+    zIndex: 20,
+  },
+  menuButton:{
+    position: 'absolute', 
+    right: 10,
+    top: Platform.OS === 'ios' ? 30 : 20, 
+    marginLeft: 'auto',
+    zIndex: 20,
+  },
+  mainChart: {
+    paddingVertical: 30, 
+    width: '100%',
+    backgroundColor: "#ABC270", 
+    
+    borderBottomLeftRadius: width * 0.15,
+    borderBottomRightRadius: width * 0.15,
+    
+    alignItems: "center",
+    justifyContent: 'flex-end',
+    paddingTop: height * 0.1,
+    paddingBottom: 30,
+    
+    zIndex: 5,
+    elevation: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+  },
+    scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: 20,
+    paddingBottom: 100,
+  },
+  title:{
+    fontSize: 30,
+    textAlign: 'center',
+    color: '#473C33',
+    fontWeight: 'bold',
+  },
+  calenderSubtitle:{
+    textAlign: 'center',
+    color: '#5c544d',
+    fontSize: 16,
+    marginBottom:8,
+  },
+  scanButton:{
+    backgroundColor: '#FEC868',
+    borderRadius: 8,
+    width: 80,
+    height: 50,
+    flexDirection:'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap:4,
+    elevation: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2.22,
+  },
+  scanButtonText:{
+    color: '#463C33',
+    fontSize: 16,
+    fontWeight: 'bold',
+    paddingRight:8,
+  },
+  scanButtonIcon:{
+    paddingLeft:8,
+    color: '#463C33',
+    fontSize: 20,
+  },
+  searchContainer:{
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical:20,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    gap:8,
+  },
+  searchBox:{
+    flex:1,
+   flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff', 
+    borderRadius: 12,  
+    paddingHorizontal: 15,
+    height: 50,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    borderWidth: 1,
+    borderColor: '#0000000d'
+  },
+  searchIcon: {
+    marginRight: 10,
+  },
+  input: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
+    height: '100%',
+  },
+  listContent: {
+    paddingHorizontal: 20,
+    paddingBottom: 50,
+  },
+  addButton: {
+    backgroundColor: '#fc8500',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: "center",
+    elevation:2,
+  },
+   plus: {
+  fontSize: 40,  
+  fontWeight: "bold",
+},
+  foodItem: {
+    flexDirection: "row",
+    backgroundColor: '#f8d599ff',
+    alignItems: "center",
+    justifyContent: "space-between", 
+    padding: 16,
+    borderRadius: 20,
+    marginBottom: 8,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.5,
+    shadowRadius: 3,
+  },
+  foodName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#473C33',
+  },
+  foodPortion: {
+    fontSize: 14,
+    color: '#888',
+    marginTop: 2,
+  },
+  calContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap:4,
+  },
+  foodCal: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#fc8500',
+  },
+  calLabel: {
+    fontSize: 12,
+    color: '#888',
+    marginLeft: 2,
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 50,
+    color: '#888',
+    fontSize: 16,
+  },
+  
+ 
+  showDetailButton: {
+    marginTop: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fc8500',
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 20,
+    gap: 5,
+  },
+  showDetailText: {
+    color: '#463C33',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+
+  // --- POPUP STİLLERİ ---
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)', // Arka planı karart
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '85%',
+    maxHeight: '60%',
+    backgroundColor: '#f8d599ff',
+    borderRadius: 20,
+    padding: 20,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+    borderBottomWidth: 1,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    paddingBottom: 10,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#473C33',
+  },
+  modalScroll: {
+    marginBottom: 10,
+  },
+  modalItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#473C33',
+  },
+  modalItemName: {
+    fontSize: 16,
+    color: '#473C33',
+    fontWeight: '500',
+  },
+  modalItemCal: {
+    fontSize: 14,
+    color: '#888',
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#473C33',
+  },
+  modalTotalText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#fc8500',
+  },
+  modalSaveButton: {
+    backgroundColor: '#473C33',
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 15,
+  },
+  modalSaveText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+
+
+})

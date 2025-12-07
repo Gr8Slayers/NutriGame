@@ -14,6 +14,17 @@ const API_URL = `http://${IP_ADDRESS}:3000`;
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CreateAvatar'>;
 
+ const Leaf = () => {
+    return (
+      <View style={styles.leafContainer}>
+        {/* Sağdaki koyu yeşil büyük yaprak */}
+        <View style={styles.leaf1} />
+        {/* Soldaki açık yeşil küçük yaprak */}
+        <View style={styles.leaf2} />
+      </View>
+    );
+  };
+
 function CreateAvatar({ navigation, route }: Props) {
   const { finalData } = route.params;
   const [name, setUserName] = useState<string | null>(null);
@@ -60,16 +71,7 @@ function CreateAvatar({ navigation, route }: Props) {
     navigation.goBack();
   }
 
-  const Leaf = () => {
-    return (
-      <View style={styles.leafContainer}>
-        {/* Sağdaki koyu yeşil büyük yaprak */}
-        <View style={styles.leaf1} />
-        {/* Soldaki açık yeşil küçük yaprak */}
-        <View style={styles.leaf2} />
-      </View>
-    );
-  };
+ 
 
   const getUserName = async () => {
 

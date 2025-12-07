@@ -8,7 +8,13 @@ export default StyleSheet.create({
     backgroundColor: '#473C33',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
-
+    menuButton:{
+    position: 'absolute', 
+    right: 10,
+    top: Platform.OS === 'ios' ? 30 : 20, 
+    marginLeft: 'auto',
+    zIndex: 20,
+  },
   mainChart: {
     paddingVertical: 30, 
     width: '100%',
@@ -82,16 +88,38 @@ export default StyleSheet.create({
   lineHeight: 40,
 },
 dateSelector: {
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+ datePill: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
+    backgroundColor: 'rgba(71, 60, 51, 0.4)', //(Glass effect)    
+    borderRadius: 25,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+
+  arrowButton: {
+    padding: 10,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 20,
+  },
+
+  dateContent: {
+    flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 10,
   },
+
   dateText: {
-    fontSize: 20,
+    color: '#fff',
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#fffbfbff',
+    letterSpacing: 0.5, // Harf aralığı
   },
   iconContainer: {
   justifyContent: "center",
@@ -101,10 +129,21 @@ dateSelector: {
   borderRadius: 10,
 },
 menuContainer: {
+    alignSelf: 'center',
+    backgroundColor: '#473C33',
     flexDirection: "row",
     justifyContent: "center",
     alignItems: 'flex-end', // Butonları alt hizada eşitlemek için
-    marginBottom: 20,
+    width: width*1,
+    borderRadius:25,
+    paddingVertical: 10,
+    zIndex: 10,
+    elevation: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -5 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    marginBottom: 8,
     marginTop: 10,
     gap: 20,
 },
@@ -115,10 +154,10 @@ chatButton: {
     borderRadius: 50,
     alignItems: 'center',
     justifyContent: "center",
-    elevation: 8,
+    elevation: 10,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.5,
     shadowRadius: 4,
 },
 recipeButton: {
@@ -128,10 +167,10 @@ recipeButton: {
     borderRadius: 35,
     alignItems: 'center',
     justifyContent: "center",
-    elevation: 4,
+    elevation: 10,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
     shadowRadius: 3.84,
 },
 scanButton: {
@@ -141,10 +180,10 @@ scanButton: {
     borderRadius: 35,
     alignItems: 'center',
     justifyContent: "center",
-    elevation: 4,
+    elevation: 10,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
     shadowRadius: 3.84,
 }
 
