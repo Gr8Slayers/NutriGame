@@ -1,7 +1,3 @@
-import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "0,1"
-os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
-
 from rfdetr import RFDETRBase
 
 model = RFDETRBase()
