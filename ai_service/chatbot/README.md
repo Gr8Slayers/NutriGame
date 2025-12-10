@@ -1,6 +1,6 @@
 # Mental Health Chatbot Service
 
-Mental health desteği sağlayan AI chatbot servisi. Hugging Face API kullanarak [Mental-Health-FineTuned-Mistral-7B](https://huggingface.co/mradermacher/Mental-Health-FineTuned-Mistral-7B-Instruct-v0.2-i1-GGUF) modeli ile konuşur.
+Mental health desteği sağlayan AI chatbot servisi. Hugging Face API kullanarak [Llama-3.2-1B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct) modeli ile konuşur.
 
 ## 🔐 Özellikler
 
@@ -31,7 +31,7 @@ npm install
 1. [Hugging Face](https://huggingface.co/) hesabı oluştur (ücretsiz)
 2. [Settings > Access Tokens](https://huggingface.co/settings/tokens) sayfasına git
 3. "New token" butonuna tıkla
-4. Token tipini "Read" olarak seç
+4. Token tipini "Fine-grained" olarak seç ve "Make calls to the serverless Inference API" iznini ekle
 5. Token'ı kopyala
 
 ### 3. Environment Ayarla
@@ -234,19 +234,11 @@ chatbot/
     └── testClient.js      # Test client
 ```
 
-## 🤝 Katkıda Bulunma
 
-1. Yeni feature eklemek için PR açın
-2. Bug bulursanız issue açın
-3. Test coverage'ı artırın
-
-## 📄 Lisans
-
-MIT License
 
 ## 🔗 Kaynaklar
 
-- [Hugging Face Model](https://huggingface.co/mradermacher/Mental-Health-FineTuned-Mistral-7B-Instruct-v0.2-i1-GGUF)
+- [Hugging Face Model](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct)
 - [Express.js Documentation](https://expressjs.com/)
 - [Hugging Face Inference API](https://huggingface.co/docs/api-inference/index)
 
