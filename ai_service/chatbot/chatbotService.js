@@ -3,9 +3,9 @@
  * Hugging Face Inference API kullanarak mental health model ile konuşma
  */
 
-import axios from 'axios';
-import dotenv from 'dotenv';
+import { HfInference } from '@huggingface/inference';
 import { maskUserMessage } from './privacyUtils.js';
+import dotenv from 'dotenv';
 
 // .env dosyasını yükle
 dotenv.config();
@@ -16,34 +16,20 @@ export class MentalHealthChatbot {
    * @param {string} apiKey - Hugging Face API key. Verilmezse .env'den alınır.
    */
   constructor(apiKey = null) {
-    this.apiKey = apiKey || process.env.HUGGINGFACE_API_KEY;
-    
-    if (!this.apiKey) {
-      throw new Error(
-        'Hugging Face API key bulunamadı! ' +
-        'Lütfen .env dosyasına HUGGINGFACE_API_KEY ekleyin veya ' +
-        'constructor\'a apiKey parametresi verin.'
-      );
+    if (!MentalHealthChatbot.instance) {
+                  this.modelId = "meta-llama/Llama-3.2-1B-Instruct"; 
+      this.apiKey = apiKey || process.env.HUGGINGFACE_API_KEY;
+      
+      if (!this.apiKey) {
+        console.error('HUGGINGFACE_API_KEY not found in .env file.');
+        throw new Error('HUGGINGFACE_API_KEY is not set.');
+      }
+
+      this.hf = new HfInference(this.apiKey);
+      this.conversationHistory = [];
+      MentalHealthChatbot.instance = this;
     }
-    
-    // Model ID
-    this.modelId = 'mradermacher/Mental-Health-FineTuned-Mistral-7B-Instruct-v0.2-i1-GGUF';
-    
-    // API endpoint
-    this.apiUrl = `https://api-inference.huggingface.co/models/${this.modelId}`;
-    
-    // Axios instance
-    this.axiosInstance = axios.create({
-      baseURL: this.apiUrl,
-      headers: {
-        'Authorization': `Bearer ${this.apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      timeout: 30000
-    });
-    
-    // Conversation history
-    this.conversationHistory = [];
+    return MentalHealthChatbot.instance;
   }
 
   /**
@@ -53,25 +39,15 @@ export class MentalHealthChatbot {
    * @returns {string} Formatlanmış prompt
    */
   _formatPrompt(message, includeHistory = false) {
-    if (includeHistory && this.conversationHistory.length > 0) {
-      // Geçmiş konuşmaları dahil et (son 3 mesaj)
-      let conversation = '';
-      const recentHistory = this.conversationHistory.slice(-3);
-      
-      for (const turn of recentHistory) {
-        if (turn.role === 'user') {
-          conversation += `[INST] ${turn.content} [/INST]\n`;
-        } else {
-          conversation += `${turn.content}\n`;
-        }
-      }
-      
-      conversation += `[INST] ${message} [/INST]`;
-      return conversation;
-    } else {
-      // Sadece mevcut mesaj
-      return `[INST] ${message} [/INST]`;
+    let prompt = 'The following is a conversation with a mental health assistant. The assistant is helpful, creative, clever, and very friendly.\n';
+    const history = includeHistory ? this.conversationHistory.slice(-3) : this.conversationHistory;
+    
+    for (const turn of history) {
+      prompt += `\nHuman: ${turn.user}\nAI: ${turn.bot}`;
     }
+    
+    prompt += `\nHuman: ${message}\nAI:`;
+    return prompt;
   }
 
   /**
@@ -87,98 +63,78 @@ export class MentalHealthChatbot {
     temperature = 0.7,
     topP = 0.9
   }) {
+    const originalMessage = message;
+    let detectedEntities = [];
+    let hasPersonalData = false;
+    
+    if (maskPersonalData) {
+      const maskResult = maskUserMessage(message);
+      message = maskResult.masked;
+      detectedEntities = maskResult.detectedEntities;
+      hasPersonalData = maskResult.hasPersonalData;
+    }
+    
+    const prompt = this._formatPrompt(message, includeHistory);
+    
     try {
-      // Kişisel verileri maskele
-      const originalMessage = message;
-      let detectedEntities = [];
-      let hasPersonalData = false;
+      // Sohbet mesajlarını hazırla
+      const messages = [];
       
-      if (maskPersonalData) {
-        const maskResult = maskUserMessage(message);
-        message = maskResult.masked;
-        detectedEntities = maskResult.detectedEntities;
-        hasPersonalData = maskResult.hasPersonalData;
+      // Geçmiş konuşmaları ekle
+      for (const turn of this.conversationHistory) {
+        messages.push({ role: "user", content: turn.user });
+        messages.push({ role: "assistant", content: turn.bot });
       }
       
-      // Prompt'u formatla
-      const prompt = this._formatPrompt(message, includeHistory);
+      // Mevcut mesajı ekle
+      messages.push({ role: "user", content: message });
       
-      // API request payload
-      const payload = {
-        inputs: prompt,
-        parameters: {
-          max_new_tokens: maxNewTokens,
-          temperature: temperature,
-          top_p: topP,
-          return_full_text: false,
-          do_sample: true
-        }
-      };
+      const response = await this.hf.chatCompletion({
+        model: this.modelId,
+        messages: messages,
+        max_tokens: maxNewTokens,
+        temperature: temperature,
+      });
+
+      const botResponse = response.choices[0].message.content.trim();
       
-      // API'ye istek gönder
-      const response = await this.axiosInstance.post('', payload);
-      
-      // Yanıtı parse et
-      let modelResponse = '';
-      if (Array.isArray(response.data) && response.data.length > 0) {
-        modelResponse = response.data[0].generated_text?.trim() || '';
-      } else {
-        modelResponse = response.data.generated_text?.trim() || '';
-      }
-      
-      // Konuşma geçmişine ekle
       if (includeHistory) {
-        this.conversationHistory.push({
-          role: 'user',
-          content: message
-        });
-        this.conversationHistory.push({
-          role: 'assistant',
-          content: modelResponse
-        });
+        this.conversationHistory.push({ user: message, bot: botResponse });
       }
       
-      // Yanıtı döndür
       return {
-        response: modelResponse,
+        response: botResponse,
         maskedMessage: maskPersonalData ? message : null,
         detectedEntities: maskPersonalData ? detectedEntities : null,
         hasPersonalData: maskPersonalData ? hasPersonalData : null,
         originalMessage: (maskPersonalData && hasPersonalData) ? originalMessage : null
       };
-      
+
     } catch (error) {
-      // Hata yönetimi
-      if (error.code === 'ECONNABORTED') {
-        return {
-          error: 'API isteği zaman aşımına uğradı. Lütfen tekrar deneyin.',
-          errorType: 'timeout'
-        };
+      console.error('Hugging Face API Error:', error);
+      
+      // Detaylı hata bilgisi
+      if (error.httpResponse && error.httpResponse.body) {
+        console.error('API Response Body:', JSON.stringify(error.httpResponse.body, null, 2));
       }
       
-      if (error.response) {
-        let errorMessage = `HTTP hatası: ${error.message}`;
-        
-        // Model yükleniyor hatası
-        if (error.response.status === 503) {
-          const estimatedTime = error.response.data?.estimated_time;
-          if (estimatedTime) {
-            errorMessage = `Model yükleniyor. Tahmini bekleme süresi: ${estimatedTime} saniye`;
-          } else {
-            errorMessage = 'Model yükleniyor. Lütfen birkaç saniye sonra tekrar deneyin.';
-          }
-        }
-        
-        return {
-          error: errorMessage,
-          errorType: 'http_error',
-          statusCode: error.response.status
-        };
-      }
+      const errorMessage = error.message || 'An unknown error occurred with the Hugging Face API.';
+      let statusCode = 500;
       
+      if (error.httpResponse && error.httpResponse.status) {
+        statusCode = error.httpResponse.status;
+      } else if (error.response && error.response.status) {
+        statusCode = error.response.status;
+      } else if (error.code && typeof error.code === 'number') {
+        statusCode = error.code;
+      } else if (error.message && error.message.includes('410')) {
+        statusCode = 410;
+      }
+
       return {
-        error: `Beklenmeyen hata: ${error.message}`,
-        errorType: 'unknown'
+        error: `Hugging Face API hatası: ${errorMessage}`,
+        errorType: 'api_error',
+        statusCode: statusCode
       };
     }
   }
@@ -195,7 +151,7 @@ export class MentalHealthChatbot {
    * @returns {Array} Konuşma geçmişi
    */
   getHistory() {
-    return [...this.conversationHistory];
+    return this.conversationHistory;
   }
 }
 
