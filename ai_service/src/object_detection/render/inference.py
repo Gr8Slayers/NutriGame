@@ -9,10 +9,10 @@ def predict(image_path):
     and returns the results in a JSON serializable format.
     """
     try:
-        # Load the fine-tuned model.
-        # Ultralytics will automatically download 'rtdetr-s.pt' if not found.
-        model_path = 'rtdetr-s.pt' # Using the small model
-        model = RTDETR(model_path)
+        # Load the model. Using the model name directly (without .pt) 
+        # forces ultralytics to use its internal pretrained model download mechanism,
+        # which is more reliable than relying on local files in cloud environments.
+        model = RTDETR('rtdetr-s')  # Ultralytics will auto-download from its hub
 
         # Perform inference
         results = model(image_path)
