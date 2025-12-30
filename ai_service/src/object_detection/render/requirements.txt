@@ -1,9 +1,5 @@
-flask==3.0.0
-pillow==10.1.0
-torch==2.1.2
-torchvision==0.16.2
-numpy==1.24.3
-gunicorn==21.2.0
-
-# RT-DETR için
-# rfdetr==0.1.0
+ultralytics
+torch
+torchvision
+Pillow
+numpy

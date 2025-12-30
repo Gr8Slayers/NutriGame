@@ -1,10 +1,25 @@
+# render.yaml
+# This file configures the services for your project on Render.
+
 services:
   - type: web
-    name: food-detection-api
-    env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
+    name: nutrigame-object-detection
+    env: node # Specifies the environment as Node.js
+    plan: free # Use the free instance type
+    
+    # Build command: Installs both Node.js and Python dependencies.
+    # Render's Node.js environment comes with pip, so we can install Python packages.
+    buildCommand: |
+      npm install
+      pip install -r requirements.txt
+      
+    # Start command: Runs the Express server.
+    startCommand: "npm start"
+    
     envVars:
+      - key: NODE_VERSION
+        value: 18 # Specify a recent Node.js version
       - key: PYTHON_VERSION
-        value: 3.10.0
-    plan: free
+        value: 3.9 # Specify a compatible Python version
+      - key: PORT
+        value: 3000

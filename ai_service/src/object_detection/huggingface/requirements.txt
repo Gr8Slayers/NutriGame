@@ -1,8 +1,0 @@
-gradio==4.44.0
-torch==2.1.2
-torchvision==0.16.2
-pillow==10.1.0
-numpy==1.24.3
-
-# RT-DETR model için
-# rfdetr==0.1.0
