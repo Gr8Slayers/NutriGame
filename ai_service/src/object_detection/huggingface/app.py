@@ -51,7 +51,7 @@ demo = gr.Interface(
         gr.Image(type="pil", label="Detection Results"),
         gr.Textbox(label="Detected Items", lines=5)
     ],
-    title="🍕 YOLOv8n Food Detection",
+    title="YOLOv8n Food Detection",
     description="Upload an image to detect food items using YOLOv8n model trained on COCO dataset (80 classes including various food items)",
     examples=[],
     cache_examples=False
