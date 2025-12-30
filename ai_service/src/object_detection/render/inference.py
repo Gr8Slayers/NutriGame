@@ -10,8 +10,8 @@ def predict(image_path):
     """
     try:
         # Load the fine-tuned model.
-        # Make sure 'rtdetr-l.pt' is in the same directory or provide the correct path.
-        model_path = 'rtdetr-l.pt' # Assuming the model is in the root
+        # Ultralytics will automatically download 'rtdetr-s.pt' if not found.
+        model_path = 'rtdetr-s.pt' # Using the small model
         model = RTDETR(model_path)
 
         # Perform inference
