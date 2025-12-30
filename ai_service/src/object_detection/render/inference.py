@@ -1,7 +1,11 @@
 import sys
 import json
+import os
 from ultralytics import YOLO
 from PIL import Image
+
+# Suppress ultralytics verbose output - only JSON should go to stdout
+os.environ['YOLO_VERBOSE'] = 'False'
 
 def predict(image_path):
     """
@@ -11,10 +15,11 @@ def predict(image_path):
     try:
         # Load YOLOv8n (nano) model - very lightweight (~6 MB)
         # Ultralytics will auto-download from its hub if not present
-        model = YOLO('yolov8n')
+        # verbose=False suppresses progress bars and info messages
+        model = YOLO('yolov8n', verbose=False)
 
-        # Perform inference
-        results = model(image_path)
+        # Perform inference with verbose=False to suppress output
+        results = model(image_path, verbose=False)
 
         # Process results
         predictions = []
