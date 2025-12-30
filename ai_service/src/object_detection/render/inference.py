@@ -1,6 +1,6 @@
 import sys
 import json
-from ultralytics import RTDETR
+from ultralytics import YOLO
 from PIL import Image
 
 def predict(image_path):
@@ -9,10 +9,9 @@ def predict(image_path):
     and returns the results in a JSON serializable format.
     """
     try:
-        # Load the model. Using the model name directly (without .pt) 
-        # forces ultralytics to use its internal pretrained model download mechanism,
-        # which is more reliable than relying on local files in cloud environments.
-        model = RTDETR('rtdetr-s')  # Ultralytics will auto-download from its hub
+        # Load YOLOv8n (nano) model - very lightweight (~6 MB)
+        # Ultralytics will auto-download from its hub if not present
+        model = YOLO('yolov8n')
 
         # Perform inference
         results = model(image_path)
