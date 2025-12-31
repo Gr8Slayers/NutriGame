@@ -1,6 +1,6 @@
-import React, { useState,useCallback } from 'react';
+import React, { useState,useCallback,useRef } from 'react';
 import {
-    View, Image, Text, TextInput, Button, Alert, TouchableOpacity, ScrollView
+    View, Image, Text, TextInput, Button, Alert, TouchableOpacity, ScrollView,Animated
 } from 'react-native';
 import { useRoute,useFocusEffect } from '@react-navigation/native';
 import { useEffect } from 'react';
@@ -17,6 +17,7 @@ import { IP_ADDRESS } from "@env";
 const API_URL = `http://${IP_ADDRESS}:3000`;
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MainPage'>;
+
 function MainPage({ navigation }: Props) {
     const route = useRoute();
     interface MealEntry {
@@ -30,6 +31,16 @@ function MainPage({ navigation }: Props) {
     interface MealsData {
         [date: string]: DailyMeals;
     }
+
+      const slideAnim = useRef(new Animated.Value(-300)).current;
+
+    useEffect(() => {
+        Animated.timing(slideAnim, {
+            toValue: 0,
+            duration: 400,
+            useNativeDriver: true,
+        }).start();
+    }, []);
     const [mealsData, setMealsData] = useState<MealsData>({});//boş obje
 
     const [calorie, setCalorie] = useState('');
@@ -70,7 +81,7 @@ function MainPage({ navigation }: Props) {
     const dailyGoal = 2000; // Hedef kaloriniz
 
     const handleMenuButton = () => {
-
+        console.log("menü açılacak.");
      }
 
 
@@ -81,9 +92,14 @@ function MainPage({ navigation }: Props) {
               <Ionicons name="menu" size={20} color="#5c544d" style={styles.menuButton} />
              </TouchableOpacity>
 
-            <View style={styles.mainChart}>
+            <Animated.View
+                style={[
+                    styles.mainChart, 
+                    { transform: [{ translateY: slideAnim }] }
+                ]}
+            >
                 <CalorieCircle calories={totalCalories} goal={dailyGoal} />
-            </View>
+            </Animated.View>
 
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                 <View style={styles.dateSelector}>
@@ -174,6 +190,24 @@ function MainPage({ navigation }: Props) {
                         onPress={() => navigation.navigate("AddMeal", {
                             selectedDate: formattedDate,
                             type: "Snack",
+                        })}>
+                        <Text style={styles.plus}>+</Text>
+                    </TouchableOpacity>
+                </View>
+                <View style={styles.addMealCard}>
+                    <Image
+                        source={require("../assets/water.png")}
+                        style={styles.iconContainer}
+                        resizeMode="contain"
+                    />
+                    <View style={styles.labelContainer}>
+                        <Text style={styles.mealTitle}>Add Water</Text>
+                        <Text style={styles.subtitle}>Recommended: 2L </Text>
+                    </View>
+                    <TouchableOpacity style={styles.addButton}
+                        onPress={() => navigation.navigate("AddWater", {
+                            selectedDate: formattedDate,
+                            type: "Water",
                         })}>
                         <Text style={styles.plus}>+</Text>
                     </TouchableOpacity>

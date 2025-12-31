@@ -12,6 +12,7 @@ import SignUpEnterData from './screens/SignUpEnterData';
 import CreateAvatar from './screens/CreateAvatar';
 import MainPage from './screens/MainPage';
 import AddMeal from './screens/AddMeal';
+import AddWater from './screens/AddWater';
 
 interface UpdatedMealParams {
   updatedMeal: {
@@ -48,6 +49,7 @@ export type RootStackParamList = {
   };
   MainPage: UpdatedMealParams | undefined;
   AddMeal: { selectedDate: string ,type:string};
+  AddWater:{ selectedDate: string ,type:string};
 };
 
 const theme = {
@@ -122,6 +124,7 @@ export default function App() {
             <Stack.Screen name="CreateAvatar" component={CreateAvatar} />
             <Stack.Screen name="MainPage" component={MainPage} initialParams={undefined} />
             <Stack.Screen name="AddMeal" component={AddMeal} />
+            <Stack.Screen name="AddWater" component={AddWater} />
           </>
         )}
       </Stack.Navigator>

@@ -59,7 +59,6 @@ export default StyleSheet.create({
     flex: 1,
   },
   subtitle: {
-    textAlign: 'center',
     color: '#5c544d',
     fontSize: 16,
     paddingLeft: 8,

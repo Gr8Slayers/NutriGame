@@ -27,15 +27,28 @@ const mockFoodData = [
   { id: '7', name: 'Avocado', calories: 160, portion: '100g' },
 ];
 
+const mockPortionData = [
+  '1 spoon approximately 10 grams' ,
+  '100g',
+  '1 cup',
+  '1 medium',
+ '1 medium',
+  '1 bowl',
+  '1 plate'
+]
+
 export default function AddMeal({ route, navigation }: Props) {
 
 
   const { selectedDate ,type} = route.params;
 
-  const [mealName, setMealName] = useState("");
   const [calories, setCalories] = useState("");
   const [searchText, setSearchText] = useState('');
   const [foodList, setFoodList] = useState([]);
+  const [portions,setPortions] = useState<string[]>([]);
+  const [portionModalVisibility, setportionModalVisible] = useState(false);
+  const [selectedPortion, setSelectedPortion] = useState("");
+  const [selectedMeali, setSelectedMeal]= useState<FoodItem | null>(null);
   const [selectedItems, setSelectedItems] = useState<FoodItem[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [filteredData, setFilteredData] = useState(mockFoodData);
@@ -62,6 +75,10 @@ export default function AddMeal({ route, navigation }: Props) {
           console.error(error);
           Alert.alert('Hata', 'Sunucuya bağlanılamadı. IP adresinizi kontrol edin.');
         }
+  };
+
+  const getPortions= async ()=> {
+
   };
 
   //Search yapıldıkça liste filtrelenir.
@@ -112,9 +129,29 @@ export default function AddMeal({ route, navigation }: Props) {
           Alert.alert('Hata', 'Sunucuya bağlanılamadı. IP adresinizi kontrol edin.');
         } 
           */
-        setSelectedItems([...selectedItems, item]);
+         setSelectedMeal(item);
+        setPortions(mockPortionData);
+        setportionModalVisible(true);
+        //setSelectedItems([...selectedItems, item]);
         Alert.alert("Added",` added to list.`);
   };
+
+  const handlePortionSelect = (portion:string) => {
+    if(!selectedMeali) return;
+
+    const newItemToAdd = {
+      ...selectedMeali,        
+      portion: portion, // 
+      calories: 100 // değişcek
+  };
+
+  setSelectedItems([...selectedItems, newItemToAdd]);
+  setportionModalVisible(false);
+  setSelectedMeal(null);
+  console.log("selectedd:",portion);
+  };
+
+
 
   const renderItem = ({ item }: { item: any }) => (
     <View style={styles.foodItem}>
@@ -279,6 +316,50 @@ export default function AddMeal({ route, navigation }: Props) {
               </View>
           </View>
       </Modal>
+
+                      <Modal
+                  animationType="fade"
+                  transparent={true}
+                  visible={portionModalVisibility}
+                  onRequestClose={() => setportionModalVisible(false)}
+                >
+
+              <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                  <View style={styles.modalHeader}>
+                      <Text style={styles.modalTitle}>Choose porsion</Text>
+                      <TouchableOpacity onPress={() => setportionModalVisible(false)}>
+                          <Ionicons name="close" size={24} color="#473C33" />
+                      </TouchableOpacity>
+                  </View>
+
+                  <ScrollView style={styles.modalScroll}>
+                      {portions.map((item, index) => (
+                          <View style={styles.foodItem}>
+                              <View>
+                                <Text style={styles.foodName}>{item}</Text>
+                              </View>
+                              
+                                <TouchableOpacity style={styles.addButton} onPress={() => handlePortionSelect(item)}>
+                                <Ionicons name="add" style={styles.plus} />
+                                </TouchableOpacity>
+                              
+                            </View>
+                      ))}
+                  </ScrollView>
+                  
+                  <View style={styles.modalFooter}>
+                      <TouchableOpacity 
+                          style={styles.modalSaveButton} 
+                          onPress={() => setportionModalVisible(false)} // Sadece kapatır, kaydetme işini ana ekrandaki Save yapar
+                      >
+                          <Text style={styles.modalSaveText}>OK</Text>
+                      </TouchableOpacity>
+                  </View>
+              </View>
+          </View>
+      </Modal>
+      
                 </View>
   );
 }
