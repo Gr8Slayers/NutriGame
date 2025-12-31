@@ -10,7 +10,6 @@ datasource db {
   url      = env("DATABASE_URL") // Bu, .env dosyasından gelecek
 }
 
-// === KULLANICI MODELİ ===
 model User {
   id        Int       @id @default(autoincrement())
   username  String    @unique
@@ -34,5 +33,56 @@ model UserProfile {
   // her UserProfile in bir User a bagli olmasini sagliyor, user da bir row silindiginde burada ilgili user in profili siliniyor
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
+model FoodLookup{
+  id              Int      @id @default(autoincrement())
+  food_id         Int      @unique
+  food_name       String
+  p_unit          String //porsiyon miktarinin hangi birim oldugu orn. gram, ml, tabak, kasik
+  p_amount        Float //porsiyon miktari orn. 100(gram), 200(ml), 2(tabak), 3(kasik)
+  p_calorie       Float
+  p_protein       Float //birimi zaten hep gram bu yuzden ozellestirmiyorum direkt miktar tutuluyor
+  p_fat           Float //birimi zaten hep gram bu yuzden ozellestirmiyorum direkt miktar tutuluyor
+  p_carb          Float //birimi zaten hep gram bu yuzden ozellestirmiyorum direkt miktar tutuluyor
+}
+
+model MealLog {
+  meal_log_id     Int      @id @default(autoincrement())
+  userId          Int      
+  date            DateTime @db.Date @default(now()) // prisma sadece Date kabul etmiyor Datetime var sadece, yanina ekledigim aciklama db de Date olarak tutlmayi sagliyor
+  meal_category   String //ogun tipi orn. sabah, ogle, aksam, araogun bunlardan baska olmayacak enum lanabilir
+  p_count         Int //kac porsiyon eklendigi, toplamlar buna gore hesaplanacak
+  food_id         Int
+  food_name       String
+  p_unit          String //porsiyon miktarinin hangi birim oldugu orn. gram, ml, tabak, kasik
+  t_amount        Float // portion_count ile portion amount carpimi, yani o log icin total amount
+  t_calorie       Float
+  t_protein       Float
+  t_fat           Float
+  t_carb          Float
+}
+
+model MealTotals{
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  date            DateTime @db.Date @default(now()) // prisma sadece Date kabul etmiyor Datetime var sadece, yanina ekledigim aciklama db de Date olarak tutlmayi sagliyor
+  meal_category   String //ogun tipi orn. sabah, ogle, aksam, araogun, OVERALL(yani tum gun) bunlardan baska olmayacak enum lanabilir     
+  t_calorie       Float
+  t_protein       Float
+  t_fat           Float
+  t_carb          Float
+
+  @@unique([userId, date, meal_category]) //1 user 1 gunde 1 ogun icin birden fazla row olusturamaz
+}
+
+model WaterLog {
+  water_log_id    Int      @id @default(autoincrement())
+  userId          Int      
+  date            DateTime @db.Date @default(now()) // prisma sadece Date kabul etmiyor Datetime var sadece, yanina ekledigim aciklama db de Date olarak tutlmayi sagliyor
+  t_amount        Int
+
+  @@unique([userId, date]) //1 user 1 gun icin birden fazla row olusturamaz
+}
+
 
 //npx prisma db push yapılmalı

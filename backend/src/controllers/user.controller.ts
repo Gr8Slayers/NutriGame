@@ -27,7 +27,7 @@ export class UserController {
             }
 
             const updatedUser = await userModel.updateUserProfileById(userId, updates);
-            return res.status(200).json({ success: true, message: 'User Profile is updated successfully.', user: req.user!.id/*updatedUser*/ });
+            return res.status(200).json({ success: true, message: 'User Profile is updated successfully.' });
         } catch (err) {
             next(err);
         }
@@ -46,15 +46,17 @@ export class UserController {
             return res.status(200).json({
                 success: true,
                 message: 'User is fetched successfully.',
-                username: fetchedUser.username,
-                email: fetchedUser.email,
-                age: fetchedUser.profile?.age,
-                gender: fetchedUser.profile?.gender,
-                height: fetchedUser.profile?.height,
-                weight: fetchedUser.profile?.weight,
-                target_weight: fetchedUser.profile?.target_weight,
-                reason_to_diet: fetchedUser.profile?.reason_to_diet,
-                avatar_url: fetchedUser.profile?.avatar_url
+                data: {
+                    username: fetchedUser.username,
+                    email: fetchedUser.email,
+                    age: fetchedUser.profile?.age,
+                    gender: fetchedUser.profile?.gender,
+                    height: fetchedUser.profile?.height,
+                    weight: fetchedUser.profile?.weight,
+                    target_weight: fetchedUser.profile?.target_weight,
+                    reason_to_diet: fetchedUser.profile?.reason_to_diet,
+                    avatar_url: fetchedUser.profile?.avatar_url
+                }
             });
         } catch (err) {
             next(err);
@@ -69,7 +71,7 @@ export class UserController {
             // ATTENTION: burada elimdeki user id ye sahip bir user var mi kontrolu yapmali miyim emin degilim, zaten giris yapabildiysek user vardir vs. bir hata alirsak bu ihtimal aklimizda bulunsun.
 
             const updatedUser = await userModel.deleteUser(userId);
-            return res.status(200).json({ success: true, message: 'User is deleted successfully.', user: req.user!.id/*updatedUser*/ });
+            return res.status(200).json({ success: true, message: 'User is deleted successfully.' });
         } catch (err) {
             next(err);
         }

@@ -1,9 +1,13 @@
 // src/index.ts
 import express from 'express';
 import dotenv from 'dotenv';
+
+import prisma from './config/prisma'; // 🔹 PRİSMA BAĞLANTISI
+
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
-import prisma from './config/prisma'; // 🔹 PRİSMA BAĞLANTISI
+import foodRoutes from './routes/food.routes';
+
 
 dotenv.config();
 
@@ -23,6 +27,7 @@ app.get('/api', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/food', foodRoutes);
 
 // Server başlat
 app.listen(port, () => {
