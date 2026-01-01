@@ -28,7 +28,7 @@ def check_annotations(dataset_path):
     print(f"\nDataset yolu: {dataset_path}\n")
     
     for split in splits:
-        split_path = dataset_path / split / "_annotations.coco.json"
+        split_path = dataset_path / f"_{split}.json"
         
         if not split_path.exists():
             print(f"⚠️  {split} annotasyon dosyası bulunamadı: {split_path}")
@@ -162,5 +162,5 @@ def check_annotations(dataset_path):
 
 
 if __name__ == "__main__":
-    dataset_path = r"D:\Desktop\Bitirme\object_detection\data\dataset\merged_fixed"
+    dataset_path = r"D:\Desktop\Bitirme\NutriGame\object_detection\finetuning\rtdetr\data"
     results = check_annotations(dataset_path)

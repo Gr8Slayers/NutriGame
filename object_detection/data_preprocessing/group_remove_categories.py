@@ -12,79 +12,301 @@ def clean_coco_categories(original_json_path, new_json_path):
     """
 
     # Adım 1: Yeni ve temiz kategori listesini tanımla
-    # Bu liste, bir önceki yanıtta oluşturduğumuz 99 sınıflı listedir.
+    # Bu liste, kalori bazlı 116 kategorili sistemdir.
     new_categories = [
-        {"id": 0, "name": "Adana_Kebap"}, {"id": 1, "name": "Almond"},
-        {"id": 2, "name": "Apple"}, {"id": 3, "name": "Artichoke_Enginar"},
-        {"id": 4, "name": "Arugula"}, {"id": 5, "name": "Asparagus"},
-        {"id": 6, "name": "Avocado"}, {"id": 7, "name": "Ayran"},
-        {"id": 8, "name": "Bacon"}, {"id": 9, "name": "Baklava"},
-        {"id": 10, "name": "Banana"}, {"id": 11, "name": "Beans"},
-        {"id": 12, "name": "Beet"}, {"id": 13, "name": "Bell_Pepper"},
-        {"id": 14, "name": "Black_Olives"}, {"id": 15, "name": "Blackberry"},
-        {"id": 16, "name": "Blueberry"}, {"id": 17, "name": "Bread_Ekmek"},
-        {"id": 18, "name": "Broccoli"}, {"id": 19, "name": "Buckwheat"},
-        {"id": 20, "name": "Burger"}, {"id": 21, "name": "Cabbage"},
-        {"id": 22, "name": "Cacik"}, {"id": 23, "name": "Carrot"},
-        {"id": 24, "name": "Cashew"}, {"id": 25, "name": "Cauliflower"},
-        {"id": 26, "name": "Celery"}, {"id": 27, "name": "Cheese"},
-        {"id": 28, "name": "Cheesecake"}, {"id": 29, "name": "Chickpeas"},
-        {"id": 30, "name": "Coffee_or_Tea_Kahve_Cay"}, {"id": 31, "name": "Cookies"},
-        {"id": 32, "name": "Corn"}, {"id": 33, "name": "Crepe"},
-        {"id": 34, "name": "Cucumber"}, {"id": 35, "name": "Doner_Et_Tavuk"},
-        {"id": 36, "name": "Eggplant"}, {"id": 37, "name": "Et_Sote"},
-        {"id": 38, "name": "French_Fries_Patates_Kizartmasi"}, {"id": 39, "name": "Fried_Eggs"},
-        {"id": 40, "name": "Fried_Fish_Hamsi_Tava"}, {"id": 41, "name": "Fruits_Mixed"},
-        {"id": 42, "name": "Granola"}, {"id": 43, "name": "Grapes"},
-        {"id": 44, "name": "Green_Beans"}, {"id": 45, "name": "Herbs"},
-        {"id": 46, "name": "Hummus"}, {"id": 47, "name": "Ice_Cream"},
-        {"id": 48, "name": "Iskender_Et_Tavuk"}, {"id": 49, "name": "Juice"},
-        {"id": 50, "name": "Kabak_Mucver"}, {"id": 51, "name": "Kabak_Tatlisi_Pumpkin_Dessert"},
-        {"id": 52, "name": "Kofte_Meatball"}, {"id": 53, "name": "Kunefe"},
-        {"id": 54, "name": "Lahmacun"}, {"id": 55, "name": "Lentil_Bulgur_Patties_Mercimek_Cig_Kofte"},
-        {"id": 56, "name": "Lemon"}, {"id": 57, "name": "Mandarin"},
-        {"id": 58, "name": "Mango"}, {"id": 59, "name": "Mashed_Potato"},
-        {"id": 60, "name": "Melon"}, {"id": 61, "name": "Menemen"},
-        {"id": 62, "name": "Mussels_Midye"}, {"id": 63, "name": "Mushrooms"},
-        {"id": 64, "name": "Nuts_Mixed"}, {"id": 65, "name": "Onion"},
-        {"id": 66, "name": "Orange"}, {"id": 67, "name": "Pasta_Makarna"},
-        {"id": 68, "name": "Peanut"}, {"id": 69, "name": "Pear"},
-        {"id": 70, "name": "Peas"}, {"id": 71, "name": "Pecan"},
-        {"id": 72, "name": "Pide"}, {"id": 73, "name": "Pineapple"},
-        {"id": 74, "name": "Pizza"}, {"id": 75, "name": "Porridge"},
-        {"id": 76, "name": "Potatoes"}, {"id": 77, "name": "Pudding"},
-        {"id": 78, "name": "Pumpkin"}, {"id": 79, "name": "Radish"},
-        {"id": 80, "name": "Raspberry"}, {"id": 81, "name": "Rice_Bulgur_Pilaf"},
-        {"id": 82, "name": "Salad_Salata"}, {"id": 83, "name": "Sandwich"},
-        {"id": 84, "name": "Sausages"}, {"id": 85, "name": "Semolina_Dessert_Irmik_Tatlisi"},
-        {"id": 86, "name": "Soup_Corba"}, {"id": 87, "name": "Spinach_Ispanak"},
-        {"id": 88, "name": "Stuffed_Dishes_Dolma"}, {"id": 89, "name": "Strawberry"},
-        {"id": 90, "name": "Suffle"}, {"id": 91, "name": "Sutlac_Rice_Pudding"},
-        {"id": 92, "name": "Sweet_Potatoes"}, {"id": 93, "name": "Tantuni"},
-        {"id": 94, "name": "Tomato"}, {"id": 95, "name": "Waffles"},
-        {"id": 96, "name": "Walnut"}, {"id": 97, "name": "Watermelon"},
-        {"id": 98, "name": "Zucchini"}
+        {"id": 0, "name": "Adana_Kebap"},
+        {"id": 1, "name": "Almond"},
+        {"id": 2, "name": "Ankara_Tava"},
+        {"id": 3, "name": "Apple"},
+        {"id": 4, "name": "Artichoke_Enginar"},
+        {"id": 5, "name": "Arugula"},
+        {"id": 6, "name": "Asparagus"},
+        {"id": 7, "name": "Avocado"},
+        {"id": 8, "name": "Ayran"},
+        {"id": 9, "name": "Bacon"},
+        {"id": 10, "name": "Baklava"},
+        {"id": 11, "name": "Banana"},
+        {"id": 12, "name": "Beans"},
+        {"id": 13, "name": "Beet"},
+        {"id": 14, "name": "Bell_Pepper"},
+        {"id": 15, "name": "Biber_Dolmasi"},
+        {"id": 16, "name": "Black_Olives"},
+        {"id": 17, "name": "Blackberry"},
+        {"id": 18, "name": "Blueberry"},
+        {"id": 19, "name": "Bread_Ekmek"},
+        {"id": 20, "name": "Broccoli"},
+        {"id": 21, "name": "Buckwheat"},
+        {"id": 22, "name": "Bulgur_Pilavi"},
+        {"id": 23, "name": "Burger"},
+        {"id": 24, "name": "Cabbage"},
+        {"id": 25, "name": "Cacik"},
+        {"id": 26, "name": "Carrot"},
+        {"id": 27, "name": "Cashew"},
+        {"id": 28, "name": "Cauliflower"},
+        {"id": 29, "name": "Celery"},
+        {"id": 30, "name": "Cheese"},
+        {"id": 31, "name": "Cheesecake"},
+        {"id": 32, "name": "Chickpeas"},
+        {"id": 33, "name": "Chips"},
+        {"id": 34, "name": "Cig_Kofte"},
+        {"id": 35, "name": "Corn"},
+        {"id": 36, "name": "Crepe"},
+        {"id": 37, "name": "Cucumber"},
+        {"id": 38, "name": "Doner_Et"},
+        {"id": 39, "name": "Doner_Tavuk"},
+        {"id": 40, "name": "Domates_Corbasi"},
+        {"id": 41, "name": "Eggplant"},
+        {"id": 42, "name": "Et_Sote"},
+        {"id": 43, "name": "Etli_Turlu"},
+        {"id": 44, "name": "Ezogelin_Corba"},
+        {"id": 45, "name": "Fish"},
+        {"id": 46, "name": "Fried_Chicken"},
+        {"id": 47, "name": "Fried_Eggs"},
+        {"id": 48, "name": "Fried_Meat"},
+        {"id": 49, "name": "Granola"},
+        {"id": 50, "name": "Grapes"},
+        {"id": 51, "name": "Green_Beans"},
+        {"id": 52, "name": "Hummus"},
+        {"id": 53, "name": "Ice_Cream"},
+        {"id": 54, "name": "Irmik_Tatlisi"},
+        {"id": 55, "name": "Iskender_Et"},
+        {"id": 56, "name": "Iskender_Tavuk"},
+        {"id": 57, "name": "Ispanak"},
+        {"id": 58, "name": "Ispanak_Graten"},
+        {"id": 59, "name": "Izmir_Kofte"},
+        {"id": 60, "name": "Juice"},
+        {"id": 61, "name": "Kabak_Mucver"},
+        {"id": 62, "name": "Kabak_Tatlisi"},
+        {"id": 63, "name": "Kadinbudu_Kofte"},
+        {"id": 64, "name": "Kakaolu_Puding"},
+        {"id": 65, "name": "Kasarli_Pide"},
+        {"id": 66, "name": "Kir_Pidesi"},
+        {"id": 67, "name": "Kiwi"},
+        {"id": 68, "name": "Kiymali_Pide"},
+        {"id": 69, "name": "Kunefe"},
+        {"id": 70, "name": "Kusbasli_Pide"},
+        {"id": 71, "name": "Lahmacun"},
+        {"id": 72, "name": "Lemon"},
+        {"id": 73, "name": "Mandarin"},
+        {"id": 74, "name": "Mango"},
+        {"id": 75, "name": "Mashed_Potato"},
+        {"id": 76, "name": "Melon"},
+        {"id": 77, "name": "Menemen"},
+        {"id": 78, "name": "Mercimek_Coftesi"},
+        {"id": 79, "name": "Mercimek_Corbasi"},
+        {"id": 80, "name": "Midye_Dolma"},
+        {"id": 81, "name": "Midye_Tava"},
+        {"id": 82, "name": "Mumbar_Dolmasi"},
+        {"id": 83, "name": "Mushrooms"},
+        {"id": 84, "name": "Onion"},
+        {"id": 85, "name": "Orange"},
+        {"id": 86, "name": "Pasta_Makarna"},
+        {"id": 87, "name": "Patlican_Kebabi"},
+        {"id": 88, "name": "Peanut"},
+        {"id": 89, "name": "Pear"},
+        {"id": 90, "name": "Peas"},
+        {"id": 91, "name": "Pecan"},
+        {"id": 92, "name": "Pineapple"},
+        {"id": 93, "name": "Pizza"},
+        {"id": 94, "name": "Porridge"},
+        {"id": 95, "name": "Potatoes"},
+        {"id": 96, "name": "Radish"},
+        {"id": 97, "name": "Raspberry"},
+        {"id": 98, "name": "Rice"},
+        {"id": 99, "name": "Salad_Salata"},
+        {"id": 100, "name": "Sausages"},
+        {"id": 101, "name": "Sehriye_Corbasi"},
+        {"id": 102, "name": "Strawberry"},
+        {"id": 103, "name": "Suffle"},
+        {"id": 104, "name": "Sutlac"},
+        {"id": 105, "name": "Sweet_Potatoes"},
+        {"id": 106, "name": "Tantuni_Et"},
+        {"id": 107, "name": "Tantuni_Tavuk"},
+        {"id": 108, "name": "Tarhana_Corbasi"},
+        {"id": 109, "name": "Tea"},
+        {"id": 110, "name": "Tomato"},
+        {"id": 111, "name": "Waffles"},
+        {"id": 112, "name": "Walnut"},
+        {"id": 113, "name": "Watermelon"},
+        {"id": 114, "name": "Yayla_Corbasi"},
+        {"id": 115, "name": "Zucchini"},
     ]
 
-    # Adım 2: Eski kategori ID'lerini yeni kategori ID'lerine eşle
+    # Adım 2: Eski 171 kategori ID'lerini yeni 116 kategori ID'lerine eşle
     # None değeri, bu kategorinin ve ilgili annotation'ların silineceği anlamına gelir.
+    # KRİTİK: 115 (Adana_Kebap) artık 0'a eşleniyor (eskiden 7'ye hatalı eşleniyordu)
     old_to_new_id_map = {
-        0: 7, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 8, 8: 10, 9: 11, 10: 12, 11: 13, 12: 14, 13: 15,
-        14: 16, 15: None, 16: 17, 17: 18, 18: 19, 19: 21, 20: None, 21: 23, 22: 24, 23: None, 24: 25,
-        25: 26, 26: None, 27: 27, 28: 29, 29: None, 30: 36, 31: None, 32: None, 33: 98, 34: 31, 35: 32,
-        36: 33, 37: 34, 38: 52, 39: None, 40: 39, 41: 36, 42: 40, 43: None, 44: 39, 45: 40, 46: None,
-        47: 41, 48: 42, 49: 43, 50: 44, 51: 45, 52: 46, 53: 47, 54: None, 55: 49, 56: None, 57: None,
-        58: None, 59: 56, 60: 57, 61: 58, 62: 59, 63: None, 64: 60, 65: None, 66: 64, 67: 63, 68: 65,
-        69: 66, 70: 67, 71: None, 72: 68, 73: 69, 74: 70, 75: 71, 76: None, 77: None, 78: None, 79: 73,
-        80: 74, 81: 81, 82: 75, 83: 76, 84: 78, 85: 79, 86: 80, 87: 81, 88: 82, 89: 82, 90: 82, 91: 82,
-        92: 83, 93: 84, 94: 62, 95: None, 96: None, 97: None, 98: None, 99: 86, 100: None, 101: 87,
-        102: 89, 103: None, 104: 92, 105: 94, 106: None, 107: None, 108: None, 109: 95, 110: 96,
-        111: 97, 112: 98, 113: None, 114: 0, 115: 7, 116: 9, 117: 88, 118: 81, 119: 20, 120: 30,
-        121: 28, 122: 55, 123: 86, 124: 17, 125: 93, 126: 93, 127: 35, 128: 48, 129: 37, 130: 40,
-        131: 87, 132: 50, 133: 72, 134: 72, 135: 72, 136: 53, 137: 72, 138: 54, 139: 67, 140: 61,
-        141: 55, 142: 86, 143: 62, 144: 62, 145: 88, 146: 38, 147: None, 148: 74, 149: 82, 150: 86,
-        151: 90, 152: 91, 153: 86, 154: 35, 155: 48, 156: 86, 157: 81, 158: 22, 159: 9, 160: 3, 161: None,
-        162: None, 163: 86, 164: 85, 165: 87, 166: 87, 167: 52, 168: 51, 169: 52, 170: 77
+        1: 8,    # airan-katyk → Ayran
+        2: 1,    # almond → Almond
+        3: 3,    # apple → Apple
+        4: 4,    # artichoke → Artichoke_Enginar
+        5: 5,    # arugula → Arugula
+        6: 6,    # asparagus → Asparagus
+        7: 7,    # avocado → Avocado
+        8: 9,    # bacon → Bacon
+        9: 11,   # banana → Banana
+        10: 12,  # beans → Beans
+        11: 13,  # beet → Beet
+        12: 14,  # bell pepper → Bell_Pepper
+        13: 16,  # black olives → Black_Olives
+        14: 17,  # blackberry → Blackberry
+        15: 18,  # blueberry → Blueberry
+        16: 46,  # boiled chicken → Fried_Chicken (merged with fried)
+        17: 19,  # bread → Bread_Ekmek
+        18: 20,  # broccoli → Broccoli
+        19: 21,  # buckwheat → Buckwheat
+        20: 24,  # cabbage → Cabbage
+        21: None, # cakes → REMOVED
+        22: 26,  # carrot → Carrot
+        23: 27,  # cashew → Cashew
+        24: 43,  # casserole with meat and vegetables → Etli_Turlu
+        25: 28,  # cauliflower → Cauliflower
+        26: 29,  # celery → Celery
+        27: None, # cereal based cooked food → REMOVED
+        28: 30,  # cheese → Cheese
+        29: 32,  # chickpeas → Chickpeas
+        30: 33,  # chips → Chips
+        31: 41,  # cooked eggplant → Eggplant
+        32: 48,  # cooked food based on meat → Fried_Meat
+        33: 43,  # cooked food meat with vegetables → Etli_Turlu
+        34: 115, # cooked zucchini → Zucchini
+        35: None, # cookies → REMOVED
+        36: 35,  # corn → Corn
+        37: 36,  # crepe → Crepe
+        38: 37,  # cucumber → Cucumber
+        39: 63,  # cutlet → Kadinbudu_Kofte
+        40: None, # desserts → REMOVED (too generic)
+        41: 47,  # egg product → Fried_Eggs
+        42: 41,  # eggplant → Eggplant
+        43: 45,  # fish → Fish
+        44: 46,  # fried chicken → Fried_Chicken
+        45: 47,  # fried eggs → Fried_Eggs
+        46: 45,  # fried fish → Fish
+        47: 48,  # fried meat → Fried_Meat
+        48: None, # fruits → REMOVED (too generic)
+        49: 49,  # granola → Granola
+        50: 50,  # grapes → Grapes
+        51: 51,  # green beans → Green_Beans
+        52: None, # herbs → REMOVED (too generic)
+        53: 52,  # hummus → Hummus
+        54: 53,  # ice-cream → Ice_Cream
+        55: None, # irimshik → REMOVED
+        56: 60,  # juice → Juice
+        57: 67,  # kiwi → Kiwi
+        58: None, # lavash → REMOVED
+        59: None, # legumes → REMOVED (too generic)
+        60: 72,  # lemon → Lemon
+        61: 73,  # mandarin → Mandarin
+        62: 74,  # mango → Mango
+        63: 75,  # mashed potato → Mashed_Potato
+        64: None, # meat product → REMOVED (too generic)
+        65: 76,  # melon → Melon
+        66: None, # mixed berries → REMOVED
+        67: None, # mixed nuts → REMOVED
+        68: 83,  # mushrooms → Mushrooms
+        69: 84,  # onion → Onion
+        70: 85,  # orange → Orange
+        71: 86,  # pasta → Pasta_Makarna
+        72: None, # pastry → REMOVED
+        73: 88,  # peanut → Peanut
+        74: 89,  # pear → Pear
+        75: 90,  # peas → Peas
+        76: 91,  # pecan → Pecan
+        77: None, # pickled cabbage → REMOVED
+        78: None, # pickled squash → REMOVED
+        79: None, # pie → REMOVED
+        80: 92,  # pineapple → Pineapple
+        81: 93,  # pizza → Pizza
+        82: 98,  # plov → Rice
+        83: 94,  # porridge → Porridge
+        84: 95,  # potatoes → Potatoes
+        85: None, # pumpkin → REMOVED (generic)
+        86: 96,  # radish → Radish
+        87: 97,  # raspberry → Raspberry
+        88: 98,  # rice → Rice
+        89: 99,  # salad fresh → Salad_Salata
+        90: 99,  # salad leaves → Salad_Salata
+        91: 99,  # salad with fried meat veggie → Salad_Salata
+        92: 99,  # salad with sauce → Salad_Salata
+        93: None, # sandwich → REMOVED
+        94: 100, # sausages → Sausages
+        95: None, # seafood → REMOVED (too generic)
+        96: None, # smetana → REMOVED
+        97: None, # snacks → REMOVED
+        98: None, # snacks bread → REMOVED
+        99: None, # souces → REMOVED
+        100: None, # soup-plain → REMOVED
+        101: None, # soy product → REMOVED
+        102: 57,  # spinach → Ispanak
+        103: 102, # strawberry → Strawberry
+        104: None, # suzbe → REMOVED
+        105: 105, # sweet potatoes → Sweet_Potatoes
+        106: 110, # tomato → Tomato
+        107: None, # tomato souce → REMOVED
+        108: None, # tushpara-wo-soup → REMOVED
+        109: None, # vegetable based cooked food → REMOVED (too generic)
+        110: 111, # waffles → Waffles
+        111: 112, # walnut → Walnut
+        112: 113, # watermelon → Watermelon
+        113: 115, # zucchini → Zucchini
+        114: None, # food-Yemek → REMOVED (too generic)
+        115: 0,   # Adana_Kebap → Adana_Kebap (FIX: was 7)
+        116: 8,   # Ayran → Ayran
+        117: 10,  # Baklava → Baklava
+        118: 15,  # Biber_Dolmasi → Biber_Dolmasi
+        119: 22,  # Bulgur_Pilavi → Bulgur_Pilavi
+        120: 23,  # Burger → Burger
+        121: 109, # Cay → Tea
+        122: 31,  # Cheescake → Cheesecake
+        123: 34,  # Cig_Kofte → Cig_Kofte
+        124: 40,  # Domates_Corbasi → Domates_Corbasi
+        125: 19,  # Ekmek → Bread_Ekmek
+        126: 106, # Ekmek_Arasi_Et_Tantuni → Tantuni_Et
+        127: 107, # Ekmek_Arasi_Tavuk_Tantuni → Tantuni_Tavuk
+        128: 38,  # Et_Doner → Doner_Et
+        129: 55,  # Et_Iskender → Iskender_Et
+        130: 42,  # Et_Sote → Et_Sote
+        131: 45,  # Hamsi_Tava → Fish
+        132: 57,  # Ispanak_Yemegi → Ispanak
+        133: 61,  # Kabak_Mucver → Kabak_Mucver
+        134: 65,  # Kasarli_Pide → Kasarli_Pide
+        135: 66,  # Kir_Pidesi → Kir_Pidesi
+        136: 68,  # Kiymali_Pide → Kiymali_Pide
+        137: 69,  # Kunefe → Kunefe
+        138: 70,  # Kusbasli_Pide → Kusbasli_Pide
+        139: 71,  # Lahmacun → Lahmacun
+        140: 86,  # Makarna → Pasta_Makarna
+        141: 77,  # Menemen → Menemen
+        142: 78,  # Mercimek_Coftesi → Mercimek_Coftesi
+        143: 79,  # Mercimek_Corbasi → Mercimek_Corbasi
+        144: 81,  # Midye_Tava → Midye_Tava
+        145: 80,  # Midye_dolma → Midye_Dolma
+        146: 82,  # Mumber_Dolmasi → Mumbar_Dolmasi
+        147: 33,  # Patates_Kizartmasi → Chips
+        148: 87,  # Patlican_Kebabi → Patlican_Kebabi
+        149: 93,  # Pizza → Pizza
+        150: 99,  # Salata → Salad_Salata
+        151: 101, # Sehriye_Corbasi → Sehriye_Corbasi
+        152: 103, # Suffle → Suffle
+        153: 104, # Sutlac → Sutlac
+        154: 108, # Tarhana_Corbasi → Tarhana_Corbasi
+        155: 39,  # Tavuk_Doner → Doner_Tavuk
+        156: 56,  # Tavuk_Iskender → Iskender_Tavuk
+        157: 114, # Yayla_Corbasi → Yayla_Corbasi
+        158: 2,   # ankara_tava → Ankara_Tava
+        159: 25,  # cacik → Cacik
+        160: 10,  # cevizli_baklava → Baklava
+        161: 4,   # enginar → Artichoke_Enginar
+        162: None, # etli_nohut → REMOVED
+        163: 43,  # etli_turlu → Etli_Turlu
+        164: 44,  # ezogelin_corba → Ezogelin_Corba
+        165: 54,  # irmik_tatlisi → Irmik_Tatlisi
+        166: 57,  # ispanak → Ispanak
+        167: 58,  # ispanak_graten → Ispanak_Graten
+        168: 59,  # izmir_kofte → Izmir_Kofte
+        169: 62,  # kabak_tatlisi → Kabak_Tatlisi
+        170: 63,  # kadinbudu_kofte → Kadinbudu_Kofte
+        171: 64,  # kakaolu_puding → Kakaolu_Puding
     }
 
     print(f"Orijinal dosya yükleniyor: {original_json_path}")
@@ -127,10 +349,24 @@ def clean_coco_categories(original_json_path, new_json_path):
 
 # --- KODU ÇALIŞTIR ---
 if __name__ == '__main__':
-    base_dir = r'D:\Datalarım\Desktop\Bitirme\object_detection\data\dataset\merged_fixed'  
-    splits = ['train', 'test', 'valid']
+    # Orijinal 171 kategorili backup dosyalarını kullan
+    base_dir = r'D:\Desktop\Bitirme\NutriGame\object_detection\finetuning\rtdetr\data'
+    
+    # Backup dosyalarından yeni 116 kategorili dosyalar oluştur
+    files_to_process = [
+        ('_train.json', 'instances_train.json'),
+        ('_valid.json', 'instances_val.json'),
+        ('_test.json', 'instances_test.json')
+    ]
 
-    for split in splits:
-        original_json = os.path.join(base_dir, split, '_annotations.coco.json')
-        new_json = os.path.join(base_dir, split, '_annotations.coco.json')
+    for original_file, new_file in files_to_process:
+        original_json = os.path.join(base_dir, original_file)
+        new_json = os.path.join(base_dir, 'annotations', new_file)
+        
+        # Annotations klasörünü oluştur (yoksa)
+        os.makedirs(os.path.dirname(new_json), exist_ok=True)
+        
+        print(f"\n{'='*50}")
+        print(f"İşleniyor: {original_file} → {new_file}")
+        print(f"{'='*50}")
         clean_coco_categories(original_json, new_json)

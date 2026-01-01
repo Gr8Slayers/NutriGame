@@ -1,9 +1,8 @@
-path: D:/Desktop/Bitirme/NutriGame/object_detection/finetuning/yolov8n/data # dataset root dir
-train: train2017.txt # train images (relative to 'path') 118287 images
-val: val2017.txt # val images (relative to 'path') 5000 images
-test: test-dev2017.txt # 20288 of 40670 images, submit to https://competitions.codalab.org/competitions/20794
+path: D:/Desktop/Bitirme/NutriGame/object_detection/finetuning/rtdetr/data
+train: images/train  
+val: images/val
 
-# Classes
+nc: 99
 names:
   0: Adana_Kebap
   1: Almond
@@ -104,3 +103,5 @@ names:
   96: Walnut
   97: Watermelon
   98: Zucchini
+
+
