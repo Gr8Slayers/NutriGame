@@ -3,101 +3,111 @@ import { StyleSheet, Platform, StatusBar, Dimensions } from 'react-native';
 const { height, width } = Dimensions.get('window');
 
 export default StyleSheet.create({
-    container: {
+  container: {
     flex: 1,
     backgroundColor: '#473C33',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    paddingTop: 0,
   },
-  backButton:{
-     position: 'absolute', 
+  backButton: {
+    position: 'absolute',
     left: 10,
-    top: Platform.OS === 'ios' ? 30 : 20, 
+    top: Platform.OS === 'ios' ? 30 : 20,
     zIndex: 20,
   },
-  menuButton:{
-    position: 'absolute', 
+  menuButton: {
+    position: 'absolute',
     right: 10,
-    top: Platform.OS === 'ios' ? 30 : 20, 
+    top: Platform.OS === 'ios' ? 30 : 20,
     marginLeft: 'auto',
     zIndex: 20,
   },
   mainChart: {
-    paddingVertical: 30, 
+    height: height * 0.55,
     width: '100%',
-    backgroundColor: "#ABC270", 
-    
+    backgroundColor: "#ABC270",
+
     borderBottomLeftRadius: width * 0.15,
     borderBottomRightRadius: width * 0.15,
-    
+
     alignItems: "center",
-    justifyContent: 'flex-end',
-    paddingTop: height * 0.1,
-    paddingBottom: 30,
-    
+    justifyContent: 'center',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : height * 0.4,
+
     zIndex: 5,
     elevation: 10,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.3,
     shadowRadius: 5,
+
+    position: 'relative',
   },
-    scrollContent: {
+  scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 20,
     paddingBottom: 100,
   },
-  title:{
+  headerContainer: {
+    position: 'absolute',
+    top: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 20 : 80,
+    width: '100%',
+    alignItems: 'center',
+    zIndex: 100,
+    elevation: 100,
+
+  },
+  title: {
     fontSize: 30,
     textAlign: 'center',
     color: '#473C33',
     fontWeight: 'bold',
   },
-  calenderSubtitle:{
+  calenderSubtitle: {
     textAlign: 'center',
     color: '#5c544d',
     fontSize: 16,
-    marginBottom:8,
+    marginBottom: 8,
   },
-  scanButton:{
+  scanButton: {
     backgroundColor: '#FEC868',
     borderRadius: 8,
     width: 80,
     height: 50,
-    flexDirection:'row',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap:4,
+    gap: 4,
     elevation: 10,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.5,
     shadowRadius: 2.22,
   },
-  scanButtonText:{
+  scanButtonText: {
     color: '#463C33',
     fontSize: 16,
     fontWeight: 'bold',
-    paddingRight:8,
+    paddingRight: 8,
   },
-  scanButtonIcon:{
-    paddingLeft:8,
+  scanButtonIcon: {
+    paddingLeft: 8,
     color: '#463C33',
     fontSize: 20,
   },
-  searchContainer:{
+  searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical:20,
+    paddingVertical: 20,
     paddingHorizontal: 20,
     paddingBottom: 20,
-    gap:8,
+    gap: 8,
   },
-  searchBox:{
-    flex:1,
-   flexDirection: 'row',
+  searchBox: {
+    flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff', 
-    borderRadius: 12,  
+    backgroundColor: '#fff',
+    borderRadius: 12,
     paddingHorizontal: 15,
     height: 50,
     elevation: 3,
@@ -128,17 +138,17 @@ export default StyleSheet.create({
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: "center",
-    elevation:2,
+    elevation: 2,
   },
-   plus: {
-  fontSize: 40,  
-  fontWeight: "bold",
-},
+  plus: {
+    fontSize: 40,
+    fontWeight: "bold",
+  },
   foodItem: {
     flexDirection: "row",
     backgroundColor: '#f8d599ff',
     alignItems: "center",
-    justifyContent: "space-between", 
+    justifyContent: "space-between",
     padding: 16,
     borderRadius: 20,
     marginBottom: 8,
@@ -161,7 +171,7 @@ export default StyleSheet.create({
   calContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap:4,
+    gap: 4,
   },
   foodCal: {
     fontSize: 16,
@@ -179,9 +189,11 @@ export default StyleSheet.create({
     color: '#888',
     fontSize: 16,
   },
-  
- 
+
+
   showDetailButton: {
+    position: 'absolute',
+    bottom: 20,
     marginTop: 10,
     flexDirection: 'row',
     alignItems: 'center',
@@ -190,6 +202,12 @@ export default StyleSheet.create({
     paddingHorizontal: 15,
     borderRadius: 20,
     gap: 5,
+    zIndex: 10,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
   },
   showDetailText: {
     color: '#463C33',
@@ -280,4 +298,73 @@ export default StyleSheet.create({
   },
 
 
+  portionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#f7e2beff',
+    padding: 15,
+    borderRadius: 12,
+    marginBottom: 10,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    borderWidth: 1,
+    borderColor: '#473C33',
+  },
+  portionText: {
+    fontSize: 16,
+    color: '#473C33',
+    fontWeight: '600',
+    flex: 1,
+  },
+  portionButton: {
+    backgroundColor: '#fc8500',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  // --- STEPPER STYLES ---
+  stepperContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+  },
+  portionInfoText: {
+    fontSize: 16,
+    color: '#473C33',
+    marginBottom: 15,
+    fontWeight: '500',
+  },
+  stepperControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '80%',
+    marginBottom: 20,
+  },
+  stepperButton: {
+    backgroundColor: '#fc8500',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 3,
+  },
+  stepperValueText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#473C33',
+  },
+  summaryText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#473C33',
+    marginTop: 10,
+  },
 })

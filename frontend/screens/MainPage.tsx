@@ -1,8 +1,8 @@
-import React, { useState,useCallback,useRef } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
-    View, Image, Text, TextInput, Button, Alert, TouchableOpacity, ScrollView,Animated
+    View, Image, Text, TextInput, Button, Alert, TouchableOpacity, ScrollView, Animated
 } from 'react-native';
-import { useRoute,useFocusEffect } from '@react-navigation/native';
+import { useRoute, useFocusEffect } from '@react-navigation/native';
 import { useEffect } from 'react';
 import { Menu } from 'react-native-paper';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -12,6 +12,7 @@ import styles from '../styles/MainPage';
 import CalorieCircle from '../components/calorieCircle';
 import { Ionicons } from '@expo/vector-icons';
 import { IP_ADDRESS } from "@env";
+import * as SecureStore from 'expo-secure-store';
 
 
 const API_URL = `http://${IP_ADDRESS}:3000`;
@@ -32,7 +33,7 @@ function MainPage({ navigation }: Props) {
         [date: string]: DailyMeals;
     }
 
-      const slideAnim = useRef(new Animated.Value(-300)).current;
+    const slideAnim = useRef(new Animated.Value(-300)).current;
 
     useEffect(() => {
         Animated.timing(slideAnim, {
@@ -43,27 +44,61 @@ function MainPage({ navigation }: Props) {
     }, []);
     const [mealsData, setMealsData] = useState<MealsData>({});//boş obje
 
-    const [calorie, setCalorie] = useState('');
-    const [carb, setCarb] = useState('');
-    const [protein, setProtein] = useState('');
-    const [fat, setFat] = useState('');
+    const [calorie, setCalorie] = useState<number>(0);
+    const [carb, setCarb] = useState<number>(0);
+    const [protein, setProtein] = useState<number>(0);
+    const [fat, setFat] = useState<number>(0);
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [showDatePicker, setShowDatePicker] = useState(false);
+
 
     const changeDate = (days: number) => {
         const newDate = new Date(selectedDate);
         newDate.setDate(newDate.getDate() + days);
         setSelectedDate(newDate);
+        setCalorie(0);
+        setProtein(0);
+        setCarb(0);
+        setFat(0);
     };
 
 
     const formattedDate = selectedDate.toISOString().split("T")[0]; // "YYYY-MM-DD" formatı
     const fetchDailyData = async () => {
-        try{
-            const res = await fetch(`${API_URL}/api/meals?date=${formattedDate}`)
+        const token = await SecureStore.getItemAsync('userToken');
+
+        const params = new URLSearchParams({
+            date: formattedDate,
+            meal_category: "OVERALL"
+        }).toString();
+        const url = `${API_URL}/api/food/get_meal_total?${params}`
+        console.log(url);
+        try {
+            const res = await fetch(url, {
+                method: "GET",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+
+            })
+
             const data = await res.json();
-            if (res.ok) {
-                setMealsData(prev => ({ ...prev, [formattedDate]: data }));
+            const params = data.data;
+            console.log(data);
+            if (res.ok && params != 0) {
+
+
+                setCalorie(params.t_calorie);
+                setCarb(params.t_carb);
+                setFat(params.t_fat);
+                setProtein(params.t_protein);
+            }
+            else {
+                setCalorie(0);
+                setCarb(0);
+                setFat(0);
+                setProtein(0);
             }
         }
         catch (error) {
@@ -73,55 +108,61 @@ function MainPage({ navigation }: Props) {
 
     useFocusEffect(
         useCallback(() => {
-            fetchDailyData(); 
-                    }, [selectedDate]) //date değiştikçe çalışsın
+            fetchDailyData();
+        }, [selectedDate]) //date değiştikçe çalışsın
     );
-    const todayMeals = mealsData[formattedDate] || {};
-    const totalCalories = Object.values(todayMeals).reduce((sum, meal: any) => sum + meal.calories, 0);
     const dailyGoal = 2000; // Hedef kaloriniz
 
     const handleMenuButton = () => {
         console.log("menü açılacak.");
-     }
+    }
 
 
     return (
         <View style={styles.container}>
 
             <TouchableOpacity style={styles.menuButton} onPress={handleMenuButton}>
-              <Ionicons name="menu" size={20} color="#5c544d" style={styles.menuButton} />
-             </TouchableOpacity>
+                <Ionicons name="menu" size={20} color="#5c544d" style={styles.menuButton} />
+            </TouchableOpacity>
 
             <Animated.View
                 style={[
-                    styles.mainChart, 
+                    styles.mainChart,
                     { transform: [{ translateY: slideAnim }] }
                 ]}
             >
-                <CalorieCircle calories={totalCalories} goal={dailyGoal} />
+
+                <CalorieCircle
+                    key={selectedDate.toISOString()}
+                    calories={calorie}
+                    goal={dailyGoal}
+                    protein={protein}
+                    carb={carb}
+                    fat={fat}
+                />
             </Animated.View>
 
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                 <View style={styles.dateSelector}>
-                        <View style={styles.datePill}>
-                            <TouchableOpacity onPress={() => changeDate(-1)} style={styles.arrowButton}>
-                                <Ionicons name="chevron-back" size={20} color="#fff" />
-                            </TouchableOpacity>
-                            <View 
-                                style={styles.dateContent} 
-                            >
-                                <Ionicons name="calendar-outline" size={18} color="#f7e5c5" style={{marginRight: 6}} />
-                                <Text style={styles.dateText}>
-                                    {selectedDate.toLocaleDateString('en-EN', { weekday: 'short', month: 'short', day: 'numeric' })}
-                                </Text>
-                            </View>
-                            <TouchableOpacity onPress={() => changeDate(1)} style={styles.arrowButton}>
-                                <Ionicons name="chevron-forward" size={20} color="#fff" />
-                            </TouchableOpacity>
+                    <View style={styles.datePill}>
+                        <TouchableOpacity onPress={() => changeDate(-1)} style={styles.arrowButton}>
+                            <Ionicons name="chevron-back" size={20} color="#fff" />
+                        </TouchableOpacity>
+                        <View
+                            style={styles.dateContent}
+                        >
+                            <Ionicons name="calendar-outline" size={18} color="#f7e5c5" style={{ marginRight: 6 }} />
+                            <Text style={styles.dateText}>
+                                {selectedDate.toLocaleDateString('en-EN', { weekday: 'short', month: 'short', day: 'numeric' })}
+                            </Text>
                         </View>
+                        <TouchableOpacity onPress={() => changeDate(1)} style={styles.arrowButton}>
+                            <Ionicons name="chevron-forward" size={20} color="#fff" />
+                        </TouchableOpacity>
                     </View>
+                </View>
 
-                    
+
                 <View style={styles.addMealCard}>
                     <Image
                         source={require("../assets/breakfast.png")}

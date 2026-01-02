@@ -7,7 +7,7 @@ export class FoodController {
 
     async search_food(req: Request, res: Response, next: NextFunction) {
         try {
-            const { food_name } = req.body;
+            const { food_name } = req.query as { food_name: string };
 
             if (!food_name) {
                 return res.status(400).json({ success: false, message: 'Food name is not provided.' });
@@ -91,7 +91,7 @@ export class FoodController {
     async get_meal_log(req: Request, res: Response, next: NextFunction) {
         try {
             const user_id = req.user!.id; // Assuming jwt/auth middleware sets req.user
-            const { date, meal_category } = req.body;
+            const { date, meal_category } = req.query as { date: string, meal_category: string };
 
             if (!date || !meal_category) {
                 return res.status(400).json({ success: false, message: 'Please provide required information { date, meal_category }.' });
@@ -132,7 +132,7 @@ export class FoodController {
     async get_meal_total(req: Request, res: Response, next: NextFunction) {
         try {
             const user_id = req.user!.id; // Assuming jwt/auth middleware sets req.user
-            const { date, meal_category } = req.body;
+            const { date, meal_category } = req.query as { date: string, meal_category: string };
 
             if (!date || !meal_category) {
                 return res.status(400).json({ success: false, message: 'Please provide required information { date, meal_category }.' });
@@ -153,7 +153,12 @@ export class FoodController {
             const fetchedTotal = await foodModel.getMealTotalByDate(user_id, parsedDate, meal_category);
 
             if (!fetchedTotal) {
-                return res.status(404).json({ success: false, message: 'No total found matching that date and meal category.' });
+                //return res.status(404).json({ success: false, message: 'No total found matching that date and meal category.' });
+                return res.status(200).json({
+                    success: true,
+                    message: "No total found matching that date and meal category.",
+                    data: 0
+                });
             }
 
             return res.status(200).json({
