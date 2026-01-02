@@ -1,4 +1,4 @@
-import React,{useState,useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { Provider as PaperProvider, MD3DarkTheme as DefaultTheme } from 'react-native-paper';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -13,11 +13,12 @@ import CreateAvatar from './screens/CreateAvatar';
 import MainPage from './screens/MainPage';
 import AddMeal from './screens/AddMeal';
 import AddWater from './screens/AddWater';
+import Menu from './screens/Menu';
 
 interface UpdatedMealParams {
   updatedMeal: {
     date: string;
-    type: string; 
+    type: string;
     mealName: string;
     calories: number;
   };
@@ -43,13 +44,14 @@ export type RootStackParamList = {
       weight: number;
       height: number;
       reason_to_diet?: string;
-      target_weight?: number;  
-      
+      target_weight?: number;
+
     }
   };
   MainPage: UpdatedMealParams | undefined;
-  AddMeal: { selectedDate: string ,type:string};
-  AddWater:{ selectedDate: string ,type:string};
+  AddMeal: { selectedDate: string, type: string };
+  AddWater: { selectedDate: string, type: string };
+  Menu: undefined;
 };
 
 const theme = {
@@ -74,28 +76,28 @@ export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const checkAuthentication = async() => {
-      let token:string|null = null;
-      let rememberMeFlag: string|null=null;
+    const checkAuthentication = async () => {
+      let token: string | null = null;
+      let rememberMeFlag: string | null = null;
 
-      try{
+      try {
         token = await SecureStore.getItemAsync('userToken');
         rememberMeFlag = await SecureStore.getItemAsync('rememberMeFlag');
 
-        if(token && rememberMeFlag=='true'){
+        if (token && rememberMeFlag == 'true') {
           setIsAuthenticated(false);
         }
 
       }
-      catch(error){
-        console.error("Cannot read token",error);
+      catch (error) {
+        console.error("Cannot read token", error);
       }
-      finally{
+      finally {
         setIsLoading(false);
       }
     };
     checkAuthentication();
-  },[]);
+  }, []);
 
   if (isLoading) {
     return (
@@ -111,24 +113,26 @@ export default function App() {
           screenOptions={{ headerShown: false }}
         >
           {isAuthenticated ? (
-          <>
-            <Stack.Screen name="MainPage" component={MainPage} initialParams={undefined} />
-            <Stack.Screen name="AddMeal" component={AddMeal} />
-          </>
-        ) : (
-         
-          <>
-            <Stack.Screen name="Login" component={Login} />
-            <Stack.Screen name="SignUp" component={SignUp} />
-            <Stack.Screen name="SignUpEnterData" component={SignUpEnterData} />
-            <Stack.Screen name="CreateAvatar" component={CreateAvatar} />
-            <Stack.Screen name="MainPage" component={MainPage} initialParams={undefined} />
-            <Stack.Screen name="AddMeal" component={AddMeal} />
-            <Stack.Screen name="AddWater" component={AddWater} />
-          </>
-        )}
-      </Stack.Navigator>
-    </NavigationContainer>
+            <>
+              <Stack.Screen name="MainPage" component={MainPage} initialParams={undefined} />
+              <Stack.Screen name="AddMeal" component={AddMeal} />
+              <Stack.Screen name="Menu" component={Menu} />
+            </>
+          ) : (
+
+            <>
+              <Stack.Screen name="Login" component={Login} />
+              <Stack.Screen name="SignUp" component={SignUp} />
+              <Stack.Screen name="SignUpEnterData" component={SignUpEnterData} />
+              <Stack.Screen name="CreateAvatar" component={CreateAvatar} />
+              <Stack.Screen name="MainPage" component={MainPage} initialParams={undefined} />
+              <Stack.Screen name="AddMeal" component={AddMeal} />
+              <Stack.Screen name="AddWater" component={AddWater} />
+              <Stack.Screen name="Menu" component={Menu} />
+            </>
+          )}
+        </Stack.Navigator>
+      </NavigationContainer>
     </PaperProvider>
   );
 }

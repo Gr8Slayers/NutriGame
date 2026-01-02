@@ -113,15 +113,12 @@ function MainPage({ navigation }: Props) {
     );
     const dailyGoal = 2000; // Hedef kaloriniz
 
-    const handleMenuButton = () => {
-        console.log("menü açılacak.");
-    }
 
 
     return (
         <View style={styles.container}>
 
-            <TouchableOpacity style={styles.menuButton} onPress={handleMenuButton}>
+            <TouchableOpacity style={styles.menuButton} onPress={() => navigation.navigate('Menu')}>
                 <Ionicons name="menu" size={20} color="#5c544d" style={styles.menuButton} />
             </TouchableOpacity>
 

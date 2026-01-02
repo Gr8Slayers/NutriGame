@@ -208,15 +208,6 @@ export default function AddMeal({ route, navigation }: Props) {
   }
 
 
-  const handleBackButton = () => {
-    navigation.goBack();
-  }
-
-  const handleMenuButton = () => {
-    //TO-DO
-  }
-
-
   //remove food from selected and send this to backend
   const handleRemoveItem = async (indexToRemove: number, itemToRemove: FoodItem) => {
     if (!itemToRemove.meal_log_id) {
@@ -281,10 +272,10 @@ export default function AddMeal({ route, navigation }: Props) {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.container}>
-          <TouchableOpacity style={styles.backButton} onPress={handleBackButton}>
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
             <Ionicons name="arrow-back" size={20} color="#5c544d" style={styles.backButton} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.menuButton} onPress={handleMenuButton}>
+          <TouchableOpacity style={styles.menuButton} onPress={() => navigation.navigate('Menu')}>
             <Ionicons name="menu" size={20} color="#5c544d" style={styles.menuButton} />
           </TouchableOpacity>
 
