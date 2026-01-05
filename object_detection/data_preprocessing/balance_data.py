@@ -26,7 +26,7 @@ def merge_coco_splits_with_reindex(train_path, val_path, test_path, output_path)
             if filename not in filename_to_img:
                 filename_to_img[filename] = img
     
-    print(f"📊 Unique resim sayısı (dosya ismine göre): {len(filename_to_img)}")
+    print(f" Unique resim sayısı (dosya ismine göre): {len(filename_to_img)}")
     
     # Yeni image ID'leri ata (1'den başlayarak)
     new_images = []
@@ -89,12 +89,12 @@ def merge_coco_splits_with_reindex(train_path, val_path, test_path, output_path)
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(merged, f, indent=2, ensure_ascii=False)
     
-    print(f"✅ Merged: {len(new_images)} resim, {len(new_annotations)} annotasyon")
-    print(f"✅ Yeni Image ID aralığı: 1-{len(new_images)}")
-    print(f"✅ Yeni Annotation ID aralığı: 1-{len(new_annotations)}")
+    print(f" Merged: {len(new_images)} resim, {len(new_annotations)} annotasyon")
+    print(f" Yeni Image ID aralığı: 1-{len(new_images)}")
+    print(f" Yeni Annotation ID aralığı: 1-{len(new_annotations)}")
 
 
-def stratified_split_with_image_moving(
+def stratified_split_with_minimum_samples(
     input_json_path,
     source_images_dir,
     output_annotations_dir,
@@ -102,17 +102,18 @@ def stratified_split_with_image_moving(
     train_ratio=0.8,
     val_ratio=0.1,
     test_ratio=0.1,
+    min_samples_per_split=1,
     random_seed=42
 ):
     """
     COCO formatındaki dataset'i stratified split yapar.
-    Her resim sadece bir sette olur (OVERLAP YOK).
+    Her kategoriden her sete EN AZ min_samples_per_split örnek gider.
+    Overlap garantili YOK.
     """
     
     random.seed(random_seed)
     
-    # Girdi dosyasını yükle
-    print("\n📖 Merged data yükleniyor...")
+    print("\n Merged data yükleniyor...")
     with open(input_json_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
     
@@ -120,7 +121,7 @@ def stratified_split_with_image_moving(
     annotations = data['annotations']
     categories = data['categories']
     
-    print(f"✅ Yüklendi: {len(images)} resim, {len(annotations)} annotasyon, {len(categories)} kategori")
+    print(f" Yüklendi: {len(images)} resim, {len(annotations)} annotasyon, {len(categories)} kategori")
     
     # Image ID'ye göre annotasyonları grupla
     img_to_anns = defaultdict(list)
@@ -132,11 +133,9 @@ def stratified_split_with_image_moving(
     for img in images:
         img_id = img['id']
         if img_id in img_to_anns:
-            # Bu resimdeki kategorileri say
             cat_counts = defaultdict(int)
             for ann in img_to_anns[img_id]:
                 cat_counts[ann['category_id']] += 1
-            # En fazla olan kategoriyi seç
             main_cat = max(cat_counts.items(), key=lambda x: x[1])[0]
             img_to_main_cat[img_id] = main_cat
     
@@ -151,19 +150,48 @@ def stratified_split_with_image_moving(
     test_imgs = set()
     
     print("\n" + "=" * 80)
-    print("STRATIFIED SPLIT BAŞLATILIYOR (OVERLAP YOK)")
+    print("STRATIFIED SPLIT BAŞLATILIYOR (MIN SAMPLES GARANTILI)")
     print("=" * 80)
-    print(f"\nRasyo: Train={train_ratio:.1%}, Val={val_ratio:.1%}, Test={test_ratio:.1%}\n")
+    print(f"\nRasyo: Train={train_ratio:.1%}, Val={val_ratio:.1%}, Test={test_ratio:.1%}")
+    print(f"Her sette minimum: {min_samples_per_split} örnek\n")
     
     category_stats = []
+    low_sample_categories = []
     
     for cat_id, img_list in cat_to_imgs.items():
         cat_name = next((c['name'] for c in categories if c['id'] == cat_id), f"Cat_{cat_id}")
         random.shuffle(img_list)
         
         n_total = len(img_list)
-        n_train = int(n_total * train_ratio)
-        n_val = int(n_total * val_ratio)
+        
+        # Minimum gereksinim kontrolü
+        min_required = min_samples_per_split * 3  # train+val+test için
+        
+        if n_total < min_required:
+            # Çok az örnek varsa, tümünü train'e at
+            train_imgs.update(img_list)
+            low_sample_categories.append((cat_name, n_total))
+            
+            category_stats.append({
+                'name': cat_name,
+                'total': n_total,
+                'train': n_total,
+                'val': 0,
+                'test': 0
+            })
+            continue
+        
+        # Normal split + minimum garanti
+        n_train = max(min_samples_per_split, int(n_total * train_ratio))
+        n_val = max(min_samples_per_split, int(n_total * val_ratio))
+        
+        # Kalan herşey test'e
+        remaining = n_total - n_train - n_val
+        
+        # Eğer test için yeterli kalmadıysa, train'den al
+        if remaining < min_samples_per_split:
+            shortage = min_samples_per_split - remaining
+            n_train = max(min_samples_per_split, n_train - shortage)
         
         cat_train = img_list[:n_train]
         cat_val = img_list[n_train:n_train + n_val]
@@ -184,11 +212,17 @@ def stratified_split_with_image_moving(
     # İstatistikleri sırala ve göster
     category_stats.sort(key=lambda x: x['total'], reverse=True)
     
+    print(" Kategori Dağılımı:")
     for stat in category_stats:
         if stat['total'] >= 10:
             print(f"{stat['name']:30s} → Train: {stat['train']:4d}, Val: {stat['val']:4d}, Test: {stat['test']:4d}")
     
-    print(f"\n✅ Toplam dağılım:")
+    if low_sample_categories:
+        print(f"\n  Az örnekli kategoriler (sadece train'e eklendi):")
+        for cat_name, count in sorted(low_sample_categories, key=lambda x: x[1]):
+            print(f"  - {cat_name}: {count} örnek")
+    
+    print(f"\n Toplam dağılım:")
     print(f"   Train: {len(train_imgs)} resim")
     print(f"   Val:   {len(val_imgs)} resim")
     print(f"   Test:  {len(test_imgs)} resim")
@@ -199,11 +233,11 @@ def stratified_split_with_image_moving(
     overlap_val_test = val_imgs & test_imgs
     
     if overlap_train_val or overlap_train_test or overlap_val_test:
-        print("\n❌ HATA: Setler arasında HALA overlap var!")
+        print("\n HATA: Setler arasında HALA overlap var!")
         print(f"Train-Val: {len(overlap_train_val)}, Train-Test: {len(overlap_train_test)}, Val-Test: {len(overlap_val_test)}")
         raise Exception("Overlap problemi çözülemedi!")
     else:
-        print("\n✅ Setler arasında overlap YOK! Mükemmel!")
+        print("\n Setler arasında overlap YOK! Mükemmel!")
     
     # Output dizinlerini oluştur
     output_annotations_dir = Path(output_annotations_dir)
@@ -232,7 +266,7 @@ def stratified_split_with_image_moving(
     print("=" * 80)
     
     for split_name, split_img_ids in splits.items():
-        print(f"\n📁 {split_name.upper()} işleniyor...")
+        print(f"\n {split_name.upper()} işleniyor...")
         
         # Bu split'e ait image'ları filtrele
         split_images = []
@@ -262,7 +296,7 @@ def stratified_split_with_image_moving(
                     images_copied += 1
                     
                     if images_copied % 1000 == 0:
-                        print(f"   📸 {images_copied} resim kopyalandı...")
+                        print(f"    {images_copied} resim kopyalandı...")
                 else:
                     images_not_found.append(filename)
         
@@ -280,20 +314,20 @@ def stratified_split_with_image_moving(
         with open(output_path, 'w', encoding='utf-8') as f:
             json.dump(split_data, f, indent=2, ensure_ascii=False)
         
-        print(f"   ✅ Annotasyon: {output_path}")
-        print(f"   ✅ Resim kopyalandı: {images_copied}/{len(split_images)}")
-        print(f"   ✅ Annotasyon sayısı: {len(split_annotations)}")
+        print(f"   Annotasyon: {output_path}")
+        print(f"   Resim kopyalandı: {images_copied}/{len(split_images)}")
+        print(f"   Annotasyon sayısı: {len(split_annotations)}")
         
         if images_not_found:
-            print(f"   ⚠️  Bulunamayan resim sayısı: {len(images_not_found)}")
+            print(f"   Bulunamayan resim sayısı: {len(images_not_found)}")
             if len(images_not_found) <= 10:
                 for fn in images_not_found:
                     print(f"      - {fn}")
     
     print("\n" + "=" * 80)
-    print("✅ STRATIFIED SPLIT VE RESİM KOPYALAMA TAMAMLANDI!")
+    print("STRATIFIED SPLIT VE RESİM KOPYALAMA TAMAMLANDI!")
     print("=" * 80)
-    print(f"\n📂 Yeni dataset yapısı:")
+    print(f"\nYeni dataset yapısı:")
     print(f"   {output_images_dir}/train/")
     print(f"   {output_images_dir}/val/")
     print(f"   {output_images_dir}/test/")
@@ -325,7 +359,7 @@ if __name__ == "__main__":
     print("ADIM 2: Stratified split yap ve resimleri organize et")
     print("=" * 80)
     
-    stratified_split_with_image_moving(
+    stratified_split_with_minimum_samples(
         input_json_path=merged_path,
         source_images_dir=r"D:\Desktop\Bitirme\NutriGame\object_detection\finetuning\rtdetr\data",
         output_annotations_dir=r"D:\Desktop\Bitirme\NutriGame\object_detection\finetuning\rtdetr\data_stratified\annotations",
@@ -333,5 +367,6 @@ if __name__ == "__main__":
         train_ratio=0.8,
         val_ratio=0.1,
         test_ratio=0.1,
+        min_samples_per_split=1,
         random_seed=42
     )

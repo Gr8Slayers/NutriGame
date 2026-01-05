@@ -184,5 +184,5 @@ def check_category_consistency(dataset_path):
 
 if __name__ == "__main__":
     # NutriGame projesindeki data klasörü
-    dataset_path = Path(r"D:\Desktop\Bitirme\NutriGame\object_detection\finetuning\rtdetr\data")
+    dataset_path = Path(r"D:\Desktop\Bitirme\NutriGame\object_detection\finetuning\rtdetr\data_stratified")
     check_category_consistency(dataset_path)

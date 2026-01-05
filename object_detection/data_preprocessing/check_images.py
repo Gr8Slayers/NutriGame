@@ -114,5 +114,5 @@ def check_images(dataset_path):
 
 
 if __name__ == "__main__":
-    dataset_path = r"D:\Desktop\Bitirme\object_detection\data\dataset\merged_fixed"
+    dataset_path = r"D:\Desktop\Bitirme\NutriGame\object_detection\finetuning\rtdetr\data_stratified"
     results = check_images(dataset_path)
