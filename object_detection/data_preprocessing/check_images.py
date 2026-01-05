@@ -13,7 +13,7 @@ def check_images(dataset_path):
     """
     
     dataset_path = Path(dataset_path)
-    splits = ['train', 'test', 'valid']
+    splits = ['train', 'test', 'val']
     
     results = {
         'total_images': 0,

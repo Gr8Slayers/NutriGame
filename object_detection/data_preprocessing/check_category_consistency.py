@@ -11,7 +11,7 @@ def check_category_consistency(dataset_path):
     """
     
     dataset_path = Path(dataset_path)
-    splits = ['train', 'test', 'valid']
+    splits = ['train', 'test', 'val']
     
     split_data = {}
     
@@ -22,7 +22,7 @@ def check_category_consistency(dataset_path):
     
     # Her split'ten kategori bilgilerini topla
     for split in splits:
-        annotation_file = dataset_path / f"_{split}.json"
+        annotation_file = dataset_path / "annotations" / f"instances_{split}.json"
         
         if not annotation_file.exists():
             print(f"⚠️  {split} bulunamadı!")
@@ -89,7 +89,7 @@ def check_category_consistency(dataset_path):
     for cat_id in sorted(train_cats):
         cat_name = split_data['train']['categories'][cat_id]
         in_test = cat_id in split_data['test']['categories']
-        in_valid = cat_id in split_data['valid']['categories']
+        in_valid = cat_id in split_data['val']['categories']
         
         if in_test and in_valid:
             categories_in_all.append(cat_id)
@@ -129,7 +129,7 @@ def check_category_consistency(dataset_path):
     for cat_id, train_count in train_top:
         cat_name = split_data['train']['categories'][cat_id]
         test_count = split_data['test']['category_counts'].get(cat_id, 0)
-        valid_count = split_data['valid']['category_counts'].get(cat_id, 0)
+        valid_count = split_data['val']['category_counts'].get(cat_id, 0)
         
         print(f"{cat_name:<30} {train_count:<10} {test_count:<10} {valid_count:<10}")
     
@@ -138,7 +138,7 @@ def check_category_consistency(dataset_path):
     print("EKSİK KATEGORİ ANALİZİ")
     print("=" * 80)
     
-    for split in ['test', 'valid']:
+    for split in ['test', 'val']:
         missing_cats = []
         for cat_id in train_cats:
             cat_name = split_data['train']['categories'][cat_id]
@@ -164,11 +164,11 @@ def check_category_consistency(dataset_path):
     for cat_id, train_count in train_top[:10]:
         cat_name = split_data['train']['categories'][cat_id]
         test_count = split_data['test']['category_counts'].get(cat_id, 0)
-        valid_count = split_data['valid']['category_counts'].get(cat_id, 0)
+        valid_count = split_data['val']['category_counts'].get(cat_id, 0)
         
         train_ratio = (train_count / split_data['train']['total_annotations']) * 100
         test_ratio = (test_count / split_data['test']['total_annotations']) * 100 if test_count > 0 else 0
-        valid_ratio = (valid_count / split_data['valid']['total_annotations']) * 100 if valid_count > 0 else 0
+        valid_ratio = (valid_count / split_data['val']['total_annotations']) * 100 if valid_count > 0 else 0
         
         print(f"{cat_name:<30}")
         print(f"  Train: {train_ratio:>5.2f}% | Test: {test_ratio:>5.2f}% | Valid: {valid_ratio:>5.2f}%")

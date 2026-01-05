@@ -13,7 +13,7 @@ def check_annotations(dataset_path):
     """
     
     dataset_path = Path(dataset_path)
-    splits = ['train', 'test', 'valid']
+    splits = ['train', 'test', 'val']
     
     results = {
         'total_annotations': 0,
@@ -28,7 +28,7 @@ def check_annotations(dataset_path):
     print(f"\nDataset yolu: {dataset_path}\n")
     
     for split in splits:
-        split_path = dataset_path / f"_{split}.json"
+        split_path = dataset_path / f"instances_{split}.json"
         
         if not split_path.exists():
             print(f"⚠️  {split} annotasyon dosyası bulunamadı: {split_path}")
@@ -162,5 +162,5 @@ def check_annotations(dataset_path):
 
 
 if __name__ == "__main__":
-    dataset_path = r"D:\Desktop\Bitirme\NutriGame\object_detection\finetuning\rtdetr\data"
+    dataset_path = r"D:\Desktop\Bitirme\NutriGame\object_detection\finetuning\rtdetr\data\annotations"
     results = check_annotations(dataset_path)

@@ -49,10 +49,10 @@ ENV/
 *.zip
 *.tar
 *.gz
-# *.jpg
-# *.jpeg
-# *.png
-# *.bmp
+*.jpg
+*.jpeg
+*.png
+*.bmp
 *.tiff
 *.mp4
 *.avi
