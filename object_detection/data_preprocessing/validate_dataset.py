@@ -203,12 +203,12 @@ def validate_coco_dataset(json_path, image_dir):
 
 
 if __name__ == "__main__":
-    base_dir = r"D:\Datalarım\Desktop\Bitirme\object_detection\data\dataset\merged"
+    base_dir = r"D:\Desktop\Bitirme\NutriGame\object_detection\finetuning\rtdetr\data"
     
     datasets = [
-        ("instances_train.json", "train"),
-        ("instances_test.json", "test"),
-        ("instances_val.json", "valid")
+        ("annotations/instances_train.json", "train"),
+        ("annotations/instances_test.json", "test"),
+        ("annotations/instances_val.json", "valid")
     ]
     
     all_valid = True
