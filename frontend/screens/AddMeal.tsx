@@ -171,6 +171,7 @@ export default function AddMeal({ route, navigation }: Props) {
   };
 
   //seçilen yemekler backende send edilir.
+  //tarih konusunda bir sorun var ben o tarihe save etmek isterken bir önceki güne save ediyor??????
   const handleAddMeal = async (items?: FoodItem[]) => {
     const token = await SecureStore.getItemAsync('userToken');
     const itemsToSend = items || selectedItems;
@@ -332,7 +333,7 @@ export default function AddMeal({ route, navigation }: Props) {
                 </TouchableOpacity>
               )}
             </View>
-            <TouchableOpacity style={styles.scanButton}>
+            <TouchableOpacity style={styles.scanButton} onPress={() => navigation.navigate("ScanFood")}>
               <Ionicons name="scan" size={20} style={styles.scanButtonIcon} />
               <Text style={styles.scanButtonText}>Scan</Text>
             </TouchableOpacity>

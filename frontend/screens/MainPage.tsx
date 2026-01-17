@@ -252,21 +252,21 @@ function MainPage({ navigation }: Props) {
                 </View>
             </ScrollView>
             <View style={styles.menuContainer}>
-                <TouchableOpacity style={styles.recipeButton}>
+                <TouchableOpacity style={styles.recipeButton} onPress={() => navigation.navigate("ScanFood")}>
                     <Image
                         source={require("../assets/spoon.png")}
                         style={{ width: 70, height: 70 }}
                         resizeMode="contain"
                     />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.chatButton}>
+                <TouchableOpacity style={styles.chatButton} onPress={() => navigation.navigate("Chatbot")}>
                     <Image
                         source={require("../assets/plate.png")}
                         style={{ width: 100, height: 100 }}
                         resizeMode="contain"
                     />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.recipeButton}>
+                <TouchableOpacity style={styles.recipeButton}   >
                     <Image
                         source={require("../assets/fork.png")}
                         style={{ width: 70, height: 70 }}

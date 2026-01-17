@@ -14,6 +14,8 @@ import MainPage from './screens/MainPage';
 import AddMeal from './screens/AddMeal';
 import AddWater from './screens/AddWater';
 import Menu from './screens/Menu';
+import Chatbot from './screens/Chatbot';
+import ScanFood from './screens/ScanFood';
 
 interface UpdatedMealParams {
   updatedMeal: {
@@ -52,6 +54,8 @@ export type RootStackParamList = {
   AddMeal: { selectedDate: string, type: string };
   AddWater: { selectedDate: string, type: string };
   Menu: undefined;
+  Chatbot: undefined;
+  ScanFood: undefined;
 };
 
 const theme = {
@@ -115,6 +119,8 @@ export default function App() {
           {isAuthenticated ? (
             <>
               <Stack.Screen name="MainPage" component={MainPage} initialParams={undefined} />
+              <Stack.Screen name="Chatbot" component={Chatbot} />
+              <Stack.Screen name="ScanFood" component={ScanFood} />
               <Stack.Screen name="AddMeal" component={AddMeal} />
               <Stack.Screen name="Menu" component={Menu} />
             </>
@@ -126,6 +132,8 @@ export default function App() {
               <Stack.Screen name="SignUpEnterData" component={SignUpEnterData} />
               <Stack.Screen name="CreateAvatar" component={CreateAvatar} />
               <Stack.Screen name="MainPage" component={MainPage} initialParams={undefined} />
+              <Stack.Screen name="Chatbot" component={Chatbot} />
+              <Stack.Screen name="ScanFood" component={ScanFood} />
               <Stack.Screen name="AddMeal" component={AddMeal} />
               <Stack.Screen name="AddWater" component={AddWater} />
               <Stack.Screen name="Menu" component={Menu} />

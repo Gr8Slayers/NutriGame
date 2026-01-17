@@ -3,6 +3,7 @@ import { View, Text, Image, TouchableOpacity, Alert, ActivityIndicator } from 'r
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store';
 import { Ionicons } from '@expo/vector-icons';
+import LottieView from 'lottie-react-native';
 import { IP_ADDRESS } from "@env";
 import styles from '../styles/Menu';
 
@@ -139,7 +140,12 @@ export default function Menu() {
                         <Text style={styles.streakValue}>{0 || 0}</Text>
                     </View>
                     <View style={styles.streakIconContainer}>
-                        <Ionicons name="flame" size={30} color="#f7e5c5" />
+                        <LottieView
+                            source={require('../assets/streak.json')}
+                            autoPlay
+                            loop
+                            style={{ width: 40, height: 40 }}
+                        />
                     </View>
                 </View>
             </View>
