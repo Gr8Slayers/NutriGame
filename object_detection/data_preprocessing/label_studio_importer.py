@@ -1,3 +1,10 @@
+# DEĞERLER - BUNLARI DEĞİŞTİR
+PROJECT_TITLE = "NutriGame Food Detection"
+IMAGES_PATH = r"D:\Desktop\Bitirme\NutriGame\object_detection\finetuning\rtdetr\data\train"
+ANNOTATIONS_PATH = r"D:\Desktop\Bitirme\NutriGame\object_detection\finetuning\rtdetr\data\annotations\instances_train.json"
+PORT = "8080"
+TOKEN = "your_token_here"  # Label Studio'dan al
+
 import argparse
 import json
 import os
@@ -5,7 +12,7 @@ import base64
 from label_studio_sdk import Client
 
 
-def coco_ann_importer(images_path, annotations_path, port, token):
+def coco_ann_importer(project_title, images_path, annotations_path, port, token):
     """
     COCO formatındaki annotasyonları Label Studio'ya import eder.
     """
@@ -159,32 +166,25 @@ def coco_ann_importer(images_path, annotations_path, port, token):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description='COCO formatındaki annotasyonları Label Studio\'ya import eder.'
-    )
+    # Direkt değerleri buraya gir
+    project_title = "NutriGame Food Detection"
+    images_path = r"D:\Desktop\Bitirme\NutriGame\object_detection\finetuning\rtdetr\data\train"
+    annotations_path = r"D:\Desktop\Bitirme\NutriGame\object_detection\finetuning\rtdetr\data\annotations\instances_train.json"
+    port = "8080"
+    token = "your_token_here"  # Label Studio'dan alacağın token
     
-    parser.add_argument('--images_path', type=str, required=True,
-                       help='Resimlerin bulunduğu klasör yolu')
-    parser.add_argument('--annotations_path', type=str, required=True,
-                       help='COCO formatındaki annotasyon dosyasının yolu')
-    parser.add_argument('--port', type=str, required=True,
-                       help='Label Studio port numarası')
-    parser.add_argument('--token', type=str, required=True,
-                       help='Label Studio API token')
-    
-    args = parser.parse_args()
-    
-    print(f"Images Path: {args.images_path}")
-    print(f"Annotations Path: {args.annotations_path}")
-    print(f"Port: {args.port}")
-    print("Token: ***")
+    print(f"📂 Images Path: {images_path}")
+    print(f"📝 Annotations Path: {annotations_path}")
+    print(f"🌐 Port: {port}")
+    print(f"🏷️  Project: {project_title}")
     print("-" * 50)
     
     coco_ann_importer(
-        images_path=args.images_path,
-        annotations_path=args.annotations_path,
-        port=args.port,
-        token=args.token
+        project_title=project_title,
+        images_path=images_path,
+        annotations_path=annotations_path,
+        port=port,
+        token=token
     )
 
 
