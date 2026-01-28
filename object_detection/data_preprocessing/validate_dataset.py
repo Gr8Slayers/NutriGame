@@ -1,7 +1,5 @@
 import json
 import os
-from PIL import Image
-import numpy as np
 
 def validate_coco_dataset(json_path, image_dir):
     """COCO veri setini kapsamlı şekilde doğrula"""
@@ -29,15 +27,15 @@ def validate_coco_dataset(json_path, image_dir):
     expected_ids = list(range(len(cat_ids)))
     missing_ids = [i for i in expected_ids if i not in cat_ids]
     if missing_ids:
-        print(f"   ❌ HATA: Eksik ID'ler: {missing_ids}")
+        print(f"    HATA: Eksik ID'ler: {missing_ids}")
     else:
-        print(f"   ✅ ID'ler ardışık (0-{max(cat_ids)})")
+        print(f"    ID'ler ardışık (0-{max(cat_ids)})")
     
     # Duplicate kontrolü
     if len(cat_ids) != len(set(cat_ids)):
-        print(f"   ❌ HATA: Duplicate kategori ID'leri var!")
+        print(f"    HATA: Duplicate kategori ID'leri var!")
     else:
-        print(f"   ✅ Duplicate yok")
+        print(f"    Duplicate yok")
     
     # 2. Annotation kategori ID kontrolü
     print("\n2. ANNOTATION KATEGORI ID KONTROLÜ")
@@ -52,21 +50,21 @@ def validate_coco_dataset(json_path, image_dir):
         # Geçersiz ID kontrolü
         invalid_anns = [a for a in annotations if a['category_id'] < 0 or a['category_id'] > max(cat_ids)]
         if invalid_anns:
-            print(f"   ❌ HATA: {len(invalid_anns)} geçersiz category_id bulundu!")
+            print(f"    HATA: {len(invalid_anns)} geçersiz category_id bulundu!")
             print(f"   İlk 5 geçersiz:", invalid_anns[:5])
         else:
-            print(f"   ✅ Tüm category_id'ler geçerli aralıkta (0-{max(cat_ids)})")
+            print(f"    Tüm category_id'ler geçerli aralıkta (0-{max(cat_ids)})")
         
         # Kullanılmayan kategori kontrolü
         used_cat_ids = set(ann_cat_ids)
         unused_cats = [c for c in categories if c['id'] not in used_cat_ids]
         if unused_cats:
-            print(f"   ⚠️  Uyarı: {len(unused_cats)} kategori hiç kullanılmamış")
+            print(f"     Uyarı: {len(unused_cats)} kategori hiç kullanılmamış")
             print(f"   Kullanılmayan ilk 5: {[c['name'] for c in unused_cats[:5]]}")
         else:
-            print(f"   ✅ Tüm kategoriler en az bir kez kullanılmış")
+            print(f"    Tüm kategoriler en az bir kez kullanılmış")
     else:
-        print(f"   ❌ HATA: Hiç annotation yok!")
+        print(f"    HATA: Hiç annotation yok!")
     
     # 3. Bounding box kontrolü
     print("\n3. BOUNDING BOX KONTROLÜ")
@@ -109,17 +107,17 @@ def validate_coco_dataset(json_path, image_dir):
                 bbox_issues.append({'ann_id': ann['id'], 'issue': 'Zero area', 'bbox': bbox})
     
     if nan_issues:
-        print(f"   ❌ HATA: {len(nan_issues)} annotation'da NaN değer var!")
+        print(f"    HATA: {len(nan_issues)} annotation'da NaN değer var!")
         print(f"   İlk 5 NaN annotation ID: {nan_issues[:5]}")
     else:
-        print(f"   ✅ NaN değer yok")
+        print(f"    NaN değer yok")
     
     if bbox_issues:
-        print(f"   ❌ HATA: {len(bbox_issues)} bounding box sorunu bulundu!")
+        print(f"    HATA: {len(bbox_issues)} bounding box sorunu bulundu!")
         for issue in bbox_issues[:5]:
             print(f"      - Ann ID {issue['ann_id']}: {issue['issue']} - {issue.get('bbox', 'N/A')}")
     else:
-        print(f"   ✅ Tüm bounding box'lar geçerli")
+        print(f"    Tüm bounding box'lar geçerli")
     
     # 4. Image dosya kontrolü
     print("\n4. IMAGE DOSYA KONTROLÜ")
@@ -156,21 +154,21 @@ def validate_coco_dataset(json_path, image_dir):
         print(f"   ❌ HATA: {len(missing_images)} resim dosyası bulunamadı!")
         print(f"   İlk 5 eksik: {missing_images[:5]}")
     else:
-        print(f"   ✅ Kontrol edilen tüm resimler mevcut")
+        print(f"    Kontrol edilen tüm resimler mevcut")
     
     if corrupted_images:
-        print(f"   ❌ HATA: {len(corrupted_images)} resim bozuk!")
+        print(f"    HATA: {len(corrupted_images)} resim bozuk!")
         for item in corrupted_images[:3]:
             print(f"      - {item['file']}: {item['error']}")
     else:
-        print(f"   ✅ Kontrol edilen resimler açılabiliyor")
+        print(f"    Kontrol edilen resimler açılabiliyor")
     
     if dim_mismatch:
-        print(f"   ❌ HATA: {len(dim_mismatch)} resimde boyut uyumsuzluğu!")
+        print(f"    HATA: {len(dim_mismatch)} resimde boyut uyumsuzluğu!")
         for item in dim_mismatch[:3]:
             print(f"      - {item['file']}: Beklenen {item['expected']}, Gerçek {item['actual']}")
     else:
-        print(f"   ✅ Resim boyutları JSON ile eşleşiyor")
+        print(f"    Resim boyutları JSON ile eşleşiyor")
     
     # 5. Genel istatistikler
     print("\n5. GENEL İSTATİSTİKLER")
@@ -194,35 +192,41 @@ def validate_coco_dataset(json_path, image_dir):
     total_errors = len(missing_ids) + len(invalid_anns) + len(nan_issues) + len(bbox_issues) + len(missing_images) + len(corrupted_images) + len(dim_mismatch)
     
     if total_errors == 0:
-        print("✅ VERİ SETİ TAMAMEN GEÇERLİ - EĞİTİME HAZIR!")
+        print(" VERİ SETİ TAMAMEN GEÇERLİ - EĞİTİME HAZIR!")
     else:
-        print(f"❌ TOPLAM {total_errors} SORUN BULUNDU - LÜTFEN DÜZELTİN!")
+        print(f" TOPLAM {total_errors} SORUN BULUNDU - LÜTFEN DÜZELTİN!")
     print("="*60 + "\n")
     
     return total_errors == 0
 
 
 if __name__ == "__main__":
-    base_dir = r"D:\Desktop\Bitirme\NutriGame\object_detection\finetuning\rtdetr\data"
+    base_dir = r"D:\Desktop\Bitirme\NutriGame\object_detection\finetuning\data"
     
+    # Ana dataset'leri kontrol et
     datasets = [
-        ("annotations/instances_train.json", "train"),
-        ("annotations/instances_test.json", "test"),
-        ("annotations/instances_val.json", "valid")
+        "grouped_dataset.json",
+        "train_split.json", 
+        "val_split.json",
+        "test_split.json"
     ]
     
     all_valid = True
     
-    for json_file, img_dir in datasets:
-        json_path = os.path.join(base_dir, json_file)
-        image_dir = os.path.join(base_dir, img_dir)
+    for dataset_file in datasets:
+        json_path = os.path.join(base_dir, dataset_file)
         
-        is_valid = validate_coco_dataset(json_path, image_dir)
-        all_valid = all_valid and is_valid
+        if os.path.exists(json_path):
+            print(f"\n {dataset_file} kontrol ediliyor...")
+            is_valid = validate_coco_dataset(json_path)
+            all_valid = all_valid and is_valid
+        else:
+            print(f"\n  {dataset_file} bulunamadı!")
+            all_valid = False
     
     print("\n" + "="*60)
     if all_valid:
-        print("🎉 TÜM VERİ SETLERİ GEÇERLİ - EĞİTİME BAŞLAYABİLİRSİNİZ!")
+        print(" TÜM VERİ SETLERİ GEÇERLİ - EĞİTİME BAŞLAYABİLİRSİNİZ!")
     else:
-        print("⚠️  BAZI VERİ SETLERİNDE SORUN VAR - LÜTFEN KONTROL EDİN!")
+        print("  BAZI VERİ SETLERİNDE SORUN VAR - LÜTFEN KONTROL EDİN!")
     print("="*60)

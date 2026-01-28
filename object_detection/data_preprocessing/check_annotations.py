@@ -13,13 +13,20 @@ def check_annotations(dataset_path):
     """
     
     dataset_path = Path(dataset_path)
-    splits = ['train', 'test', 'val']
+    
+    # Yeni dataset dosya isimleri
+    dataset_files = [
+        'grouped_dataset.json',
+        'train_split.json', 
+        'val_split.json',
+        'test_split.json'
+    ]
     
     results = {
         'total_annotations': 0,
         'total_images': 0,
         'categories': {},
-        'splits': {}
+        'datasets': {}
     }
     
     print("=" * 80)
@@ -27,26 +34,26 @@ def check_annotations(dataset_path):
     print("=" * 80)
     print(f"\nDataset yolu: {dataset_path}\n")
     
-    for split in splits:
-        split_path = dataset_path / f"instances_{split}.json"
+    for dataset_file in dataset_files:
+        file_path = dataset_path / dataset_file
         
-        if not split_path.exists():
-            print(f"⚠️  {split} annotasyon dosyası bulunamadı: {split_path}")
+        if not file_path.exists():
+            print(f"⚠️  {dataset_file} bulunamadı: {file_path}")
             continue
         
-        print(f"\n📁 {split.upper()} annotasyonları kontrol ediliyor...")
+        print(f"\n📁 {dataset_file} kontrol ediliyor...")
         print("-" * 80)
         
         try:
-            with open(split_path, 'r', encoding='utf-8') as f:
+            with open(file_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             
             images = data.get('images', [])
             annotations = data.get('annotations', [])
             categories = data.get('categories', [])
             
-            # Split bilgilerini kaydet
-            split_info = {
+            # Dataset bilgilerini kaydet
+            dataset_info = {
                 'images': len(images),
                 'annotations': len(annotations),
                 'categories': len(categories),
@@ -162,5 +169,5 @@ def check_annotations(dataset_path):
 
 
 if __name__ == "__main__":
-    dataset_path = r"D:\Desktop\Bitirme\NutriGame\object_detection\finetuning\rtdetr\data\annotations"
+    dataset_path = r"D:\Desktop\Bitirme\NutriGame\object_detection\finetuning\data"
     results = check_annotations(dataset_path)
