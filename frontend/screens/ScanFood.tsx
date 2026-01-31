@@ -54,10 +54,10 @@ export default function ScanFood() {
                 <Image source={{ uri: photo }} style={styles.preview} />
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity style={styles.button} onPress={() => setPhoto(null)}>
-                        <Text style={styles.text}>Take New Photo</Text>
+                        <Text style={styles.text}>Retake</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={[styles.button, { backgroundColor: 'green' }]} onPress={() => Alert.alert("Gönderiliyor", "Backend'e gönderilecek...")}>
-                        <Text style={styles.text}>Scan</Text>
+                    <TouchableOpacity style={[styles.button, { backgroundColor: '#47dd7caf' }]} onPress={() => Alert.alert("Gönderiliyor", "Backend'e gönderilecek...")}>
+                        <Text style={styles.text}>Scan Food</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -78,7 +78,7 @@ export default function ScanFood() {
                 <View style={[styles.container, { backgroundColor: 'black' }]} />
             )}
 
-            <View style={styles.buttonContainer}>
+            <View style={styles.captureButtonContainer}>
                 <TouchableOpacity style={styles.captureButton} onPress={takePicture}>
                     <View style={styles.captureInner} />
                 </TouchableOpacity>
