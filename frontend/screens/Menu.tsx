@@ -6,6 +6,9 @@ import { Ionicons } from '@expo/vector-icons';
 import LottieView from 'lottie-react-native';
 import { IP_ADDRESS } from "@env";
 import styles from '../styles/Menu';
+import { RootStackParamList } from '../App';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { UserProfile } from '../types';
 
 const API_URL = `http://${IP_ADDRESS}:3000`;
 
@@ -53,15 +56,8 @@ const getAvatarSource = (path: string | undefined) => {
     }
 };
 
-interface UserProfile {
-    username: string;
-    email: string;
-    avatar_url?: string;
-    target_weight?: number;
-}
-
 export default function Menu() {
-    const navigation = useNavigation();
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -114,6 +110,7 @@ export default function Menu() {
         );
     }
 
+
     return (
         <View style={styles.container}>
             {/* Back Button */}
@@ -165,7 +162,7 @@ export default function Menu() {
 
             {/* Menu Options */}
             <View style={styles.menuList}>
-                <TouchableOpacity style={styles.menuItem} onPress={() => Alert.alert("Coming Soon", "Profile settings will be available soon!")}>
+                <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate("ProfileSettingsMenu", profile || { username: '', email: '' })}>
                     <View style={styles.menuIconBox}>
                         <Ionicons name="person-outline" size={20} color="#47dd7caf" />
                     </View>

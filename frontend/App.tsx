@@ -16,15 +16,10 @@ import AddWater from './screens/AddWater';
 import Menu from './screens/Menu';
 import Chatbot from './screens/Chatbot';
 import ScanFood from './screens/ScanFood';
+import ProfileSettingsMenu from './screens/ProfileSettingsMenu';
+import EditProfile from './screens/EditProfile';
+import { UserProfile, UpdatedMealParams } from './types';
 
-interface UpdatedMealParams {
-  updatedMeal: {
-    date: string;
-    type: string;
-    mealName: string;
-    calories: number;
-  };
-}
 // Navigation tipi
 export type RootStackParamList = {
   Login: undefined;
@@ -54,6 +49,8 @@ export type RootStackParamList = {
   AddMeal: { selectedDate: string, type: string };
   AddWater: { selectedDate: string, type: string };
   Menu: undefined;
+  ProfileSettingsMenu: UserProfile;
+  EditProfile: UserProfile;
   Chatbot: undefined;
   ScanFood: undefined;
 };
@@ -123,6 +120,8 @@ export default function App() {
               <Stack.Screen name="ScanFood" component={ScanFood} />
               <Stack.Screen name="AddMeal" component={AddMeal} />
               <Stack.Screen name="Menu" component={Menu} />
+              <Stack.Screen name="ProfileSettingsMenu" component={ProfileSettingsMenu} />
+              <Stack.Screen name="EditProfile" component={EditProfile} />
             </>
           ) : (
 
@@ -137,6 +136,8 @@ export default function App() {
               <Stack.Screen name="AddMeal" component={AddMeal} />
               <Stack.Screen name="AddWater" component={AddWater} />
               <Stack.Screen name="Menu" component={Menu} />
+              <Stack.Screen name="ProfileSettingsMenu" component={ProfileSettingsMenu} />
+              <Stack.Screen name="EditProfile" component={EditProfile} />
             </>
           )}
         </Stack.Navigator>

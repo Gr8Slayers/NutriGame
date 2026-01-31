@@ -4,9 +4,7 @@ import {
 } from 'react-native';
 import { useRoute, useFocusEffect } from '@react-navigation/native';
 import { useEffect } from 'react';
-import { Menu } from 'react-native-paper';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { RootStackParamList } from '../App';
 import styles from '../styles/MainPage';
 import CalorieCircle from '../components/calorieCircle';

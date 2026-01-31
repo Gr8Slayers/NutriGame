@@ -43,6 +43,7 @@ export default StyleSheet.create({
         shadowOpacity: 0.5,
         shadowRadius: 5,
         elevation: 10,
+        overflow: 'visible',
     },
     menuHeader: {
         flexDirection: 'row',
@@ -81,10 +82,10 @@ export default StyleSheet.create({
         color: '#ffffff',
     },
     menuButton: {
-        width: 40,
-        height: 40,
-        justifyContent: 'center',
-        alignItems: 'center',
+        position: 'absolute',
+        left: 20,
+        top: Platform.OS === 'ios' ? 40 : 20,
+        zIndex: 20,
     },
     newChatButton: {
         width: 40,
@@ -153,6 +154,13 @@ export default StyleSheet.create({
         paddingVertical: 10,
         borderBottomWidth: 1,
         borderBottomColor: 'rgba(255,255,255,0.05)',
+    },
+
+    backButton: {
+        position: 'absolute',
+        right: 20,
+        top: Platform.OS === 'ios' ? 40 : 20,
+        zIndex: 20,
     },
 
 });

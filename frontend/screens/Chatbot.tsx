@@ -1,8 +1,9 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { View, TouchableOpacity, ScrollView, Platform, KeyboardAvoidingView, Animated, Dimensions, Easing, Text, FlatList } from 'react-native';
+import { View, TouchableOpacity, ScrollView, Platform, KeyboardAvoidingView, Animated, Dimensions, Easing, Text, FlatList, Modal } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 import { GiftedChat, Avatar, IMessage, Bubble, MessageText, BubbleProps, MessageTextProps, InputToolbar, Composer, Send } from 'react-native-gifted-chat';
 import { Ionicons } from '@expo/vector-icons';
+
 import styles from '../styles/Chatbot';
 import { useNavigation } from '@react-navigation/native';
 
@@ -14,10 +15,13 @@ export default function Chatbot() {
     const [messages, setMessages] = useState<IMessage[]>([]);
     const navigation = useNavigation();
     const [showMenu, setShowMenu] = useState(false);
-    const [history, setHistory] = useState<any[]>([]);
+    const [history, setHistory] = useState<any[]>([]); //backende gönderilecek sohbet geçmişi
     const [chatID, setChatID] = useState<string | number | null>(null);
+    const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+    const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
 
     const slideAnim = React.useRef(new Animated.Value(-MENU_WIDTH)).current;
+
 
     const toggleMenu = () => {
         if (showMenu) {
@@ -176,7 +180,7 @@ export default function Chatbot() {
     const loadChat = (chat: any) => {
         setChatID(chat.id);
         setMessages(chat.messages);
-        setShowMenu(false);
+        toggleMenu();
     };
 
     const renderHistoryItem = ({ item }: { item: any }) => (
@@ -184,118 +188,213 @@ export default function Chatbot() {
             style={styles.historyItem}
             onPress={() => loadChat(item)}
         >
-            <Ionicons name="chatbubble-ellipses-outline" size={20} color="#ccc" style={{ marginRight: 10 }} />
-            <View style={{ flex: 1 }}>
-                <Text numberOfLines={1} style={{ color: 'white', fontWeight: 'bold' }}>
-                    {item.title || "Yeni Sohbet"}
-                </Text>
-                <Text style={{ color: '#aaa', fontSize: 10 }}>
-                    {new Date(item.createdAt).toLocaleDateString()}
-                </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <View style={{ flex: 1 }}>
+                    <Text numberOfLines={1} style={{ color: 'white', fontWeight: 'bold' }}>
+                        {item.title || "New Chat"}
+                    </Text>
+
+                    <Text style={{ color: '#aaa', fontSize: 10 }}>
+                        {new Date(item.createdAt).toLocaleDateString()}
+                    </Text>
+                </View>
+
+                <TouchableOpacity
+                    onPress={(e) => {
+                        e.stopPropagation();
+                        setSelectedChatId(item.id);
+                        setDeleteModalVisible(true);
+                    }}
+                    style={{ padding: 5 }}
+                >
+                    <Ionicons
+                        name="ellipsis-horizontal"
+                        size={24}
+                        color="#ffffff"
+                    />
+                </TouchableOpacity>
             </View>
         </TouchableOpacity>
     );
 
+    const deleteChat = (chatId: string) => {
+        setHistory((prevHistory) =>
+            prevHistory.filter((chat) => chat.id !== chatId)
+        );
+        setDeleteModalVisible(false);
+        setSelectedChatId(null);
+        openNewChat();
+    };
+
     const openNewChat = () => {
+        setChatID(null); // üstüne güncel mesajları kaydetmesin diye
         setMessages(setNewChat());
         toggleMenu();
     }
 
     return (
-        <View style={styles.container}>
-
-            {showMenu && (
-                //overlay katmanı oluşturuluyo kullancıı overlaye bastığında menü kapanır
+        <>
+            {/* Delete Chat Modal */}
+            <Modal
+                visible={deleteModalVisible}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setDeleteModalVisible(false)}
+            >
                 <TouchableOpacity
-                    style={styles.overlay}
+                    style={{
+                        flex: 1,
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}
                     activeOpacity={1}
-                    onPress={toggleMenu}
-                />
-            )}
+                    onPress={() => setDeleteModalVisible(false)}
+                >
+                    <View
+                        style={{
+                            backgroundColor: '#2c2c2e',
+                            borderRadius: 16,
+                            padding: 20,
+                            width: '80%',
+                            maxWidth: 300,
+                        }}
+                        onStartShouldSetResponder={() => true}
+                    >
+                        <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>
+                            Delete Chat
+                        </Text>
+                        <Text style={{ color: '#aaa', fontSize: 14, marginBottom: 20 }}>
+                            Are you sure you want to delete this chat? This action cannot be undone.
+                        </Text>
+                        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 10 }}>
+                            <TouchableOpacity
+                                onPress={() => setDeleteModalVisible(false)}
+                                style={{
+                                    paddingVertical: 10,
+                                    paddingHorizontal: 20,
+                                    borderRadius: 8,
+                                    backgroundColor: '#3a3a3c',
+                                }}
+                            >
+                                <Text style={{ color: 'white', fontWeight: '600' }}>Cancel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => selectedChatId && deleteChat(selectedChatId)}
+                                style={{
+                                    paddingVertical: 10,
+                                    paddingHorizontal: 20,
+                                    borderRadius: 8,
+                                    backgroundColor: '#ff3b30',
+                                }}
+                            >
+                                <Text style={{ color: 'white', fontWeight: '600' }}>Delete</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </TouchableOpacity>
+            </Modal>
+            <View style={styles.container}>
+                {showMenu && (
+                    //overlay katmanı oluşturuluyo kullancıı overlaye bastığında menü kapanır
+                    <TouchableOpacity
+                        style={styles.overlay}
+                        activeOpacity={1}
+                        onPress={toggleMenu}
+                    />
+                )}
 
-            <Animated.View style={[
-                styles.menuContainer,
-                {
-                    transform: [{ translateX: slideAnim }]
-                }
-            ]}>
-                <View style={styles.menuHeader}>
-                    <Text style={styles.menuTitle}>Menu</Text>
-                    <TouchableOpacity onPress={toggleMenu} style={styles.closeButton}>
-                        <Ionicons name="close" size={24} color="#ffffff" />
+
+                <Animated.View style={[
+                    styles.menuContainer,
+                    {
+                        transform: [{ translateX: slideAnim }],
+                        zIndex: 100,
+                    }
+                ]}>
+                    <View style={styles.menuHeader}>
+                        <Text style={styles.menuTitle}>Menu</Text>
+                        <TouchableOpacity onPress={toggleMenu} style={styles.closeButton}>
+                            <Ionicons name="close" size={24} color="#ffffff" />
+                        </TouchableOpacity>
+
+                    </View>
+
+                    <TouchableOpacity style={styles.menuItem} onPress={openNewChat}>
+                        <Ionicons name="add-circle-outline" size={24} color="#ffffff" style={styles.menuIcon} />
+                        <Text style={styles.menuText}>New Chat</Text>
+                    </TouchableOpacity>
+                    <View style={styles.menuItem}>
+                        <Ionicons name="chatbubble-ellipses-outline" size={24} color="#ffffff" style={styles.menuIcon} />
+                        <Text style={styles.menuSubTitle}>History</Text>
+                    </View>
+                    <FlatList
+                        data={history}
+                        renderItem={renderHistoryItem}
+
+                        style={{ overflow: 'visible' }}
+                        contentContainerStyle={{ paddingBottom: 20 }}
+                        keyboardShouldPersistTaps="always"
+                        ListEmptyComponent={() => (
+                            <View style={{ padding: 20, alignItems: 'center' }}>
+                                <Text style={{ color: '#666' }}>No history.</Text>
+                            </View>
+                        )}
+                    />
+
+                </Animated.View>
+
+                <View style={styles.chatContainer}>
+
+                    <TouchableOpacity style={styles.menuButton} onPress={toggleMenu}>
+                        <Ionicons name="menu" size={24} color="#ffffff" />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                        <Ionicons name="arrow-back" size={24} color="#ffffff" />
                     </TouchableOpacity>
 
-                </View>
+                    <KeyboardAvoidingView
+                        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                        style={{ flex: 1, }}
+                        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+                    >
+                        <GiftedChat
+                            messages={messages}
+                            onSend={messages => onSend(messages)}
+                            user={{ _id: 1 }}
+                            renderBubble={renderBubble}
+                            renderMessageText={renderMessageText}
+                            renderInputToolbar={renderInputToolbar}
+                            renderComposer={renderComposer}
+                            renderSend={renderSend}
+                            minInputToolbarHeight={60}
+                            renderAvatar={(props) => {
+                                return (
+                                    <Avatar
+                                        {...props}
+                                        containerStyle={{
 
-                <TouchableOpacity style={styles.menuItem} onPress={openNewChat}>
-                    <Ionicons name="add-circle-outline" size={24} color="#ffffff" style={styles.menuIcon} />
-                    <Text style={styles.menuText}>New Chat</Text>
-                </TouchableOpacity>
+                                            left: { marginRight: 0 },
+                                            right: {}
+                                        }}
+                                        imageStyle={{
+                                            left: {
+                                                width: 50,
+                                                height: 50,
+                                                borderRadius: 25,
+                                            },
+                                            right: {},
+                                        }}
 
-                <View style={styles.menuItem}>
-                    <Text style={styles.menuSubTitle}>History</Text>
-                    <ScrollView>
-                        <FlatList
-                            data={history}
-                            renderItem={renderHistoryItem}
 
-                            ListEmptyComponent={() => (
-                                <View style={{ padding: 20, alignItems: 'center' }}>
-                                    <Text style={{ color: '#666' }}>No history.</Text>
-                                </View>
-                            )}
+                                    />
+                                );
+                            }}
                         />
-                    </ScrollView>
+                    </KeyboardAvoidingView>
                 </View>
-
-            </Animated.View>
-
-            <View style={styles.chatContainer}>
-                <TouchableOpacity style={styles.menuButton} onPress={toggleMenu}>
-                    <Ionicons name="menu" size={24} color="#ffffff" />
-                </TouchableOpacity>
-
-                <KeyboardAvoidingView
-                    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-                    style={{ flex: 1, }}
-                    keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
-                >
-                    <GiftedChat
-                        messages={messages}
-                        onSend={messages => onSend(messages)}
-                        user={{ _id: 1 }}
-                        renderBubble={renderBubble}
-                        renderMessageText={renderMessageText}
-                        renderInputToolbar={renderInputToolbar}
-                        renderComposer={renderComposer}
-                        renderSend={renderSend}
-                        minInputToolbarHeight={60}
-                        renderAvatar={(props) => {
-                            return (
-                                <Avatar
-                                    {...props}
-                                    containerStyle={{
-
-                                        left: { marginRight: 0 },
-                                        right: {}
-                                    }}
-                                    imageStyle={{
-                                        left: {
-                                            width: 50,
-                                            height: 50,
-                                            borderRadius: 25,
-                                        },
-                                        right: {},
-                                    }}
-
-
-                                />
-                            );
-                        }}
-                    />
-                </KeyboardAvoidingView>
-            </View>
-        </View >
+            </View >
+        </>
     );
 }
 
