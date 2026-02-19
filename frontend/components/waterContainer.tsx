@@ -71,7 +71,7 @@ const WaterWave = ({ progress, maxCapacity = 3000 }: WaterWaveProps) => {
           <Group clip={Skia.Path.Make().addCircle(R, R, R)}>
 
             {/* Background - Darker deep water look */}
-            <Circle cx={R} cy={R} r={R} color="#1a1a1a" />
+            <Circle cx={R} cy={R} r={R} color="#b19f9fff" />
 
             {/* Back Wave - Darker */}
             <Path path={path1} color="#1e3a8a" opacity={0.5} />
@@ -88,12 +88,6 @@ const WaterWave = ({ progress, maxCapacity = 3000 }: WaterWaveProps) => {
               />
             </Path>
 
-            {/* Glass Reflection / Glare */}
-            <Circle cx={R} cy={R} r={R} style="stroke" strokeWidth={2} color="rgba(255,255,255,0.1)" />
-            <Path
-              path={Skia.Path.Make().addOval({ x: R - 80, y: 40, width: 160, height: 60 })}
-              color="rgba(255,255,255,0.1)"
-            />
 
             {/* Meter Ticks */}
             {ticks.map((tick, index) => (
@@ -135,11 +129,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginVertical: 20,
+
   },
   circleContainer: {
     width: SIZE,
     height: SIZE,
     position: 'relative',
+
+
   },
   textOverlay: {
     position: 'absolute',

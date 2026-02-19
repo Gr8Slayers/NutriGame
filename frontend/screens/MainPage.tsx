@@ -116,9 +116,16 @@ function MainPage({ navigation }: Props) {
     return (
         <View style={styles.container}>
 
-            <TouchableOpacity style={styles.menuButton} onPress={() => navigation.navigate('Menu')}>
-                <Ionicons name="menu" size={20} color="#5c544d" style={styles.menuButton} />
-            </TouchableOpacity>
+            {/* Header */}
+            <View style={styles.header}>
+
+                <Text style={styles.headerTitle}>Main Page</Text>
+                <TouchableOpacity style={styles.menuButton} onPress={() => navigation.navigate('Menu')}>
+                    <Ionicons name="menu" size={24} color="#333" style={styles.menuButton} />
+                </TouchableOpacity>
+                <View style={styles.placeholder} />
+
+            </View>
 
             <Animated.View
                 style={[

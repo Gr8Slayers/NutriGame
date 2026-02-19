@@ -1,0 +1,246 @@
+import { StyleSheet, Platform, StatusBar, Dimensions } from 'react-native';
+
+const { height, width } = Dimensions.get('window');
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#473C33',
+        paddingTop: 0,
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
+        paddingTop: 50,
+        paddingBottom: 20,
+        backgroundColor: '#ABC270',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.5,
+        shadowRadius: 5,
+        elevation: 10,
+        zIndex: 10,
+    },
+    backButton: {
+        padding: 8,
+    },
+    menuButton: {
+        position: 'absolute',
+        right: 10,
+        top: Platform.OS === 'ios' ? 30 : 20,
+        marginLeft: 'auto',
+        zIndex: 20,
+
+    },
+    headerTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#333',
+    },
+    placeholder: {
+        width: 40,
+    },
+    dateText: {
+        textAlign: 'center',
+        color: '#ffffffff',
+        fontSize: 16,
+        padding: 10,
+        marginTop: 10,
+    },
+    waterContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    portionContainer: {
+        paddingHorizontal: 20,
+        marginTop: 20,
+    },
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#ffffffff',
+        marginBottom: 15,
+    },
+    portionGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+    },
+    portionButton: {
+        width: '48%',
+        backgroundColor: '#ABC270',
+        borderRadius: 15,
+        padding: 20,
+        marginBottom: 15,
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.5,
+        shadowRadius: 5,
+        elevation: 10,
+    },
+    portionButtonPressed: {
+        backgroundColor: '#e3f2fd',
+        borderColor: '#2196F3',
+    },
+    portionIcon: {
+        fontSize: 40,
+        marginBottom: 8,
+    },
+    portionName: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#ffffffff',
+        marginBottom: 4,
+    },
+    portionAmount: {
+        fontSize: 14,
+        color: '#ffffffff',
+    },
+    showDetailButtonContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    showDetailText: {
+        color: '#463C33',
+        fontWeight: 'bold',
+        fontSize: 14,
+    },
+    showDetailButton: {
+        marginTop: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#fc8500',
+        paddingVertical: 8,
+        paddingHorizontal: 15,
+        borderRadius: 20,
+        gap: 5,
+        elevation: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+    },
+    saveButton: {
+        backgroundColor: '#4CAF50',
+        marginHorizontal: 20,
+        marginTop: 20,
+        marginBottom: 30,
+        padding: 18,
+        borderRadius: 15,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 4,
+    },
+    saveButtonDisabled: {
+        backgroundColor: '#ccc',
+    },
+    saveButtonText: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    currentAmount: {
+        alignItems: 'center',
+        marginTop: 10,
+    },
+    currentAmountText: {
+        fontSize: 16,
+        color: '#ffffffff',
+        marginBottom: 5,
+    },
+    currentAmountValue: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#ffffffff',
+    },
+    // --- POPUP STİLLERİ ---
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)', // Arka planı karart
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContent: {
+        width: '85%',
+        maxHeight: '60%',
+        backgroundColor: '#f8d599ff',
+        borderRadius: 20,
+        padding: 20,
+        elevation: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 15,
+        borderBottomWidth: 1,
+        elevation: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        paddingBottom: 10,
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#473C33',
+    },
+    modalScroll: {
+        marginBottom: 10,
+    },
+    modalItem: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#473C33',
+    },
+    modalItemName: {
+        fontSize: 16,
+        color: '#473C33',
+        fontWeight: '500',
+    },
+    modalItemCal: {
+        fontSize: 14,
+        color: '#888',
+    },
+    modalFooter: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginTop: 10,
+        paddingTop: 10,
+        borderTopWidth: 1,
+        borderTopColor: '#473C33',
+    },
+    modalTotalText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#fc8500',
+    },
+    modalSaveButton: {
+        backgroundColor: '#473C33',
+        paddingHorizontal: 20,
+        paddingVertical: 8,
+        borderRadius: 15,
+    },
+    modalSaveText: {
+        color: '#fff',
+        fontWeight: 'bold',
+    },
+});
+
+export default styles;

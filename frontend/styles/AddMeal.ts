@@ -8,11 +8,32 @@ export default StyleSheet.create({
     backgroundColor: '#473C33',
     paddingTop: 0,
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 50,
+    paddingBottom: 20,
+    backgroundColor: '#ABC270',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
+    elevation: 10,
+    zIndex: 10,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  placeholder: {
+    width: 40,
+  },
   backButton: {
-    position: 'absolute',
-    left: 10,
-    top: Platform.OS === 'ios' ? 30 : 20,
-    zIndex: 20,
+    padding: 8,
+
   },
   menuButton: {
     position: 'absolute',

@@ -267,18 +267,27 @@ export default function AddMeal({ route, navigation }: Props) {
       style={{ flex: 1, backgroundColor: '#473C33' }}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
     >
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back" size={24} color="#333" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Add {type}</Text>
+        <TouchableOpacity style={styles.menuButton} onPress={() => navigation.navigate('Menu')}>
+          <Ionicons name="menu" size={24} color="#333" style={styles.menuButton} />
+        </TouchableOpacity>
+        <View style={styles.placeholder} />
+      </View>
       <ScrollView
         contentContainerStyle={{ paddingBottom: 100 }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.container}>
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={20} color="#5c544d" style={styles.backButton} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.menuButton} onPress={() => navigation.navigate('Menu')}>
-            <Ionicons name="menu" size={20} color="#5c544d" style={styles.menuButton} />
-          </TouchableOpacity>
+
 
 
           <View style={styles.mainChart}>
