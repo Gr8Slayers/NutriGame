@@ -294,7 +294,10 @@ export default function Chatbot() {
                     </View>
                 </TouchableOpacity>
             </Modal>
+
+
             <View style={styles.container}>
+
                 {showMenu && (
                     //overlay katmanı oluşturuluyo kullancıı overlaye bastığında menü kapanır
                     <TouchableOpacity
@@ -346,12 +349,20 @@ export default function Chatbot() {
 
                 <View style={styles.chatContainer}>
 
-                    <TouchableOpacity style={styles.menuButton} onPress={toggleMenu}>
-                        <Ionicons name="menu" size={24} color="#ffffff" />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                        <Ionicons name="arrow-back" size={24} color="#ffffff" />
-                    </TouchableOpacity>
+                    {/* Header */}
+                    <View style={styles.header}>
+                        <TouchableOpacity style={styles.menuButton} onPress={toggleMenu}>
+                            <Ionicons name="menu" size={24} color="#333" />
+                        </TouchableOpacity>
+
+                        <Text style={styles.headerTitle}>NutriCoach</Text>
+                        <TouchableOpacity
+                            style={styles.backButton}
+                            onPress={() => navigation.goBack()}
+                        >
+                            <Ionicons name="arrow-back" size={24} color="#333" />
+                        </TouchableOpacity>
+                    </View>
 
                     <KeyboardAvoidingView
                         behavior={Platform.OS === 'ios' ? 'padding' : undefined}

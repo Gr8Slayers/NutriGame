@@ -18,6 +18,7 @@ import Chatbot from './screens/Chatbot';
 import ScanFood from './screens/ScanFood';
 import ProfileSettingsMenu from './screens/ProfileSettingsMenu';
 import EditProfile from './screens/EditProfile';
+import SocialFeed from './screens/SocialFeed';
 import { UserProfile, UpdatedMealParams } from './types';
 
 // Navigation tipi
@@ -53,6 +54,7 @@ export type RootStackParamList = {
   EditProfile: UserProfile;
   Chatbot: undefined;
   ScanFood: undefined;
+  SocialFeed: undefined;
 };
 
 const theme = {
@@ -122,6 +124,7 @@ export default function App() {
               <Stack.Screen name="Menu" component={Menu} />
               <Stack.Screen name="ProfileSettingsMenu" component={ProfileSettingsMenu} />
               <Stack.Screen name="EditProfile" component={EditProfile} />
+              <Stack.Screen name="SocialFeed" component={SocialFeed} />
             </>
           ) : (
 
@@ -138,6 +141,7 @@ export default function App() {
               <Stack.Screen name="Menu" component={Menu} />
               <Stack.Screen name="ProfileSettingsMenu" component={ProfileSettingsMenu} />
               <Stack.Screen name="EditProfile" component={EditProfile} />
+              <Stack.Screen name="SocialFeed" component={SocialFeed} />
             </>
           )}
         </Stack.Navigator>

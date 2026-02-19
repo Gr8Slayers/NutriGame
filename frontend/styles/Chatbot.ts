@@ -12,8 +12,7 @@ export default StyleSheet.create({
     chatContainer: {
         flex: 1,
         backgroundColor: '#000000ff',
-        paddingVertical: height * 0.05,
-        paddingHorizontal: width * 0.02,
+        paddingBottom: height * 0.05,
     },
     // Overlay for "tap outside to close"
     overlay: {
@@ -24,6 +23,35 @@ export default StyleSheet.create({
         bottom: 0,
         backgroundColor: 'rgba(0,0,0,0.5)',
         zIndex: 5,
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
+        paddingTop: 50,
+        paddingBottom: 20,
+        backgroundColor: '#ABC270',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.5,
+        shadowRadius: 5,
+        elevation: 10,
+        zIndex: 10,
+    },
+    backButton: {
+        padding: 8,
+    },
+    menuButton: {
+        padding: 8,
+    },
+    headerTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#333',
+    },
+    placeholder: {
+        width: 40,
     },
     menuContainer: {
         position: 'absolute',
@@ -81,12 +109,7 @@ export default StyleSheet.create({
         fontSize: 18,
         color: '#ffffff',
     },
-    menuButton: {
-        position: 'absolute',
-        left: 20,
-        top: Platform.OS === 'ios' ? 40 : 20,
-        zIndex: 20,
-    },
+
     newChatButton: {
         width: 40,
         height: 40,
@@ -156,11 +179,6 @@ export default StyleSheet.create({
         borderBottomColor: 'rgba(255,255,255,0.05)',
     },
 
-    backButton: {
-        position: 'absolute',
-        right: 20,
-        top: Platform.OS === 'ios' ? 40 : 20,
-        zIndex: 20,
-    },
+
 
 });

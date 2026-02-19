@@ -92,6 +92,38 @@ export default function AddWater({ route, navigation }: Props) {
           setAddedEntries(prev => prev.filter(e => e.key !== key));
      };
 
+     const handleDeleteSaved = async () => {
+          try {
+               const token = await SecureStore.getItemAsync('userToken');
+               const params = new URLSearchParams({ date: selectedDate }).toString();
+               const totalRes = await fetch(`${API_URL}/api/food/get_water_total?${params}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+               });
+               const totalData = await totalRes.json();
+               if (!totalRes.ok || !totalData.data) {
+                    Alert.alert('Hata', 'Su kaydı bulunamadı.');
+                    return;
+               }
+               const { water_log_id, t_amount } = totalData.data;
+               const res = await fetch(`${API_URL}/api/food/delete_from_water`, {
+                    method: 'POST',
+                    headers: {
+                         'Content-Type': 'application/json',
+                         'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ water_log_id, water_amount: t_amount })
+               });
+               if (res.ok) {
+                    setCurrentWater(0);
+               } else {
+                    const d = await res.json();
+                    Alert.alert('Hata', d.message || 'Silme başarısız.');
+               }
+          } catch (e) {
+               Alert.alert('Hata', 'Bağlantı hatası.');
+          }
+     };
+
      const handleSave = async () => {
           if (addedAmount === 0) {
                Alert.alert('Uyarı', 'Lütfen su miktarı ekleyin.');
@@ -238,6 +270,31 @@ export default function AddWater({ route, navigation }: Props) {
                                    </View>
 
                                    <ScrollView style={styles.modalScroll}>
+                                        {/* Kayıtlı (backend'de olan) */}
+                                        {currentWater > 0 && (
+                                             <View style={styles.modalItem}>
+                                                  <View>
+                                                       <Text style={styles.modalItemName}>💾 Kaydedilmiş</Text>
+                                                       <Text style={styles.modalItemCal}>{currentWater} ml</Text>
+                                                  </View>
+                                                  <TouchableOpacity
+                                                       onPress={() =>
+                                                            Alert.alert(
+                                                                 'Sil',
+                                                                 `Kayıtlı ${currentWater} ml silinsin mi?`,
+                                                                 [
+                                                                      { text: 'İptal', style: 'cancel' },
+                                                                      { text: 'Sil', style: 'destructive', onPress: handleDeleteSaved }
+                                                                 ]
+                                                            )
+                                                       }
+                                                  >
+                                                       <Ionicons name="trash-outline" size={20} color="#e57373" />
+                                                  </TouchableOpacity>
+                                             </View>
+                                        )}
+
+                                        {/* Eklenecek (henüz kaydedilmemiş) */}
                                         {addedEntries.map((item, index) => (
                                              <View key={index} style={styles.modalItem}>
                                                   <View>
@@ -249,6 +306,10 @@ export default function AddWater({ route, navigation }: Props) {
                                                   </TouchableOpacity>
                                              </View>
                                         ))}
+
+                                        {currentWater === 0 && addedEntries.length === 0 && (
+                                             <Text style={{ textAlign: 'center', color: '#888', paddingVertical: 20 }}>Kayıt yok</Text>
+                                        )}
                                    </ScrollView>
 
                                    <View style={styles.modalFooter}>
