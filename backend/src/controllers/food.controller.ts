@@ -35,11 +35,23 @@ export class FoodController {
     async add_to_meal(req: Request, res: Response, next: NextFunction) {
         try {
             const user_id = req.user!.id; // Assuming jwt/auth middleware sets req.user
-            const { meal_category, food_id, p_count } = req.body; // froentend tarafindan secilen food un id sinin istek atarken backende verilecegini varsayiyorum: food_id, search_food dan gelen seceneklerden user in sectiginin food_id sinin frontend tarafindan depolanip bana verilmesi gerekiyor
+            const { date, meal_category, food_id, p_count } = req.body;//req.query as { date: string, meal_category: string, food_id: number, p_count: number }; // froentend tarafindan secilen food un id sinin istek atarken backende verilecegini varsayiyorum: food_id, search_food dan gelen seceneklerden user in sectiginin food_id sinin frontend tarafindan depolanip bana verilmesi gerekiyor
 
-            if (!meal_category || !food_id || !p_count) {
-                return res.status(400).json({ success: false, message: 'Please provide required information { meal_category, food_id, p_count }.' });
+            if (!date || !meal_category || !food_id || !p_count) {
+                return res.status(400).json({ success: false, message: 'Please provide required information { date, meal_category, food_id, p_count }.' });
             }
+
+            // 1. Check format (YYYY-MM-DD)
+            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+            if (!date || !dateRegex.test(date)) {
+                return res.status(400).json({ success: false, message: 'Invalid format. Use YYYY-MM-DD.' });
+            }
+            // 2. Check if it's a valid calendar date
+            const parsedDate = new Date(date);
+            if (isNaN(parsedDate.getTime())) {
+                return res.status(400).json({ success: false, message: 'Invalid calendar date.' });
+            }
+            // end of date format check
 
             const fetchedFood = await foodModel.getFoodByFoodId(food_id);
 
@@ -54,7 +66,7 @@ export class FoodController {
             const t_fat = fetchedFood.p_fat * p_count;
             const t_carb = fetchedFood.p_carb * p_count;
 
-            const added_food = await foodModel.addFoodToMealLog(user_id, meal_category, p_count, food_id, fetchedFood.food_name, fetchedFood.p_unit, t_amount, t_calorie, t_protein, t_fat, t_carb);
+            const added_food = await foodModel.addFoodToMealLog(user_id, parsedDate, meal_category, p_count, food_id, fetchedFood.food_name, fetchedFood.p_unit, t_amount, t_calorie, t_protein, t_fat, t_carb);
             if (!added_food) {
                 res.status(400).json({ success: false, message: 'Food could not be added to the meal log.' });
 

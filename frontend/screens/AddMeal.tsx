@@ -187,6 +187,7 @@ export default function AddMeal({ route, navigation }: Props) {
             'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({
+            date: selectedDate, // bunu ben ekledim fyi -zeynep
             meal_category: type,
             food_id: item.food_id,
             p_count: item.portionValue || 1,

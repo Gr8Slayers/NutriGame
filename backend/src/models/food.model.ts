@@ -21,28 +21,26 @@ export const foodModel = {
         });
     },
 
-    addFoodToMealLog: async (user_id: number, meal_category: string, p_count: number, food_id: number, food_name: string, p_unit: string, t_amount: number, t_calorie: number, t_protein: number, t_fat: number, t_carb: number) => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); // saat degil sadece gun tutabilmek icin
+    addFoodToMealLog: async (user_id: number, date: Date, meal_category: string, p_count: number, food_id: number, food_name: string, p_unit: string, t_amount: number, t_calorie: number, t_protein: number, t_fat: number, t_carb: number) => {
 
         return await prisma.$transaction(async (tx) => {
             //yemek once mealLoga ekleniyor
             const log = await tx.mealLog.create({
-                data: { userId: user_id, date: today, meal_category, p_count, food_id, food_name, p_unit, t_amount, t_calorie, t_protein, t_fat, t_carb }
+                data: { userId: user_id, date: date, meal_category, p_count, food_id, food_name, p_unit, t_amount, t_calorie, t_protein, t_fat, t_carb }
             });
 
             // ilgili ogune eklsense de bir de overall adi altinda tum gunun degerlerine de ekleme yapiliyor yoksa yeni olusturuluyor
             await tx.mealTotals.upsert({
-                where: { userId_date_meal_category: { userId: user_id, date: today, meal_category: "OVERALL" } }, // user id, date, meal category primary key oluyor 3 degerin ayni oldugu iki row bulunamaz
+                where: { userId_date_meal_category: { userId: user_id, date: date, meal_category: "OVERALL" } }, // user id, date, meal category primary key oluyor 3 degerin ayni oldugu iki row bulunamaz
                 update: { t_calorie: { increment: t_calorie }, t_protein: { increment: t_protein }, t_fat: { increment: t_fat }, t_carb: { increment: t_carb } },
-                create: { userId: user_id, date: today, meal_category: "OVERALL", t_calorie, t_protein, t_fat, t_carb }
+                create: { userId: user_id, date: date, meal_category: "OVERALL", t_calorie, t_protein, t_fat, t_carb }
             });
 
             // eklenilen yemegin kalori vs bilgileri mealtotals tablosunda ilgili ogunun uzerine ekleniyor hic row acilmamissa yeni olusuturup degerleri ekliyor
             await tx.mealTotals.upsert({
-                where: { userId_date_meal_category: { userId: user_id, date: today, meal_category } },
+                where: { userId_date_meal_category: { userId: user_id, date: date, meal_category } },
                 update: { t_calorie: { increment: t_calorie }, t_protein: { increment: t_protein }, t_fat: { increment: t_fat }, t_carb: { increment: t_carb } },
-                create: { userId: user_id, date: today, meal_category, t_calorie, t_protein, t_fat, t_carb }
+                create: { userId: user_id, date: date, meal_category, t_calorie, t_protein, t_fat, t_carb }
             });
 
             return log;
