@@ -50,7 +50,7 @@ model MealLog {
   meal_log_id     Int      @id @default(autoincrement())
   userId          Int      
   date            DateTime @db.Date @default(now()) // prisma sadece Date kabul etmiyor Datetime var sadece, yanina ekledigim aciklama db de Date olarak tutlmayi sagliyor
-  meal_category   String //ogun tipi orn. sabah, ogle, aksam, araogun bunlardan baska olmayacak enum lanabilir
+  meal_category   String //ogun tipi orn. {breakfast, lunch, dinner, snack} bunlardan baska olmayacak enum lanabilir
   p_count         Int //kac porsiyon eklendigi, toplamlar buna gore hesaplanacak
   food_id         Int
   food_name       String
@@ -66,20 +66,20 @@ model MealTotals{
   id              Int      @id @default(autoincrement())
   userId          Int
   date            DateTime @db.Date @default(now()) // prisma sadece Date kabul etmiyor Datetime var sadece, yanina ekledigim aciklama db de Date olarak tutlmayi sagliyor
-  meal_category   String //ogun tipi orn. sabah, ogle, aksam, araogun, OVERALL(yani tum gun) bunlardan baska olmayacak enum lanabilir     
+  meal_category   String //ogun tipi orn. {breakfast, lunch, dinner, snack, OVERALL(yani tum gun)} bunlardan baska olmayacak enum lanabilir     
   t_calorie       Float
   t_protein       Float
   t_fat           Float
   t_carb          Float
 
-  @@unique([userId, date, meal_category]) //1 user 1 gunde 1 ogun icin birden fazla row olusturamaz
+  @@unique([userId, date, meal_category]) //1 user 1 gunde 1 ogun tipi icin birden fazla row olusturamaz
 }
 
 model WaterLog {
   water_log_id    Int      @id @default(autoincrement())
   userId          Int      
   date            DateTime @db.Date @default(now()) // prisma sadece Date kabul etmiyor Datetime var sadece, yanina ekledigim aciklama db de Date olarak tutlmayi sagliyor
-  t_amount        Int
+  t_amount        Int //yeni eklenen su miktarini o anki totale ekleyip yeni totali kaydediyorum
 
   @@unique([userId, date]) //1 user 1 gun icin birden fazla row olusturamaz
 }

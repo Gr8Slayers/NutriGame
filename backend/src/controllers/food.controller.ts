@@ -233,7 +233,7 @@ export class FoodController {
         try {
             const user_id = req.user!.id; // Assuming jwt/auth middleware sets req.user
 
-            const { date } = req.query as { date: string };
+            const { date } = req.query as { date: string }; // bunu duygu eklemis!
 
             if (!date) {
                 return res.status(400).json({ success: false, message: 'Please provide required information { date }.' });

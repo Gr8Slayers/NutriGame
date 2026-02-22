@@ -21,7 +21,7 @@ export class AuthController {
                 return res.status(409).json({ success: false, message: 'Bu email ya da username zaten kayıtlı.' });
             }
 
-            //const hashedPassword = await bcrypt.hash(password, 10);
+            //const hashedPassword = await bcrypt.hash(password, 10); //suanda database i gozle takip edebilmek icin hashlemeye girmedim ileride direkt eklenir zaten
             await userModel.createUser(username, email, password, age, gender, height, weight, target_weight, reason_to_diet, avatar_url);
             return res.status(201).json({ success: true, message: 'Kayıt başarılı.' });
         } catch (error) {
@@ -46,7 +46,7 @@ export class AuthController {
                 return res.status(401).json({ success: false, message: 'Geçersiz email/username veya şifre.' });
             }
             // JWT token oluştur
-            const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
+            const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' }); // olusturulan token 7 gun boyunca gecerli, frontend bunu bir yere kaydedip kullanabilir
             return res.status(200).json({
                 success: true,
                 message: 'Giriş başarılı.',
