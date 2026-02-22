@@ -61,32 +61,44 @@ export default function Menu() {
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
 
-    const fetchProfile = async () => {
+    const fetchProfile = useCallback(async () => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
         try {
             const token = await SecureStore.getItemAsync('userToken');
-            if (!token) return;
+            if (!token) {
+                setLoading(false);
+                return;
+            }
 
             const res = await fetch(`${API_URL}/api/user/profile`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
-                }
+                },
+                signal: controller.signal,
             });
+            clearTimeout(timeoutId);
             const data = await res.json();
 
             if (res.ok && data.success) {
                 setProfile(data.data);
             }
-        } catch (error) {
-            console.log("Error fetching profile:", error);
+        } catch (error: any) {
+            clearTimeout(timeoutId);
+            if (error.name === 'AbortError') {
+                console.log('Menu: Profil isteği zaman aşımına uğradı');
+            } else {
+                console.log("Error fetching profile:", error);
+            }
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     useFocusEffect(
         useCallback(() => {
             fetchProfile();
-        }, [])
+        }, [fetchProfile])
     );
 
     const handleLogout = async () => {

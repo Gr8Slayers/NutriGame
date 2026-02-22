@@ -1,66 +1,66 @@
-import { Platform, StatusBar, Dimensions,StyleSheet } from 'react-native';
+import { Platform, StatusBar, Dimensions, StyleSheet } from 'react-native';
 const { height } = Dimensions.get('window');
 
 export default StyleSheet.create({
-    container: {
+  container: {
     flex: 1,
     backgroundColor: '#473C33',
     flexDirection: 'column',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
 
-leafContainer:{
-    position:'absolute',
+  leafContainer: {
+    position: 'absolute',
     top: height * 0.13,
-    left: '50%', 
+    left: '50%',
     marginLeft: -50,
-    width: 100,
-    height: 100,
-    zIndex: 10,
+    width: 100,
+    height: 100,
+    zIndex: 10,
 
-  },
-  
-  leaf1:{ // Koyu Yeşil Yaprak
-    position: 'absolute', // MUTLAKA EKLE
-    left: 50, // Container içinde sağa kaydır
-    width: 90,
-    height: 100,
-    backgroundColor: '#2e7d32', // Koyu yeşil
-    borderTopLeftRadius: 120,
+  },
+
+  leaf1: { // Koyu Yeşil Yaprak
+    position: 'absolute', // MUTLAKA EKLE
+    left: 50, // Container içinde sağa kaydır
+    width: 90,
+    height: 100,
+    backgroundColor: '#2e7d32', // Koyu yeşil
+    borderTopLeftRadius: 120,
     borderBottomRightRadius: 120,
-    borderTopRightRadius: 20, 
+    borderTopRightRadius: 20,
     borderBottomLeftRadius: 20,
     transform: [{ rotate: '0deg' }],
     zIndex: 2,
-  },
-  leaf2:{ // Açık Yeşil Yaprak
-    position: 'absolute', // MUTLAKA EKLE
-    right: 55, // Container içinde sola kaydır
-    top:15,
-    width: 70,
-    height: 85,
-    backgroundColor: '#8bc34a', // Açık yeşil
-    borderTopLeftRadius: 110,
+  },
+  leaf2: { // Açık Yeşil Yaprak
+    position: 'absolute', // MUTLAKA EKLE
+    right: 55, // Container içinde sola kaydır
+    top: 15,
+    width: 70,
+    height: 85,
+    backgroundColor: '#8bc34a', // Açık yeşil
+    borderTopLeftRadius: 110,
     borderBottomRightRadius: 110,
     borderTopRightRadius: 15,
     borderBottomLeftRadius: 15,
-    
+
     transform: [{ rotate: '-80deg' }], // Hafif eğim
     zIndex: 2,
-  },
-    backButton:{
-     position: 'absolute', // ARTIK AKIŞI BOZMAZ (Yer kaplamaz)
+  },
+  backButton: {
+    position: 'absolute', // ARTIK AKIŞI BOZMAZ (Yer kaplamaz)
     left: 20,
     // iOS ve Android için güvenli tepe boşluğu
-    top: Platform.OS === 'ios' ? 50 : 20, 
+    top: Platform.OS === 'ios' ? 50 : 20,
     zIndex: 20, // En üstte görünsün
   },
-  dataContainer:{
+  dataContainer: {
     marginTop: Platform.OS === 'ios' ? height * 0.25 : height * 0.20,
     flex: 1,
     backgroundColor: '#ABC270',
-    borderTopLeftRadius:40,
-    borderTopRightRadius:40,
+    borderTopLeftRadius: 40,
+    borderTopRightRadius: 40,
     overflow: 'hidden',
   },
   scrollContent: {
@@ -74,7 +74,7 @@ leafContainer:{
     backgroundColor: '#f7e5c5ff',
     fontSize: 16,
   },
-   inputContainer: {
+  inputContainer: {
     marginVertical: 16,
     paddingLeft: 8,
     paddingRight: 8,
@@ -84,7 +84,7 @@ leafContainer:{
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#0a0701ff',
-     // Android için gölge
+    // Android için gölge
     elevation: 5,
 
     // iOS için gölge (Bu kısmı eklersen iOS'te de derinlik olur)
@@ -98,11 +98,11 @@ leafContainer:{
   },
   label: {
     zIndex: 1,
-    fontWeight:'bold',
+    fontWeight: 'bold',
     fontSize: 18,
     color: '#463C33',
     paddingTop: 8,
-    marginBottom: 8-5
+    marginBottom: 8 - 5
   },
   options: {
     zIndex: 1,
@@ -137,25 +137,28 @@ leafContainer:{
     backgroundColor: '#FEC868',
     borderRadius: 8,
     alignItems: 'center',
-     elevation: 3,
+    justifyContent: 'center',
+    height: 50,
+    elevation: 3,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.22,
     shadowRadius: 2.22,
   },
-  goalButtonText:{
+  goalButtonText: {
     color: '#463C33',
     fontSize: 16,
     fontWeight: 'bold',
+    padding: 8,
   },
   button: {
-  backgroundColor: '#Db5B23',
-  paddingHorizontal: 15,
-  paddingVertical: 12,
-  borderRadius: 20,
-  alignItems: 'center',
-  marginBottom: 15,
-   elevation: 3,
+    backgroundColor: '#Db5B23',
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    borderRadius: 20,
+    alignItems: 'center',
+    marginBottom: 15,
+    elevation: 3,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.22,
@@ -166,4 +169,4 @@ leafContainer:{
     fontSize: 25,
     fontWeight: 'bold',
   },
-  });
+});

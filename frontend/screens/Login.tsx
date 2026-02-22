@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  View, Text, TextInput, Button, Alert, TouchableOpacity, ScrollView,KeyboardAvoidingView, Platform
+  View, Text, TextInput, Button, Alert, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as SecureStore from 'expo-secure-store';
@@ -16,16 +16,16 @@ const API_URL = `http://${IP_ADDRESS}:3000`;
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
- const Leaf = () => {
-    return (
-      <View style={styles.leafContainer}>
-        {/* Sağdaki koyu yeşil büyük yaprak */}
-        <View style={styles.leaf1} />
-        {/* Soldaki açık yeşil küçük yaprak */}
-        <View style={styles.leaf2} />
-      </View>
-    );
-  };
+const Leaf = () => {
+  return (
+    <View style={styles.leafContainer}>
+      {/* Sağdaki koyu yeşil büyük yaprak */}
+      <View style={styles.leaf1} />
+      {/* Soldaki açık yeşil küçük yaprak */}
+      <View style={styles.leaf2} />
+    </View>
+  );
+};
 
 function Login({ navigation }: Props) {
   const [email, setEmail] = useState('');
@@ -34,11 +34,12 @@ function Login({ navigation }: Props) {
   const [loading, setLoading] = useState<boolean>(false);
   const [remember, setRemember] = useState(false);
 
- 
+
 
   const handleLogin = async () => {
     if (loading) return;
     setLoading(true);
+    console.log(`${API_URL}/api/auth/login`);
     console.log(JSON.stringify({ email, username, password }));
 
     try {
@@ -77,70 +78,70 @@ function Login({ navigation }: Props) {
     <View style={styles.container}>
       <Leaf />
       <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{ flex: 1 }}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20} // Android'de bazen azıcık pay gerekir
-    >
-      
-      <View style={styles.dataContainer}>
-        <ScrollView contentContainerStyle={styles.scrollContent}keyboardShouldPersistTaps="handled">
-          
-          <Text style={styles.logInTitle}>LOG IN</Text>
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20} // Android'de bazen azıcık pay gerekir
+      >
 
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Email or Username *</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Email or Username"
-              value={email || username}
-              onChangeText={(text) => {
-                if (text.includes("@")) {
-                  setEmail(text);
-                  setUserName("");
-                } else {
-                  setUserName(text);
-                  setEmail("");
-                }
-              }}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-          </View>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Password *</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={true}
-            />
-          </View>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={handleLogin}
-            disabled={loading}
-          >
-            <Text style={styles.buttonText}>
-              {loading ? 'Entering...' : 'Log In'}
-            </Text>
-          </TouchableOpacity>
-          <View style={styles.rememberContainer}>
+        <View style={styles.dataContainer}>
+          <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+
+            <Text style={styles.logInTitle}>LOG IN</Text>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Email or Username *</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Email or Username"
+                value={email || username}
+                onChangeText={(text) => {
+                  if (text.includes("@")) {
+                    setEmail(text);
+                    setUserName("");
+                  } else {
+                    setUserName(text);
+                    setEmail("");
+                  }
+                }}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Password *</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={true}
+              />
+            </View>
             <TouchableOpacity
-              style={[styles.checkbox, remember && styles.checkboxChecked]}
-              onPress={() => setRemember(!remember)}
+              style={styles.button}
+              onPress={handleLogin}
+              disabled={loading}
             >
-              {remember && <Text style={styles.checkMark}>✓</Text>}
+              <Text style={styles.buttonText}>
+                {loading ? 'Entering...' : 'Log In'}
+              </Text>
             </TouchableOpacity>
-            <Text style={styles.rememberText}>Remember Me</Text>
-          </View>
+            <View style={styles.rememberContainer}>
+              <TouchableOpacity
+                style={[styles.checkbox, remember && styles.checkboxChecked]}
+                onPress={() => setRemember(!remember)}
+              >
+                {remember && <Text style={styles.checkMark}>✓</Text>}
+              </TouchableOpacity>
+              <Text style={styles.rememberText}>Remember Me</Text>
+            </View>
 
-          <View style={styles.divider} />
-          <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-            <Text style={styles.linkText}>Don't have an account? <Text style={styles.signUpLinkText}>Sign Up</Text></Text>
-          </TouchableOpacity>
-        </ScrollView>
-      </View>
+            <View style={styles.divider} />
+            <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
+              <Text style={styles.linkText}>Don't have an account? <Text style={styles.signUpLinkText}>Sign Up</Text></Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
       </KeyboardAvoidingView>
     </View>
   );

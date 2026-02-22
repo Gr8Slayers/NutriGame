@@ -54,20 +54,14 @@ export default function AddMeal({ route, navigation }: Props) {
   const fat = selectedItems.reduce((sum, item) => sum + (item.p_fat || 0), 0); //seçilen yemeklerin toplam yağ
   const [dailyGoal, setDailyGoal] = useState(2000);//sonra hesaplanacak
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchDailyData();
-    }, [selectedDate]) //date değiştikçe çalışsın
-  );
-
-  const fetchDailyData = async () => {
+  const fetchDailyData = useCallback(async () => {
     const token = await SecureStore.getItemAsync('userToken');
     try {
       const params = new URLSearchParams({
         date: selectedDate,
         meal_category: type
       }).toString();
-      const url = `${API_URL}/api/food/get_meal_log?${params}`
+      const url = `${API_URL}/api/food/get_meal_log?${params}`;
       console.log(url);
       const res = await fetch(url, {
         method: 'GET',
@@ -100,7 +94,13 @@ export default function AddMeal({ route, navigation }: Props) {
     } catch (error) {
       console.error("Error fetching daily data:", error);
     }
-  };
+  }, [selectedDate, type]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchDailyData();
+    }, [fetchDailyData])
+  );
 
   //databaseden food verileri request edilir.
   const getFood = async () => {

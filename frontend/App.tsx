@@ -88,7 +88,7 @@ export default function App() {
         rememberMeFlag = await SecureStore.getItemAsync('rememberMeFlag');
 
         if (token && rememberMeFlag == 'true') {
-          setIsAuthenticated(false);
+          setIsAuthenticated(true);
         }
 
       }
@@ -121,6 +121,7 @@ export default function App() {
               <Stack.Screen name="Chatbot" component={Chatbot} />
               <Stack.Screen name="ScanFood" component={ScanFood} />
               <Stack.Screen name="AddMeal" component={AddMeal} />
+              <Stack.Screen name="AddWater" component={AddWater} />
               <Stack.Screen name="Menu" component={Menu} />
               <Stack.Screen name="ProfileSettingsMenu" component={ProfileSettingsMenu} />
               <Stack.Screen name="EditProfile" component={EditProfile} />

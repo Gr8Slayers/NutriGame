@@ -46,7 +46,7 @@ export default function AddWater({ route, navigation }: Props) {
      const addedAmount = addedEntries.reduce((sum, e) => sum + e.amount, 0);
 
      // Fetch current water intake for the selected date
-     const fetchWaterData = async () => {
+     const fetchWaterData = useCallback(async () => {
           try {
                const token = await SecureStore.getItemAsync('userToken');
                const params = new URLSearchParams({ date: selectedDate }).toString();
@@ -70,13 +70,13 @@ export default function AddWater({ route, navigation }: Props) {
                console.log("Error fetching water data:", error);
                setCurrentWater(0);
           }
-     };
+     }, [selectedDate]);
 
      useFocusEffect(
           useCallback(() => {
                fetchWaterData();
                setAddedEntries([]);
-          }, [selectedDate])
+          }, [fetchWaterData])
      );
 
      const handlePortionPress = (portion: WaterPortion) => {
@@ -274,7 +274,6 @@ export default function AddWater({ route, navigation }: Props) {
                                         {currentWater > 0 && (
                                              <View style={styles.modalItem}>
                                                   <View>
-                                                       <Text style={styles.modalItemName}>💾 Kaydedilmiş</Text>
                                                        <Text style={styles.modalItemCal}>{currentWater} ml</Text>
                                                   </View>
                                                   <TouchableOpacity

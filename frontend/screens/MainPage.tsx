@@ -62,14 +62,17 @@ function MainPage({ navigation }: Props) {
 
 
     const formattedDate = selectedDate.toISOString().split("T")[0]; // "YYYY-MM-DD" formatı
-    const fetchDailyData = async () => {
+    const fetchDailyData = useCallback(async () => {
         const token = await SecureStore.getItemAsync('userToken');
 
-        const params = new URLSearchParams({
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 sn timeout
+
+        const queryParams = new URLSearchParams({
             date: formattedDate,
             meal_category: "OVERALL"
         }).toString();
-        const url = `${API_URL}/api/food/get_meal_total?${params}`
+        const url = `${API_URL}/api/food/get_meal_total?${queryParams}`;
         console.log(url);
         try {
             const res = await fetch(url, {
@@ -78,36 +81,38 @@ function MainPage({ navigation }: Props) {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
+                signal: controller.signal,
+            });
 
-            })
-
+            clearTimeout(timeoutId);
             const data = await res.json();
-            const params = data.data;
+            const result = data.data;
             console.log(data);
-            if (res.ok && params != 0) {
-
-
-                setCalorie(params.t_calorie);
-                setCarb(params.t_carb);
-                setFat(params.t_fat);
-                setProtein(params.t_protein);
-            }
-            else {
+            if (res.ok && result != 0) {
+                setCalorie(result.t_calorie);
+                setCarb(result.t_carb);
+                setFat(result.t_fat);
+                setProtein(result.t_protein);
+            } else {
                 setCalorie(0);
                 setCarb(0);
                 setFat(0);
                 setProtein(0);
             }
+        } catch (error: any) {
+            clearTimeout(timeoutId);
+            if (error.name === 'AbortError') {
+                console.log('İstek zaman aşımına uğradı (10 sn)');
+            } else {
+                console.log('Veri çekme hatası:', error);
+            }
         }
-        catch (error) {
-            console.log("Veri çekme hatası:", error);
-        }
-    };
+    }, [formattedDate]);
 
     useFocusEffect(
         useCallback(() => {
             fetchDailyData();
-        }, [selectedDate]) //date değiştikçe çalışsın
+        }, [fetchDailyData])
     );
     const dailyGoal = 2000; // Hedef kaloriniz
 
