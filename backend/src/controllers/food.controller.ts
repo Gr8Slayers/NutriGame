@@ -7,7 +7,7 @@ export class FoodController {
 
     async search_food(req: Request, res: Response, next: NextFunction) {
         try {
-            const { food_name } = req.query as { food_name: string };
+            const { food_name } = req.query as { food_name: string }; //frontend burada parametre olarak veriyor food name i
 
             if (!food_name) {
                 return res.status(400).json({ success: false, message: 'Food name is not provided.' });
@@ -166,6 +166,7 @@ export class FoodController {
 
             if (!fetchedTotal) {
                 //return res.status(404).json({ success: false, message: 'No total found matching that date and meal category.' });
+                // burada herhangi bir kayit bulmadigi durumda 0 mis gibi kabul ediyor, boylelikle ui da totale 0 gosteriyor yani bu bir hata degil aslinda
                 return res.status(200).json({
                     success: true,
                     message: "No total found matching that date and meal category.",
@@ -245,7 +246,7 @@ export class FoodController {
         try {
             const user_id = req.user!.id; // Assuming jwt/auth middleware sets req.user
 
-            const { date } = req.query as { date: string }; // bunu duygu eklemis!
+            const { date } = req.query as { date: string };
 
             if (!date) {
                 return res.status(400).json({ success: false, message: 'Please provide required information { date }.' });
@@ -266,7 +267,13 @@ export class FoodController {
             const fetched_water_total = await foodModel.getWaterTotal(user_id, parsedDate);
 
             if (!fetched_water_total) {
-                res.status(400).json({ success: false, message: 'Water summary could not be found.' });
+                //res.status(400).json({ success: false, message: 'Water summary could not be found.' });
+                // burada herhangi bir kayit bulmadigi durumda 0 mis gibi kabul ediyor, boylelikle ui da totale 0 gosteriyor yani bu bir hata degil aslinda
+                return res.status(200).json({
+                    success: true,
+                    message: "No total waterlog found matching that date.",
+                    data: 0
+                });
             }
 
             return res.status(200).json({ success: true, message: 'Water summary succesfully found', data: fetched_water_total });
