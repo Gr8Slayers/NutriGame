@@ -263,25 +263,13 @@ function MainPage({ navigation }: Props) {
             </ScrollView>
             <View style={styles.menuContainer}>
                 <TouchableOpacity style={styles.recipeButton} onPress={() => navigation.navigate("ScanFood")}>
-                    <Image
-                        source={require("../assets/spoon.png")}
-                        style={{ width: 70, height: 70 }}
-                        resizeMode="contain"
-                    />
+                    <Ionicons name="scan" size={18} color="#f7e5c5" style={{ alignSelf: "center" }} />
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.chatButton} onPress={() => navigation.navigate("Chatbot")}>
-                    <Image
-                        source={require("../assets/plate.png")}
-                        style={{ width: 100, height: 100 }}
-                        resizeMode="contain"
-                    />
+                    <Ionicons name="chatbubble-outline" size={18} color="#f7e5c5" style={{ alignSelf: "center" }} />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.recipeButton}   >
-                    <Image
-                        source={require("../assets/fork.png")}
-                        style={{ width: 70, height: 70 }}
-                        resizeMode="contain"
-                    />
+                <TouchableOpacity style={styles.recipeButton} onPress={() => navigation.navigate("SocialFeed")} >
+                    <Ionicons name="restaurant-outline" size={18} color="#f7e5c5" style={{ alignSelf: "center" }} />
                 </TouchableOpacity>
             </View>
         </View>
