@@ -6,12 +6,12 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql" // Veritabanı olarak PostgreSQL kullanıyoruz
-  url      = env("DATABASE_URL") // Bu, .env dosyasından gelecek
+  provider = "cockroachdb" // CockroachDB kullanıyoruz
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
+  id        Int       @id @default(sequence())
   username  String    @unique
   email     String    @unique
   password  String
@@ -20,7 +20,7 @@ model User {
 }
 
 model UserProfile {
-  id             Int      @id @default(autoincrement())
+  id             Int      @id @default(sequence())
   userId         Int      @unique
   age            Int
   gender         String
@@ -35,7 +35,7 @@ model UserProfile {
 }
 
 model FoodLookup{
-  id              Int      @id @default(autoincrement())
+  id              Int      @id @default(sequence())
   food_id         Int      @unique
   food_name       String
   p_unit          String //porsiyon miktarinin hangi birim oldugu orn. gram, ml, tabak, kasik
@@ -47,7 +47,7 @@ model FoodLookup{
 }
 
 model MealLog {
-  meal_log_id     Int      @id @default(autoincrement())
+  meal_log_id     Int      @id @default(sequence())
   userId          Int      
   date            DateTime @db.Date @default(now()) // prisma sadece Date kabul etmiyor Datetime var sadece, yanina ekledigim aciklama db de Date olarak tutlmayi sagliyor
   meal_category   String //ogun tipi orn. {breakfast, lunch, dinner, snack} bunlardan baska olmayacak enum lanabilir
@@ -63,7 +63,7 @@ model MealLog {
 }
 
 model MealTotals{
-  id              Int      @id @default(autoincrement())
+  id              Int      @id @default(sequence())
   userId          Int
   date            DateTime @db.Date @default(now()) // prisma sadece Date kabul etmiyor Datetime var sadece, yanina ekledigim aciklama db de Date olarak tutlmayi sagliyor
   meal_category   String //ogun tipi orn. {breakfast, lunch, dinner, snack, OVERALL(yani tum gun)} bunlardan baska olmayacak enum lanabilir     
@@ -76,7 +76,7 @@ model MealTotals{
 }
 
 model WaterLog {
-  water_log_id    Int      @id @default(autoincrement())
+  water_log_id    Int      @id @default(sequence())
   userId          Int      
   date            DateTime @db.Date @default(now()) // prisma sadece Date kabul etmiyor Datetime var sadece, yanina ekledigim aciklama db de Date olarak tutlmayi sagliyor
   t_amount        Int //yeni eklenen su miktarini o anki totale ekleyip yeni totali kaydediyorum
