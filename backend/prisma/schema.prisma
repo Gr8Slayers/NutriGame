@@ -85,4 +85,47 @@ model WaterLog {
 }
 
 
+model UserFollow {
+  id          Int      @id @default(sequence())
+  followerId  Int
+  followingId Int
+
+  @@unique([followerId, followingId])
+}
+
+model Post {
+  id                  Int           @id @default(sequence())
+  userId              Int
+  caption             String        @default("")
+  imageUrl            String?
+  isRecipe            Boolean       @default(false)
+  recipeTitle         String?
+  recipeIngredients   String?
+  recipeInstructions  String?
+  recipeCalories      Float?
+  recipePrepTime      Int?
+  createdAt           DateTime      @default(now())
+
+  likes               PostLike[]
+  comments            PostComment[]
+}
+
+model PostLike {
+  id      Int  @id @default(sequence())
+  postId  Int
+  userId  Int
+  post    Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+}
+
+model PostComment {
+  id        Int      @id @default(sequence())
+  postId    Int
+  userId    Int
+  text      String
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
 //npx prisma db push yapılmalı

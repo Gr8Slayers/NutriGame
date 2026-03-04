@@ -63,12 +63,32 @@ function NewPost({ navigation }: Props) {
         setSubmitting(true);
 
         try {
-
             const token = await SecureStore.getItemAsync('userToken');
+
+            // Resim varsa önce backend'e yükle, public URL al
+            let uploadedImageUrl: string | undefined;
+            if (imageUri) {
+                const formData = new FormData();
+                const filename = imageUri.split('/').pop() ?? 'photo.jpg';
+                const match = /\.(\w+)$/.exec(filename);
+                const type = match ? `image/${match[1]}` : 'image/jpeg';
+                formData.append('image', { uri: imageUri, name: filename, type } as any);
+
+                const uploadRes = await fetch(`${API_URL}/api/upload`, {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${token}` },
+                    body: formData,
+                });
+                if (uploadRes.ok) {
+                    const uploadData = await uploadRes.json();
+                    uploadedImageUrl = uploadData.imageUrl;
+                }
+            }
+
             const body = {
                 caption,
                 isRecipe: true,
-                imageUrl: imageUri ?? undefined,
+                imageUrl: uploadedImageUrl,
                 recipeDetails: {
                     title: title.trim(),
                     ingredients: ingredients.trim(),
