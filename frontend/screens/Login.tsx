@@ -39,7 +39,6 @@ function Login({ navigation }: Props) {
   const handleLogin = async () => {
     if (loading) return;
     setLoading(true);
-    console.log(`${API_URL}/api/auth/login`);
     console.log(JSON.stringify({ email, username, password }));
 
     try {

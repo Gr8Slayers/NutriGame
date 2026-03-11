@@ -59,7 +59,7 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction) 
 
         // 6. req.user'a kullanıcı bilgilerini ekle
         req.user = {
-            id: decoded.userId,
+            id: Number(decoded.userId),
         };
 
         // 7. Bir sonraki middleware veya controller'a geç

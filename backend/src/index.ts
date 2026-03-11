@@ -25,7 +25,7 @@ app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 // Resim yükleme endpoint'i
 const storage = multer.diskStorage({
     destination: path.join(__dirname, '..', 'uploads'),
-    filename: (_req, file, cb) => {
+    filename: (_req: Express.Request, file: Express.Multer.File, cb: (error: Error | null, filename: string) => void) => {
         const ext = path.extname(file.originalname) || '.jpg';
         cb(null, `${Date.now()}_${Math.random().toString(36).slice(2)}${ext}`);
     },
@@ -33,7 +33,7 @@ const storage = multer.diskStorage({
 const upload = multer({
     storage,
     limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
-    fileFilter: (_req, file, cb) => {
+    fileFilter: (_req: Express.Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
         if (['image/jpeg', 'image/png', 'image/jpg'].includes(file.mimetype)) {
             cb(null, true);
         } else {
@@ -53,12 +53,12 @@ app.post('/api/upload', authMiddleware, upload.single('image'), (req: any, res: 
 });
 
 prisma.$connect()
-  .then(() => console.log('📦 Database bağlantısı başarılı'))
-  .catch((err: any) => console.error('❌ Database bağlantı hatası:', err));
+    .then(() => console.log('📦 Database bağlantısı başarılı'))
+    .catch((err: any) => console.error('❌ Database bağlantı hatası:', err));
 
 // Health Check
 app.get('/api', (req, res) => {
-  res.json({ message: 'Nutrigame API Çalışıyor!' });
+    res.json({ message: 'Nutrigame API Çalışıyor!' });
 });
 
 app.use('/api/auth', authRoutes);
@@ -68,11 +68,11 @@ app.use('/api/social', socialRoutes);
 
 // Server başlat
 app.listen(port, () => {
-  console.log(`
+    console.log(`
 ╔══════════════════════════════════════════╗
     🎮 NutriGame Backend Server Started
     🚀 Server: http://localhost:${port}
     📱 Network: http://[YOUR_IP]:${port}
 ╚══════════════════════════════════════════╝`
-  );
+    );
 });

@@ -14,8 +14,8 @@ export const userModel = {
     });
   },
 
-  //createUser: register esnasinda girilen bilgiler ile user ve userprofile tablosuna girdi olusturuluyor 
-  createUser: async (username: string, email: string, password: string, age: number, gender: string, height: number, weight: number, target_weight: number, reason_to_diet: string, avatar_url: string, activity_level: string, goal_duration_months: number | null) => {
+  //createUser: register esnasinda girilen bilgiler ile user ve userprofile tablosuna girdi olusturuluyor
+  createUser: async (username: string, email: string, password: string, age: number, gender: string, height: number, weight: number, target_weight: number, reason_to_diet: string, avatar_url: string) => {
     return prisma.user.create({
       data: {
         username,
@@ -30,8 +30,6 @@ export const userModel = {
             target_weight,
             reason_to_diet,
             avatar_url,
-            activity_level,
-            goal_duration_months,
           },
         },
       },
@@ -39,7 +37,7 @@ export const userModel = {
   },
 
   //updateUserProfileById: user in profilinde degisiklik yapmasini sagliyor, saglanan id ye sahip userin saglanan degisiklikleri user ve userprofile tablosunda guncelleniyor
-  updateUserProfileById: async (userId: bigint, updates: { age?: number, gender?: string, weight?: number, height?: number, target_weight?: number, reason_to_diet?: string, avatar_url?: string }) => {
+  updateUserProfileById: async (userId: number, updates: { age?: number, gender?: string, weight?: number, height?: number, target_weight?: number, reason_to_diet?: string, avatar_url?: string }) => {
     const updatedProfile = await prisma.userProfile.update({
       where: { userId: userId },  // userId üzerinden profili bul
       data: updates,              // hangi alandan degisiklik geldiyse onu güncelle
@@ -48,14 +46,14 @@ export const userModel = {
   },
 
   //deleteUser: verilen user id ye sahip userin user ve userprofile tablolari siliniyor
-  deleteUser: async (userId: bigint) => {
+  deleteUser: async (userId: number) => {
     return await prisma.user.delete({
       where: { id: userId }
     });
   },
 
   //fetchUser: verilen user id ye sahip user in user ve userporfile tablolarindaki bilgileri donuluyor
-  fetchUser: async (userId: bigint) => {
+  fetchUser: async (userId: number) => {
     return await prisma.user.findFirst({
       where: { id: userId },
       include: { profile: true },
@@ -64,11 +62,12 @@ export const userModel = {
 
 };
 
+// ──────────────────────────────────────────────────────────────────────────────
 // calculateDailyTargets: pure helper – no DB call needed.
 // Inputs: fields from UserProfile. Returns per-meal calorie targets + water.
-
+// ──────────────────────────────────────────────────────────────────────────────
 export interface DailyTargets {
-  tdee: number;
+  tdee: number;          // total daily energy expenditure (adjusted for goal)
   breakfast: number;     // 25% of tdee
   lunch: number;         // 35% of tdee
   dinner: number;        // 30% of tdee

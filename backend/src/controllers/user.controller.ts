@@ -7,11 +7,9 @@ export class UserController {
 
     async updateUserProfile(req: Request, res: Response, next: NextFunction) {
         try {
-            const userId = req.user!.id; // Assuming jwt/auth middleware sets req.user
+            const userId = req.user!.id;
 
-            // ATTENTION: burada elimdeki user id ye sahip bir user var mi kontrolu yapmali miyim emin degilim, zaten giris yapabildiysek user vardir vs. bir hata alirsak bu ihtimal aklimizda bulunsun.
-
-            const { age, gender, weight, height, target_weight, reason_to_diet, avatar_url, ...extra } = req.body; // sadece belli ozelliklerin degismesini mumkun kiliyor
+            const { age, gender, weight, height, target_weight, reason_to_diet, avatar_url, ...extra } = req.body;
 
             const updates: any = {};
             if (age) updates.age = age;
@@ -26,7 +24,7 @@ export class UserController {
                 return res.status(400).json({ success: false, message: 'No data to update.' });
             }
 
-            const updatedUser = await userModel.updateUserProfileById(BigInt(userId), updates);
+            await userModel.updateUserProfileById(Number(userId), updates);
             return res.status(200).json({ success: true, message: 'User Profile is updated successfully.' });
         } catch (err) {
             next(err);
@@ -35,9 +33,9 @@ export class UserController {
 
     async getUserProfile(req: Request, res: Response, next: NextFunction) {
         try {
-            const userId = req.user!.id; // Assuming jwt/auth middleware sets req.user
+            const userId = req.user!.id;
 
-            const fetchedUser = await userModel.fetchUser(BigInt(userId));
+            const fetchedUser = await userModel.fetchUser(Number(userId));
 
             if (!fetchedUser) {
                 return res.status(401).json({ success: false, message: 'User is not found.' });
@@ -64,13 +62,9 @@ export class UserController {
     }
 
     async deleteAccount(req: Request, res: Response, next: NextFunction) {
-        // TO DO: bu istekten sonra user giris sayfasina yonlendirilmeli degil mi frontend tarfindan
         try {
-            const userId = req.user!.id; // Assuming jwt/auth middleware sets req.user
-
-            // ATTENTION: burada elimdeki user id ye sahip bir user var mi kontrolu yapmali miyim emin degilim, zaten giris yapabildiysek user vardir vs. bir hata alirsak bu ihtimal aklimizda bulunsun.
-
-            const updatedUser = await userModel.deleteUser(BigInt(userId));
+            const userId = req.user!.id;
+            await userModel.deleteUser(Number(userId));
             return res.status(200).json({ success: true, message: 'User is deleted successfully.' });
         } catch (err) {
             next(err);
@@ -81,19 +75,20 @@ export class UserController {
         try {
             const userId = req.user!.id;
 
-            const fetchedUser = await userModel.fetchUser(BigInt(userId));
+            const fetchedUser = await userModel.fetchUser(Number(userId));
 
             if (!fetchedUser || !fetchedUser.profile) {
                 return res.status(404).json({ success: false, message: 'User profile not found. Please complete signup.' });
             }
 
             const p = fetchedUser.profile;
+            // activity_level was removed from the schema; use 'Moderately Active' as default
             const targets = calculateDailyTargets(
                 p.age,
                 p.gender,
                 p.weight,
                 p.height,
-                p.activity_level,
+                'Moderately Active', // default since field no longer stored in DB
                 p.reason_to_diet
             );
 

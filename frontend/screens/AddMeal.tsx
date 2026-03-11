@@ -48,30 +48,28 @@ export default function AddMeal({ route, navigation }: Props) {
   const [selectedItems, setSelectedItems] = useState<FoodItem[]>([]);
   const [modalVisible, setModalVisible] = useState(false); // detay gösterimi modal
   const [filteredData, setFilteredData] = useState([]);
-  const totalCalories = selectedItems.reduce((sum, item) => sum + (item.calories || 0), 0); //seçilen yemeklerin toplam kalorisi
-  const protein = selectedItems.reduce((sum, item) => sum + (item.p_protein || 0), 0); //seçilen yemeklerin toplam protein
-  const carb = selectedItems.reduce((sum, item) => sum + (item.p_carb || 0), 0); //seçilen yemeklerin toplam karbonhidrat
-  const fat = selectedItems.reduce((sum, item) => sum + (item.p_fat || 0), 0); //seçilen yemeklerin toplam yağ
-  const [dailyGoal, setDailyGoal] = useState(2000);//sonra hesaplanacak
+  const totalCalories = selectedItems.reduce((sum, item) => sum + (item.calories || 0), 0);
+  const protein = selectedItems.reduce((sum, item) => sum + (item.p_protein || 0), 0);
+  const carb = selectedItems.reduce((sum, item) => sum + (item.p_carb || 0), 0);
+  const fat = selectedItems.reduce((sum, item) => sum + (item.p_fat || 0), 0);
 
+  // Actual saved totals fetched from backend for this meal (shown in circle)
+  const [savedCalories, setSavedCalories] = useState(0);
+  const [savedProtein, setSavedProtein] = useState(0);
+  const [savedCarb, setSavedCarb] = useState(0);
+  const [savedFat, setSavedFat] = useState(0);
+  const [mealGoal, setMealGoal] = useState(500); // personalized meal goal
+
+  // Fetch meal log items (for the list)
   const fetchDailyData = useCallback(async () => {
     const token = await SecureStore.getItemAsync('userToken');
     try {
-      const params = new URLSearchParams({
-        date: selectedDate,
-        meal_category: type
-      }).toString();
-      const url = `${API_URL}/api/food/get_meal_log?${params}`;
-      console.log(url);
-      const res = await fetch(url, {
+      const params = new URLSearchParams({ date: selectedDate, meal_category: type }).toString();
+      const res = await fetch(`${API_URL}/api/food/get_meal_log?${params}`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       });
       const data = await res.json();
-      console.log(data);
       if (res.ok && Array.isArray(data.data) && data.data.length > 0) {
         const fetchedItems = data.data.map((item: any) => ({
           meal_log_id: item.meal_log_id,
@@ -92,14 +90,61 @@ export default function AddMeal({ route, navigation }: Props) {
         setSelectedItems([]);
       }
     } catch (error) {
-      console.error("Error fetching daily data:", error);
+      console.error('Error fetching meal log:', error);
     }
   }, [selectedDate, type]);
+
+  // Fetch actual saved totals for the circle (from MealTotals table)
+  const fetchMealTotal = useCallback(async () => {
+    const token = await SecureStore.getItemAsync('userToken');
+    try {
+      const params = new URLSearchParams({ date: selectedDate, meal_category: type }).toString();
+      const res = await fetch(`${API_URL}/api/food/get_meal_total?${params}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok && data.data && data.data !== 0) {
+        setSavedCalories(data.data.t_calorie ?? 0);
+        setSavedProtein(data.data.t_protein ?? 0);
+        setSavedCarb(data.data.t_carb ?? 0);
+        setSavedFat(data.data.t_fat ?? 0);
+      } else {
+        setSavedCalories(0); setSavedProtein(0); setSavedCarb(0); setSavedFat(0);
+      }
+    } catch (error) {
+      console.error('Error fetching meal total:', error);
+    }
+  }, [selectedDate, type]);
+
+  // Fetch personalized daily targets to get this meal's goal
+  const fetchMealGoal = useCallback(async () => {
+    const token = await SecureStore.getItemAsync('userToken');
+    try {
+      const res = await fetch(`${API_URL}/api/user/daily_targets`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        const t = data.data;
+        const typeLower = type.toLowerCase();
+        if (typeLower === 'breakfast') setMealGoal(t.breakfast);
+        else if (typeLower === 'lunch') setMealGoal(t.lunch);
+        else if (typeLower === 'dinner') setMealGoal(t.dinner);
+        else if (typeLower === 'snack') setMealGoal(t.snack);
+      }
+    } catch (error) {
+      console.error('Error fetching meal goal:', error);
+    }
+  }, [type]);
 
   useFocusEffect(
     useCallback(() => {
       fetchDailyData();
-    }, [fetchDailyData])
+      fetchMealTotal();
+      fetchMealGoal();
+    }, [fetchDailyData, fetchMealTotal, fetchMealGoal])
   );
 
   //databaseden food verileri request edilir.
@@ -199,7 +244,7 @@ export default function AddMeal({ route, navigation }: Props) {
       const allSuccess = results.every(res => res.ok);
 
       if (allSuccess) {
-
+        fetchMealTotal(); // refresh the circle immediately
       } else {
         Alert.alert("Hata", "Bazı yemekler eklenemedi.");
       }
@@ -303,12 +348,12 @@ export default function AddMeal({ route, navigation }: Props) {
             >
 
               <CalorieCircle
-                key={selectedDate}
-                calories={totalCalories}
-                goal={dailyGoal}
-                protein={protein}
-                carb={carb}
-                fat={fat}
+                key={selectedDate + type}
+                calories={savedCalories}
+                goal={mealGoal}
+                protein={savedProtein}
+                carb={savedCarb}
+                fat={savedFat}
               />
             </Animated.View>
             <TouchableOpacity
