@@ -49,6 +49,14 @@ function MainPage({ navigation }: Props) {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [showDatePicker, setShowDatePicker] = useState(false);
 
+    // --- Personalized daily targets ---
+    const [dailyGoal, setDailyGoal] = useState<number>(2000);
+    const [breakfastGoal, setBreakfastGoal] = useState<number>(500);
+    const [lunchGoal, setLunchGoal] = useState<number>(700);
+    const [dinnerGoal, setDinnerGoal] = useState<number>(600);
+    const [snackGoal, setSnackGoal] = useState<number>(200);
+    const [waterGoal, setWaterGoal] = useState<number>(2000); // ml
+
 
     const changeDate = (days: number) => {
         const newDate = new Date(selectedDate);
@@ -109,12 +117,39 @@ function MainPage({ navigation }: Props) {
         }
     }, [formattedDate]);
 
+    // Fetch personalized daily targets once when the screen is focused
+    const fetchDailyTargets = useCallback(async () => {
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+            const res = await fetch(`${API_URL}/api/user/daily_targets`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                const t = data.data;
+                setDailyGoal(t.tdee);
+                setBreakfastGoal(t.breakfast);
+                setLunchGoal(t.lunch);
+                setDinnerGoal(t.dinner);
+                setSnackGoal(t.snack);
+                setWaterGoal(t.water_ml);
+                console.log('Daily targets fetched:', t);
+            }
+        } catch (error) {
+            console.log('Failed to fetch daily targets:', error);
+        }
+    }, []);
+
     useFocusEffect(
         useCallback(() => {
             fetchDailyData();
-        }, [fetchDailyData])
+            fetchDailyTargets();
+        }, [fetchDailyData, fetchDailyTargets])
     );
-    const dailyGoal = 2000; // Hedef kaloriniz
 
 
 
@@ -178,7 +213,7 @@ function MainPage({ navigation }: Props) {
                     />
                     <View style={styles.labelContainer}>
                         <Text style={styles.mealTitle}>Add Breakfast</Text>
-                        <Text style={styles.subtitle}>Recommended: 830-1170 kcal</Text>
+                        <Text style={styles.subtitle}>Recommended: {breakfastGoal} kcal</Text>
                     </View>
                     <TouchableOpacity style={styles.addButton}
                         onPress={() => navigation.navigate("AddMeal", {
@@ -196,7 +231,7 @@ function MainPage({ navigation }: Props) {
                     />
                     <View style={styles.labelContainer}>
                         <Text style={styles.mealTitle}>Add Lunch</Text>
-                        <Text style={styles.subtitle}>Recommended: 830-1170 kcal</Text>
+                        <Text style={styles.subtitle}>Recommended: {lunchGoal} kcal</Text>
                     </View>
                     <TouchableOpacity style={styles.addButton}
                         onPress={() => navigation.navigate("AddMeal", {
@@ -214,7 +249,7 @@ function MainPage({ navigation }: Props) {
                     />
                     <View style={styles.labelContainer}>
                         <Text style={styles.mealTitle}>Add Dinner</Text>
-                        <Text style={styles.subtitle}>Recommended: 830-1170 kcal</Text>
+                        <Text style={styles.subtitle}>Recommended: {dinnerGoal} kcal</Text>
                     </View>
                     <TouchableOpacity style={styles.addButton}
                         onPress={() => navigation.navigate("AddMeal", {
@@ -232,7 +267,7 @@ function MainPage({ navigation }: Props) {
                     />
                     <View style={styles.labelContainer}>
                         <Text style={styles.mealTitle}>Add Snack</Text>
-                        <Text style={styles.subtitle}>Recommended: 830-1170 kcal</Text>
+                        <Text style={styles.subtitle}>Recommended: {snackGoal} kcal</Text>
                     </View>
                     <TouchableOpacity style={styles.addButton}
                         onPress={() => navigation.navigate("AddMeal", {
@@ -250,7 +285,7 @@ function MainPage({ navigation }: Props) {
                     />
                     <View style={styles.labelContainer}>
                         <Text style={styles.mealTitle}>Add Water</Text>
-                        <Text style={styles.subtitle}>Recommended: 2L </Text>
+                        <Text style={styles.subtitle}>Recommended: {(waterGoal / 1000).toFixed(1)}L</Text>
                     </View>
                     <TouchableOpacity style={styles.addButton}
                         onPress={() => navigation.navigate("AddWater", {

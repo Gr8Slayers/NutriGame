@@ -11,7 +11,7 @@ export class AuthController {
     async register(req: Request, res: Response, next: NextFunction) {
         console.log('POST api/auth/register')
         try {
-            const { username, email, password, age, gender, height, weight, target_weight, reason_to_diet, avatar_url } = req.body;
+            const { username, email, password, age, gender, height, weight, target_weight, reason_to_diet, avatar_url, activity_level, goal_duration_months } = req.body;
             if (!username || !email || !password || !age || !gender || !height || !weight) {
                 return res.status(400).json({ success: false, message: 'Zorunlu alanları doldurunuz.' });
             }
@@ -22,7 +22,7 @@ export class AuthController {
             }
 
             //const hashedPassword = await bcrypt.hash(password, 10); //suanda database i gozle takip edebilmek icin hashlemeye girmedim ileride direkt eklenir zaten
-            await userModel.createUser(username, email, password, age, gender, height, weight, target_weight, reason_to_diet, avatar_url);
+            await userModel.createUser(username, email, password, age, gender, height, weight, target_weight, reason_to_diet, avatar_url, activity_level ?? '', goal_duration_months ?? null);
             return res.status(201).json({ success: true, message: 'Kayıt başarılı.' });
         } catch (error) {
             next(error);

@@ -5,8 +5,9 @@ import { authMiddleware } from '../middleware/auth.middleware';
 
 const router = Router();
 
-router.patch('/profile', authMiddleware, userController.updateUserProfile);
-router.get('/profile', authMiddleware, userController.getUserProfile);
-router.delete('/profile', authMiddleware, userController.deleteAccount);
+router.patch('/profile', authMiddleware, userController.updateUserProfile.bind(userController));
+router.get('/profile', authMiddleware, userController.getUserProfile.bind(userController));
+router.delete('/profile', authMiddleware, userController.deleteAccount.bind(userController));
+router.get('/daily_targets', authMiddleware, userController.getDailyTargets.bind(userController));
 
 export default router;

@@ -1,7 +1,7 @@
 // src/controllers/user.controller.ts
 
 import { Request, Response, NextFunction } from 'express';
-import { userModel } from '../models/user.model';
+import { userModel, calculateDailyTargets } from '../models/user.model';
 
 export class UserController {
 
@@ -26,7 +26,7 @@ export class UserController {
                 return res.status(400).json({ success: false, message: 'No data to update.' });
             }
 
-            const updatedUser = await userModel.updateUserProfileById(userId, updates);
+            const updatedUser = await userModel.updateUserProfileById(BigInt(userId), updates);
             return res.status(200).json({ success: true, message: 'User Profile is updated successfully.' });
         } catch (err) {
             next(err);
@@ -37,7 +37,7 @@ export class UserController {
         try {
             const userId = req.user!.id; // Assuming jwt/auth middleware sets req.user
 
-            const fetchedUser = await userModel.fetchUser(userId);
+            const fetchedUser = await userModel.fetchUser(BigInt(userId));
 
             if (!fetchedUser) {
                 return res.status(401).json({ success: false, message: 'User is not found.' });
@@ -70,8 +70,38 @@ export class UserController {
 
             // ATTENTION: burada elimdeki user id ye sahip bir user var mi kontrolu yapmali miyim emin degilim, zaten giris yapabildiysek user vardir vs. bir hata alirsak bu ihtimal aklimizda bulunsun.
 
-            const updatedUser = await userModel.deleteUser(userId);
+            const updatedUser = await userModel.deleteUser(BigInt(userId));
             return res.status(200).json({ success: true, message: 'User is deleted successfully.' });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async getDailyTargets(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = req.user!.id;
+
+            const fetchedUser = await userModel.fetchUser(BigInt(userId));
+
+            if (!fetchedUser || !fetchedUser.profile) {
+                return res.status(404).json({ success: false, message: 'User profile not found. Please complete signup.' });
+            }
+
+            const p = fetchedUser.profile;
+            const targets = calculateDailyTargets(
+                p.age,
+                p.gender,
+                p.weight,
+                p.height,
+                p.activity_level,
+                p.reason_to_diet
+            );
+
+            return res.status(200).json({
+                success: true,
+                message: 'Daily targets calculated successfully.',
+                data: targets
+            });
         } catch (err) {
             next(err);
         }
