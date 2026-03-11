@@ -9,6 +9,7 @@ import { useRoute } from '@react-navigation/native';
 import styles from '../styles/SignUpEnterData';
 import GenderSelector from '../components/genderSelection'
 import GoalDropdown from '../components/goalSelection'
+import ActivityLevelDropdown from '../components/activityLevelSelection'
 import { RootStackParamList } from '../App';
 import { IP_ADDRESS } from "@env";
 
@@ -34,6 +35,8 @@ function SignUpEnterData({ navigation, route }: Props) {
   const [height, setHeight] = useState('');
   const [goal, setGoal] = useState('');
   const [target_weight, setTargetWeight] = useState('');
+  const [activity_level, setActivityLevel] = useState('');
+  const [goal_duration_months, setGoalDurationMonths] = useState('');
 
 
   const [loading, setLoading] = useState<boolean>(false);
@@ -47,10 +50,23 @@ function SignUpEnterData({ navigation, route }: Props) {
     if (loading) return;
     setLoading(true);
 
-    if (!age || !gender || !weight || !height || !goal) {
-      Alert.alert("Hata", "Please Enter All Infos.");
+    if (!age || !gender || !weight || !height || !goal || !activity_level) {
+      Alert.alert("Missing Info", "Please fill in all required fields.");
       setLoading(false);
       return;
+    }
+
+    // Goal duration validation: must be between 1 and 24 months if provided
+    if (goal_duration_months) {
+      const months = parseInt(goal_duration_months);
+      if (isNaN(months) || months < 1 || months > 24) {
+        Alert.alert(
+          "Invalid Duration",
+          "Please enter a realistic goal duration between 1 and 24 months."
+        );
+        setLoading(false);
+        return;
+      }
     }
     const secondData = {
       ...initialData,
@@ -60,6 +76,8 @@ function SignUpEnterData({ navigation, route }: Props) {
       height: parseFloat(height),
       reason_to_diet: goal,
       target_weight: target_weight ? parseFloat(target_weight) : 0,
+      activity_level,
+      goal_duration_months: goal_duration_months ? parseInt(goal_duration_months) : null,
     }
     navigation.navigate('CreateAvatar', { finalData: secondData });
     setLoading(false);
@@ -123,6 +141,22 @@ function SignUpEnterData({ navigation, route }: Props) {
                 value={target_weight}
                 keyboardType="numeric"
                 onChangeText={setTargetWeight}
+              />
+            </View>
+            <ActivityLevelDropdown value={activity_level} onChange={setActivityLevel} />
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Goal Duration (optional)</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="How many months to reach your goal? (1–24)"
+                value={goal_duration_months}
+                keyboardType="numeric"
+                maxLength={2}
+                onChangeText={(text) => {
+                  // Only allow digits
+                  const cleaned = text.replace(/[^0-9]/g, '');
+                  setGoalDurationMonths(cleaned);
+                }}
               />
             </View>
             <TouchableOpacity style={styles.button} onPress={handleSignUpData}>

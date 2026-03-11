@@ -300,9 +300,14 @@ function SocialFeed({ navigation }: Props) {
                     <Ionicons name="arrow-back" size={24} color="#333" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Feed</Text>
-                <TouchableOpacity style={styles.menuButton} onPress={() => navigation.navigate('Menu')}>
-                    <Ionicons name="menu" size={24} color="#333" />
-                </TouchableOpacity>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <TouchableOpacity style={styles.menuButton} onPress={() => navigation.navigate('FindFriends')}>
+                        <Ionicons name="people-outline" size={24} color="#333" />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.menuButton} onPress={() => navigation.navigate('Menu')}>
+                        <Ionicons name="menu" size={24} color="#333" />
+                    </TouchableOpacity>
+                </View>
             </View>
 
             {loading ? (

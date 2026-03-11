@@ -45,13 +45,13 @@ export class AuthController {
             if (!passwordMatch) {
                 return res.status(401).json({ success: false, message: 'Geçersiz email/username veya şifre.' });
             }
-            // JWT token oluştur
-            const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' }); // olusturulan token 7 gun boyunca gecerli, frontend bunu bir yere kaydedip kullanabilir
+            // JWT token oluştur (BigInt'i string'e çevir - CockroachDB BigInt JSON serialize edemez)
+            const token = jwt.sign({ userId: user.id.toString() }, JWT_SECRET, { expiresIn: '7d' });
             return res.status(200).json({
                 success: true,
                 message: 'Giriş başarılı.',
                 token,
-                user: {}
+                user: { id: user.id.toString(), username: user.username, email: user.email }
             });
         } catch (error) {
             next(error);

@@ -20,6 +20,7 @@ import ProfileSettingsMenu from './screens/ProfileSettingsMenu';
 import EditProfile from './screens/EditProfile';
 import SocialFeed from './screens/SocialFeed';
 import NewPost from './screens/NewPost';
+import FindFriends from './screens/FindFriends';
 import { UserProfile, UpdatedMealParams } from './types';
 
 // Navigation tipi
@@ -57,6 +58,7 @@ export type RootStackParamList = {
   ScanFood: undefined;
   SocialFeed: undefined;
   NewPost: undefined;
+  FindFriends: undefined;
 };
 
 const theme = {
@@ -129,6 +131,7 @@ export default function App() {
               <Stack.Screen name="EditProfile" component={EditProfile} />
               <Stack.Screen name="SocialFeed" component={SocialFeed} />
               <Stack.Screen name="NewPost" component={NewPost} />
+              <Stack.Screen name="FindFriends" component={FindFriends} />
             </>
           ) : (
 
@@ -147,6 +150,7 @@ export default function App() {
               <Stack.Screen name="EditProfile" component={EditProfile} />
               <Stack.Screen name="SocialFeed" component={SocialFeed} />
               <Stack.Screen name="NewPost" component={NewPost} />
+              <Stack.Screen name="FindFriends" component={FindFriends} />
             </>
           )}
         </Stack.Navigator>

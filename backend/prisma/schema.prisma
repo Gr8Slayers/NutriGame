@@ -6,12 +6,12 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql" // Veritabanı olarak PostgreSQL kullanıyoruz
-  url      = env("DATABASE_URL") // Bu, .env dosyasından gelecek
+  provider = "cockroachdb"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
+  id        BigInt    @id @default(autoincrement())
   username  String    @unique
   email     String    @unique
   password  String
@@ -20,22 +20,24 @@ model User {
 }
 
 model UserProfile {
-  id             Int      @id @default(autoincrement())
-  userId         Int      @unique
-  age            Int
-  gender         String
-  weight         Int
-  height         Int
-  target_weight  Int
-  reason_to_diet String
-  avatar_url     String
+  id                   BigInt   @id @default(autoincrement())
+  userId               BigInt   @unique
+  age                  Int
+  gender               String
+  weight               Int
+  height               Int
+  target_weight        Int
+  reason_to_diet       String
+  avatar_url           String
+  activity_level       String   @default("")
+  goal_duration_months Int?     
 
   // her UserProfile in bir User a bagli olmasini sagliyor, user da bir row silindiginde burada ilgili user in profili siliniyor
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model FoodLookup{
-  id              Int      @id @default(autoincrement())
+  id              BigInt   @id @default(autoincrement())
   food_id         Int      @unique
   food_name       String
   p_unit          String //porsiyon miktarinin hangi birim oldugu orn. gram, ml, tabak, kasik
@@ -47,8 +49,8 @@ model FoodLookup{
 }
 
 model MealLog {
-  meal_log_id     Int      @id @default(autoincrement())
-  userId          Int      
+  meal_log_id     BigInt   @id @default(autoincrement())
+  userId          BigInt   
   date            DateTime @db.Date @default(now()) // prisma sadece Date kabul etmiyor Datetime var sadece, yanina ekledigim aciklama db de Date olarak tutlmayi sagliyor
   meal_category   String //ogun tipi orn. {breakfast, lunch, dinner, snack} bunlardan baska olmayacak enum lanabilir
   p_count         Int //kac porsiyon eklendigi, toplamlar buna gore hesaplanacak
@@ -63,8 +65,8 @@ model MealLog {
 }
 
 model MealTotals{
-  id              Int      @id @default(autoincrement())
-  userId          Int
+  id              BigInt   @id @default(autoincrement())
+  userId          BigInt
   date            DateTime @db.Date @default(now()) // prisma sadece Date kabul etmiyor Datetime var sadece, yanina ekledigim aciklama db de Date olarak tutlmayi sagliyor
   meal_category   String //ogun tipi orn. {breakfast, lunch, dinner, snack, OVERALL(yani tum gun)} bunlardan baska olmayacak enum lanabilir     
   t_calorie       Float
@@ -76,8 +78,8 @@ model MealTotals{
 }
 
 model WaterLog {
-  water_log_id    Int      @id @default(autoincrement())
-  userId          Int      
+  water_log_id    BigInt   @id @default(autoincrement())
+  userId          BigInt   
   date            DateTime @db.Date @default(now()) // prisma sadece Date kabul etmiyor Datetime var sadece, yanina ekledigim aciklama db de Date olarak tutlmayi sagliyor
   t_amount        Int //yeni eklenen su miktarini o anki totale ekleyip yeni totali kaydediyorum
 
