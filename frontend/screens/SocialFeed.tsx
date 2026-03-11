@@ -80,13 +80,30 @@ function SocialFeed({ navigation }: Props) {
         });
     }, []);
 
-    const toggleComments = useCallback((postId: string) => {
+    const toggleComments = useCallback(async (postId: string) => {
+        const isOpening = !expandedComments.has(postId);
+
         setExpandedComments(prev => {
             const next = new Set(prev);
             next.has(postId) ? next.delete(postId) : next.add(postId);
             return next;
         });
-    }, []);
+
+        // Açılıyorsa ve yorumlar henüz yüklenmemişse backend'den çek
+        if (!isOpening || commentsByPost[postId]) return;
+
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+            const res = await fetch(`${API_URL}/api/social/comments/${postId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+            setCommentsByPost(prev => ({ ...prev, [postId]: data.data ?? [] }));
+        } catch (e) {
+            console.error('Yorumlar yüklenemedi:', e);
+        }
+    }, [expandedComments, commentsByPost]);
 
     const handleLike = useCallback(async (post: Post) => {
         const token = await SecureStore.getItemAsync('userToken');
