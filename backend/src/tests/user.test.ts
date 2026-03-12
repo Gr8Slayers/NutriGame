@@ -235,7 +235,7 @@ describe('🔗 Integration Tests — User Data Endpoints', () => {
         const res = await request(app)
             .patch('/api/user/profile')
             .set('Authorization', `Bearer ${userToken}`)
-            .send({ 
+            .send({
                 reason_to_diet: 'Weight Loss',
                 avatar_url: '../assets/avatars/av3.png'
             });
@@ -247,8 +247,44 @@ describe('🔗 Integration Tests — User Data Endpoints', () => {
         const getRes = await request(app)
             .get('/api/user/profile')
             .set('Authorization', `Bearer ${userToken}`);
-            
+
         expect(getRes.body.data.reason_to_diet).toBe('Weight Loss');
         expect(getRes.body.data.avatar_url).toBe('../assets/avatars/av3.png');
     });
+});
+
+it('DELETE /api/user/profile should completely delete the user account and associated data', async () => {
+    const deleteRes = await request(app)
+        .delete('/api/user/profile')
+        .set('Authorization', `Bearer ${userToken}`);
+
+    expect(deleteRes.status).toBe(200);
+    expect(deleteRes.body.success).toBe(true);
+    expect(deleteRes.body.message).toBe('User is deleted successfully.');
+
+    // 2. Silinen hesaba tekrar erişmeye çalış (404 veya 401 dönmeli)
+    const getRes = await request(app)
+        .get('/api/user/profile')
+        .set('Authorization', `Bearer ${userToken}`);
+
+    expect([401, 404]).toContain(getRes.status);
+    expect(getRes.body.success).toBe(false);
+
+    // 3. Veritabanını doğrudan kontrol et (Gerçekten silinmiş mi?)
+    const dbUserAfterDelete = await prisma.user.findUnique({
+        where: { id: testUserId }
+    });
+
+    expect(dbUserAfterDelete).toBeNull(); // Veritabanında artık böyle bir ID olmamalı
+
+    // (Opsiyonel ama önerilen) - İlişkili tabloların da (Cascade) silindiğinden emin ol
+    const userMealLogs = await prisma.mealLog.findMany({ where: { userId: testUserId } });
+    expect(userMealLogs.length).toBe(0);
+
+    const userWaterLogs = await prisma.waterLog.findMany({ where: { userId: testUserId } });
+    expect(userWaterLogs.length).toBe(0);
+
+    // afterAll kancasının hata vermemesi için testUserId'yi sıfırlıyoruz
+    testUserId = 0;
+
 });

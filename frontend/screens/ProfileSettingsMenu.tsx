@@ -68,7 +68,7 @@ export default function ProfileSettingsMenu() {
             if (!token) return;
             console.log(`${API_URL}/api/user/profile/delete`)
 
-            const res = await fetch(`${API_URL}/api/user/profile/delete`, {
+            const res = await fetch(`${API_URL}/api/user/profile`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`
