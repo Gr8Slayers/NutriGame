@@ -11,24 +11,34 @@ const ACTIVITY_LEVELS = [
     { label: 'Extra Active', description: 'Intense daily exercise or physical job', icon: 'flash-outline' },
 ];
 
+interface ActivityDropdownProps {
+    value: string;
+    onChange: (val: string) => void;
+    buttonStyle?: any;
+    buttonTextStyle?: any;
+    labelStyle?: any;
+    containerStyle?: any;
+}
+
 const ActivityLevelDropdown = ({
     value,
     onChange,
-}: {
-    value: string;
-    onChange: (val: string) => void;
-}) => {
+    buttonStyle,
+    buttonTextStyle,
+    labelStyle,
+    containerStyle,
+}: ActivityDropdownProps) => {
     const [visible, setVisible] = useState(false);
 
     return (
-        <View style={styles.inputContainer}>
-            <Text style={styles.label}>Activity Level *</Text>
+        <View style={[styles.inputContainer, containerStyle]}>
+            <Text style={[styles.label, labelStyle]}>Activity Level *</Text>
             <TouchableOpacity
-                style={[styles.goalButton, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}
+                style={[styles.goalButton, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, buttonStyle]}
                 onPress={() => setVisible(true)}
                 activeOpacity={0.7}
             >
-                <Text style={styles.goalButtonText}>{value || 'Choose Your Activity Level'}</Text>
+                <Text style={[styles.goalButtonText, buttonTextStyle]}>{value || 'Choose Your Activity Level'}</Text>
             </TouchableOpacity>
 
             <Modal

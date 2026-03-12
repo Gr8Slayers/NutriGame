@@ -11,18 +11,27 @@ const GOALS = [
   { label: 'Healthy Life', icon: 'leaf-outline' },
 ];
 
-const GoalDropdown = ({ value, onChange }: { value: string; onChange: (val: string) => void }) => {
+interface GoalDropdownProps {
+  value: string;
+  onChange: (val: string) => void;
+  buttonStyle?: any;
+  buttonTextStyle?: any;
+  labelStyle?: any;
+  containerStyle?: any;
+}
+
+const GoalDropdown = ({ value, onChange, buttonStyle, buttonTextStyle, labelStyle, containerStyle }: GoalDropdownProps) => {
   const [visible, setVisible] = useState(false);
 
   return (
-    <View style={styles.inputContainer}>
-      <Text style={styles.label}>Goal *</Text>
+    <View style={[styles.inputContainer, containerStyle]}>
+      <Text style={[styles.label, labelStyle]}>Goal *</Text>
       <TouchableOpacity
-        style={[styles.goalButton, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}
+        style={[styles.goalButton, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, buttonStyle]}
         onPress={() => setVisible(true)}
         activeOpacity={0.7}
       >
-        <Text style={styles.goalButtonText}>{value || 'Choose Your Goal'}</Text>
+        <Text style={[styles.goalButtonText, buttonTextStyle]}>{value || 'Choose Your Goal'}</Text>
       </TouchableOpacity>
 
       <Modal

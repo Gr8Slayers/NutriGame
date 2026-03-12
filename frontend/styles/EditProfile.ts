@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import goalSelection from '../components/goalSelection';
 
 export default StyleSheet.create({
     container: {
@@ -143,5 +144,17 @@ export default StyleSheet.create({
     avatarImage: {
         width: '100%',
         height: '100%',
+    },
+    goalSelection: {
+        backgroundColor: '#14281d',
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#2a3f32',
+    },
+    activitySelection: {
+        backgroundColor: '#14281d',
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#2a3f32',
     },
 });

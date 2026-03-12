@@ -8,6 +8,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { UserProfile } from '../types';
 import styles from '../styles/EditProfile';
+import GoalDropdown from '../components/goalSelection';
+import ActivityLevelDropdown from '../components/activityLevelSelection';
 
 const API_URL = `http://${IP_ADDRESS}:3000`;
 
@@ -104,6 +106,8 @@ export default function EditProfile() {
     const [currentWeight, setCurrentWeight] = useState('');
     const [height, setHeight] = useState('');
     const [selectedAvatar, setSelectedAvatar] = useState(userData.avatar_url || '');
+    const [reasonToDiet, setReasonToDiet] = useState(userData.reason_to_diet || 'Maintain Weight');
+    const [activityLevel, setActivityLevel] = useState('Moderately Active'); // Assuming default or mapping if it was stored
     const [showAvatarModal, setShowAvatarModal] = useState(false);
     const [saving, setSaving] = useState(false);
 
@@ -120,6 +124,7 @@ export default function EditProfile() {
                 username,
                 email,
                 avatar_url: selectedAvatar,
+                reason_to_diet: reasonToDiet,
             };
 
             if (currentWeight) {
@@ -245,6 +250,29 @@ export default function EditProfile() {
                             keyboardType="numeric"
                         />
                     </View>
+                </View>
+
+                {/* Dietary Preference & Activity Level */}
+                <View style={{ zIndex: 10 }}>
+                    <GoalDropdown
+                        value={reasonToDiet}
+                        onChange={setReasonToDiet}
+                        buttonStyle={styles.goalSelection}
+                        buttonTextStyle={{ color: '#f7e5c5', fontSize: 16 }}
+                        labelStyle={styles.label}
+                        containerStyle={{ backgroundColor: 'transparent', borderWidth: 0, elevation: 0, shadowOpacity: 0, paddingHorizontal: 0, paddingVertical: 0 }}
+                    />
+                </View>
+
+                <View style={{ zIndex: 9 }}>
+                    <ActivityLevelDropdown
+                        value={activityLevel}
+                        onChange={setActivityLevel}
+                        buttonStyle={styles.activitySelection}
+                        buttonTextStyle={{ color: '#f7e5c5', fontSize: 16 }}
+                        labelStyle={styles.label}
+                        containerStyle={{ backgroundColor: 'transparent', borderWidth: 0, elevation: 0, shadowOpacity: 0, paddingHorizontal: 0, paddingVertical: 0 }}
+                    />
                 </View>
 
                 {/* Save Button */}

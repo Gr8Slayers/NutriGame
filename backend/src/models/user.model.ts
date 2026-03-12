@@ -104,8 +104,11 @@ export function calculateDailyTargets(
 
   // Step 3: Adjust for goal
   const dietLower = reason_to_diet.toLowerCase();
+  
   if (dietLower.includes('loss') || dietLower.includes('lose')) {
-    tdee = Math.max(1200, tdee - 500); // never go below 1200 kcal
+    // Medical lower limits: 1500 for men, 1200 for women
+    const minCalories = gender.toLowerCase() === 'male' ? 1500 : 1200;
+    tdee = Math.max(minCalories, tdee - 500); 
   } else if (dietLower.includes('gain') || dietLower.includes('muscle')) {
     tdee = tdee + 300;
   }

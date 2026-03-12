@@ -4,6 +4,10 @@ export interface UserProfile {
     email: string;
     avatar_url?: string;
     target_weight?: number;
+    weight?: number;
+    height?: number;
+    reason_to_diet?: string;
+    activity_level?: string;
     level?: number;
     streak?: number;
 }
