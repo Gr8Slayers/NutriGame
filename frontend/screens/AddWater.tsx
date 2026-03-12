@@ -41,7 +41,8 @@ export default function AddWater({ route, navigation }: Props) {
      const [currentWater, setCurrentWater] = useState<number>(0);
      const [addedEntries, setAddedEntries] = useState<AddedEntry[]>([]);
      const [modalVisible, setModalVisible] = useState(false);
-     const maxCapacity = 3000; // 3 liters daily goal
+     const [waterGoal, setWaterGoal] = useState<number>(0);
+     const maxCapacity = waterGoal > 0 ? waterGoal : 3000;
 
      const addedAmount = addedEntries.reduce((sum, e) => sum + e.amount, 0);
 
@@ -72,11 +73,31 @@ export default function AddWater({ route, navigation }: Props) {
           }
      }, [selectedDate]);
 
+     const fetchWaterGoal = useCallback(async () => {
+          const token = await SecureStore.getItemAsync('userToken');
+          try {
+               const res = await fetch(`${API_URL}/api/user/daily_targets`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+               });
+               const data = await res.json();
+               if (res.ok && data.success) {
+                    const t = data.data;
+                    if (t && t.water_ml) {
+                         setWaterGoal(t.water_ml);
+                    }
+               }
+          } catch (error) {
+               console.error('Error fetching water goal:', error);
+          }
+     }, []);
+
      useFocusEffect(
           useCallback(() => {
                fetchWaterData();
                setAddedEntries([]);
-          }, [fetchWaterData])
+               fetchWaterGoal();
+          }, [fetchWaterData, fetchWaterGoal])
      );
 
      const handlePortionPress = (portion: WaterPortion) => {

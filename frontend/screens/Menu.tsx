@@ -63,7 +63,7 @@ export default function Menu() {
 
     const fetchProfile = useCallback(async () => {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // reduced to 5s
         try {
             const token = await SecureStore.getItemAsync('userToken');
             if (!token) {
@@ -82,13 +82,17 @@ export default function Menu() {
 
             if (res.ok && data.success) {
                 setProfile(data.data);
+            } else {
+                console.log("Menu profile fetch not successful:", data);
             }
         } catch (error: any) {
             clearTimeout(timeoutId);
             if (error.name === 'AbortError') {
                 console.log('Menu: Profil isteği zaman aşımına uğradı');
+                Alert.alert('Bağlantı Hatası', 'Profil bilgileri yüklenemedi (Zaman aşımı).');
             } else {
                 console.log("Error fetching profile:", error);
+                Alert.alert('Hata', 'Profil bilgileri yüklenirken bir sorun oluştu.');
             }
         } finally {
             setLoading(false);

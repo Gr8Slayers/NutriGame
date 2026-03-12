@@ -43,7 +43,6 @@ export default StyleSheet.create({
     width: 40,
   },
   mainChart: {
-    paddingVertical: 30,
     width: '100%',
     backgroundColor: "#ABC270",
 
@@ -52,7 +51,7 @@ export default StyleSheet.create({
 
     alignItems: "center",
     justifyContent: 'flex-end',
-    paddingTop: height * 0.1,
+    paddingTop: height * 0.05,
     paddingBottom: 30,
 
     zIndex: 5,

@@ -70,7 +70,7 @@ export default StyleSheet.create({
   },
   headerContainer: {
     position: 'absolute',
-    top: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 20 : 80,
+    top: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 20 : 50,
     width: '100%',
     alignItems: 'center',
     zIndex: 100,

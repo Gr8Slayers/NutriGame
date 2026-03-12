@@ -88,6 +88,9 @@ function CreateAvatar({ navigation, route }: Props) {
     if (loading) return;
     setLoading(true);
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 seconds timeout
+
     try {
       console.log(`${API_URL}/api/auth/register`)
       const res = await fetch(`${API_URL}/api/auth/register`, {
@@ -99,26 +102,34 @@ function CreateAvatar({ navigation, route }: Props) {
           ...finalData,
           avatar_url: selected,
         }),
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
+
       const data = await res.json();
       console.log(data);
       if (res.ok) {
         navigation.navigate("Login");
-        Alert.alert('Success', data.message);
+        Alert.alert('Başarılı', data.message);
       }
       else {
-        Alert.alert('Error', data.message || "Cannot create profile");
+        Alert.alert('Hata', data.message || "Profil oluşturulamadı.");
       }
 
     }
-    catch (error) {
-
+    catch (error: any) {
+      clearTimeout(timeoutId);
+      if (error.name === 'AbortError') {
+        Alert.alert('Bağlantı Hatası', 'Sunucuya bağlanılamadı (Zaman aşımı). Lütfen internetinizi (veya okul Wi-Fi bağlantınızı) kontrol edin.');
+      } else {
+        Alert.alert('Hata', 'Kayıt işlemi sırasında bir hata oluştu. Sunucu kapalı olabilir.');
+      }
+      console.error(error);
     }
     finally {
       setLoading(false);
     }
-
-
   };
 
   useEffect(() => {

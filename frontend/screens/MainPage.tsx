@@ -213,7 +213,7 @@ function MainPage({ navigation }: Props) {
                     />
                     <View style={styles.labelContainer}>
                         <Text style={styles.mealTitle}>Add Breakfast</Text>
-                        <Text style={styles.subtitle}>Recommended: {breakfastGoal} kcal</Text>
+                        <Text style={styles.subtitle}>Rec: {breakfastGoal} kcal | {Math.round((breakfastGoal * 0.30) / 4)}g P • {Math.round((breakfastGoal * 0.50) / 4)}g C • {Math.round((breakfastGoal * 0.20) / 9)}g F</Text>
                     </View>
                     <TouchableOpacity style={styles.addButton}
                         onPress={() => navigation.navigate("AddMeal", {
@@ -231,7 +231,7 @@ function MainPage({ navigation }: Props) {
                     />
                     <View style={styles.labelContainer}>
                         <Text style={styles.mealTitle}>Add Lunch</Text>
-                        <Text style={styles.subtitle}>Recommended: {lunchGoal} kcal</Text>
+                        <Text style={styles.subtitle}>Rec: {lunchGoal} kcal | {Math.round((lunchGoal * 0.30) / 4)}g P • {Math.round((lunchGoal * 0.50) / 4)}g C • {Math.round((lunchGoal * 0.20) / 9)}g F</Text>
                     </View>
                     <TouchableOpacity style={styles.addButton}
                         onPress={() => navigation.navigate("AddMeal", {
@@ -249,7 +249,7 @@ function MainPage({ navigation }: Props) {
                     />
                     <View style={styles.labelContainer}>
                         <Text style={styles.mealTitle}>Add Dinner</Text>
-                        <Text style={styles.subtitle}>Recommended: {dinnerGoal} kcal</Text>
+                        <Text style={styles.subtitle}>Rec: {dinnerGoal} kcal | {Math.round((dinnerGoal * 0.30) / 4)}g P • {Math.round((dinnerGoal * 0.50) / 4)}g C • {Math.round((dinnerGoal * 0.20) / 9)}g F</Text>
                     </View>
                     <TouchableOpacity style={styles.addButton}
                         onPress={() => navigation.navigate("AddMeal", {
@@ -267,7 +267,7 @@ function MainPage({ navigation }: Props) {
                     />
                     <View style={styles.labelContainer}>
                         <Text style={styles.mealTitle}>Add Snack</Text>
-                        <Text style={styles.subtitle}>Recommended: {snackGoal} kcal</Text>
+                        <Text style={styles.subtitle}>Rec: {snackGoal} kcal | {Math.round((snackGoal * 0.30) / 4)}g P • {Math.round((snackGoal * 0.50) / 4)}g C • {Math.round((snackGoal * 0.20) / 9)}g F</Text>
                     </View>
                     <TouchableOpacity style={styles.addButton}
                         onPress={() => navigation.navigate("AddMeal", {
