@@ -195,6 +195,15 @@ export default function AddMeal({ route, navigation }: Props) {
   const handleAddWithStepper = () => {
     if (!selectedMeal) return;
 
+    // Future date check
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    
+    if (selectedDate > todayStr) {
+      Alert.alert("Uyarı", "Gelecek tarihlere kayıt ekleyemezsiniz.");
+      return;
+    }
+
     const baseAmount = selectedMeal.p_amount || 100;
     const unit = selectedMeal.p_unit || 'g';
     const totalWeight = stepperValue * baseAmount; //kulanıcı kaç porsiyuon yedigine göre hesaplanır.
@@ -210,16 +219,17 @@ export default function AddMeal({ route, navigation }: Props) {
     const newList = [...selectedItems, newItemToAdd];
     setSelectedItems(newList);
     handleAddMeal(newList);
+    handleStreakUpdate();
     setportionModalVisible(false);
     setSelectedMeal(null);
 
   };
 
   //seçilen yemekler backende send edilir.
-  //tarih konusunda bir sorun var ben o tarihe save etmek isterken bir önceki güne save ediyor??????
   const handleAddMeal = async (items?: FoodItem[]) => {
     const token = await SecureStore.getItemAsync('userToken');
     const itemsToSend = items || selectedItems;
+    if (itemsToSend.length === 0) return;
 
     try {
       const promises = itemsToSend.map(item => {
@@ -232,7 +242,7 @@ export default function AddMeal({ route, navigation }: Props) {
             'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({
-            date: selectedDate, // bunu ben ekledim fyi -zeynep
+            date: selectedDate,
             meal_category: type,
             food_id: item.food_id,
             p_count: item.portionValue || 1,
@@ -245,12 +255,43 @@ export default function AddMeal({ route, navigation }: Props) {
 
       if (allSuccess) {
         fetchMealTotal(); // refresh the circle immediately
+
+        await handleStreakUpdate();
+
       } else {
         Alert.alert("Hata", "Bazı yemekler eklenemedi.");
       }
     } catch (error) {
       console.error("Error adding meals:", error);
       Alert.alert("Hata", "Yemek ekleme hatası");
+    }
+  }
+
+  const handleStreakUpdate = async () => {
+    const token = await SecureStore.getItemAsync('userToken');
+    const url = `${API_URL}/api/gamification/streak/update`;
+    console.log(url);
+
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          date: selectedDate,
+          meal_category: type,
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        console.log('Streak updated successfully');
+      } else {
+        console.log('Streak update failed', data);
+      }
+    } catch (error) {
+      console.error('Error updating streak:', error);
     }
   }
 
@@ -276,6 +317,7 @@ export default function AddMeal({ route, navigation }: Props) {
       if (res.ok) {
         const newList = selectedItems.filter((_, index) => index !== indexToRemove);
         setSelectedItems(newList);
+        fetchMealTotal();
       }
       else {
         Alert.alert("Hata", "Silinemedi");
@@ -473,7 +515,7 @@ export default function AddMeal({ route, navigation }: Props) {
                   <View style={styles.stepperControls}>
                     <TouchableOpacity
                       style={styles.stepperButton}
-                      onPress={() => setStepperValue(prev => Math.max(0.5, prev - 0.5))}
+                      onPress={() => setStepperValue(prev => Math.min(10, prev + 0.5))}
                     >
                       <Ionicons name="remove" size={30} color="#fff" />
                     </TouchableOpacity>

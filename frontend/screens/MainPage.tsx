@@ -27,9 +27,7 @@ function MainPage({ navigation }: Props) {
     type DailyMeals = {
         [K in MealType]?: MealEntry;
     };
-    interface MealsData {
-        [date: string]: DailyMeals;
-    }
+
 
     const slideAnim = useRef(new Animated.Value(-300)).current;
 
@@ -40,7 +38,6 @@ function MainPage({ navigation }: Props) {
             useNativeDriver: true,
         }).start();
     }, []);
-    const [mealsData, setMealsData] = useState<MealsData>({});//boş obje
 
     const [calorie, setCalorie] = useState<number>(0);
     const [carb, setCarb] = useState<number>(0);

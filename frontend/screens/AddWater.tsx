@@ -101,6 +101,15 @@ export default function AddWater({ route, navigation }: Props) {
      );
 
      const handlePortionPress = (portion: WaterPortion) => {
+          // Future date check
+          const today = new Date();
+          const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+          
+          if (selectedDate > todayStr) {
+               Alert.alert("Uyarı", "Gelecek tarihlere kayıt ekleyemezsiniz.");
+               return;
+          }
+
           const entry: AddedEntry = {
                key: `${portion.id}-${Date.now()}`,
                name: portion.name,

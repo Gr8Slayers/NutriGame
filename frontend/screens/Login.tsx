@@ -39,35 +39,47 @@ function Login({ navigation }: Props) {
   const handleLogin = async () => {
     if (loading) return;
     setLoading(true);
-    console.log(JSON.stringify({ email, username, password }));
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 saniye sınırı
 
     try {
+      console.log(`${API_URL}/api/auth/login`);
+
       const res = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, username, password }),
+        signal: controller.signal,
       });
 
+      clearTimeout(timeoutId);
       const data = await res.json();
 
       if (res.ok) {
         Alert.alert('Success', data.message);
-        navigation.navigate('MainPage');
+
         const token = data.token || "No Token";
         await SecureStore.setItemAsync('userToken', token);
+
         if (remember) {
           await SecureStore.setItemAsync('rememberMeFlag', 'true');
-        }
-        else {
+        } else {
           await SecureStore.deleteItemAsync('rememberMeFlag');
         }
-        //Alert.alert('Başarılı', `Giriş yapıldı! Token: ${data.token.substring(0, 20)}...`);
+
+        navigation.navigate('MainPage');
       } else {
         Alert.alert('Hata', data.message || 'Giriş yapılamadı');
       }
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Hata', 'Sunucuya bağlanılamadı. IP adresinizi kontrol edin.');
+    } catch (error: any) {
+      clearTimeout(timeoutId);
+      if (error.name === 'AbortError') {
+        Alert.alert('Bağlantı Hatası', 'Sunucu yanıt vermedi (Zaman aşımı). Lütfen IP adresinizi ve internetinizi kontrol edin.');
+      } else {
+        Alert.alert('Hata', 'Sunucuya bağlanılamadı. Backend kapalı veya ağ hatası var.');
+      }
+      console.error("Login Hatası:", error);
     } finally {
       setLoading(false);
     }

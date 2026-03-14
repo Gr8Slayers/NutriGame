@@ -60,10 +60,12 @@ export default function Menu() {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
+    const [streakValue, setStreakValue] = useState<number>(0);
 
-    const fetchProfile = useCallback(async () => {
+    const fetchProfileAndStreak = useCallback(async () => {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000); // reduced to 5s
+        const timeoutId = setTimeout(() => controller.abort(), 20000);
+
         try {
             const token = await SecureStore.getItemAsync('userToken');
             if (!token) {
@@ -71,28 +73,35 @@ export default function Menu() {
                 return;
             }
 
-            const res = await fetch(`${API_URL}/api/user/profile`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                },
-                signal: controller.signal,
-            });
-            clearTimeout(timeoutId);
-            const data = await res.json();
+            const [profileRes, streakRes] = await Promise.all([
+                fetch(`${API_URL}/api/user/profile`, {
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    signal: controller.signal,
+                }),
+                fetch(`${API_URL}/api/gamification/streak`, {
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    signal: controller.signal,
+                })
+            ]);
 
-            if (res.ok && data.success) {
-                setProfile(data.data);
-            } else {
-                console.log("Menu profile fetch not successful:", data);
+            const profileData = await profileRes.json();
+            const streakData = await streakRes.json();
+
+            if (profileRes.ok && profileData.success) {
+                setProfile(profileData.data);
             }
+
+            if (streakRes.ok && streakData.success) {
+                setStreakValue(streakData.data.currentStreak);
+            }
+
+            clearTimeout(timeoutId);
         } catch (error: any) {
             clearTimeout(timeoutId);
             if (error.name === 'AbortError') {
-                console.log('Menu: Profil isteği zaman aşımına uğradı');
-                Alert.alert('Bağlantı Hatası', 'Profil bilgileri yüklenemedi (Zaman aşımı).');
+                console.log("İstek zaman aşımına uğradı.");
             } else {
-                console.log("Error fetching profile:", error);
-                Alert.alert('Hata', 'Profil bilgileri yüklenirken bir sorun oluştu.');
+                console.log("Veri çekme hatası:", error);
             }
         } finally {
             setLoading(false);
@@ -101,8 +110,8 @@ export default function Menu() {
 
     useFocusEffect(
         useCallback(() => {
-            fetchProfile();
-        }, [fetchProfile])
+            fetchProfileAndStreak();
+        }, [fetchProfileAndStreak])
     );
 
     const handleLogout = async () => {
@@ -150,7 +159,7 @@ export default function Menu() {
                 <View style={styles.streakContainer}>
                     <View>
                         <Text style={styles.streakLabel}>Streak</Text>
-                        <Text style={styles.streakValue}>{0 || 0}</Text>
+                        <Text style={styles.streakValue}>{streakValue || 0}</Text>
                     </View>
                     <View style={styles.streakIconContainer}>
                         <LottieView

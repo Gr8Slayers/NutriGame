@@ -51,7 +51,13 @@ export class FoodController {
             if (isNaN(parsedDate.getTime())) {
                 return res.status(400).json({ success: false, message: 'Invalid calendar date.' });
             }
-            // end of date format check
+
+            // 3. Block future dates
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            if (parsedDate > today) {
+                return res.status(400).json({ success: false, message: 'Future dates are not allowed for logging.' });
+            }
 
             const fetchedFood = await foodModel.getFoodByFoodId(food_id);
 
@@ -205,7 +211,13 @@ export class FoodController {
             if (isNaN(parsedDate.getTime())) {
                 return res.status(400).json({ success: false, message: 'Invalid calendar date.' });
             }
-            // end of date format check
+
+            // 3. Block future dates
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            if (parsedDate > today) {
+                return res.status(400).json({ success: false, message: 'Future dates are not allowed for logging.' });
+            }
 
             const addedWater = await foodModel.addtoWaterLog(user_id, parsedDate, water_amount);
 

@@ -14,16 +14,16 @@ const API_URL = `http://${IP_ADDRESS}:3000`;
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CreateAvatar'>;
 
- const Leaf = () => {
-    return (
-      <View style={styles.leafContainer}>
-        {/* Sağdaki koyu yeşil büyük yaprak */}
-        <View style={styles.leaf1} />
-        {/* Soldaki açık yeşil küçük yaprak */}
-        <View style={styles.leaf2} />
-      </View>
-    );
-  };
+const Leaf = () => {
+  return (
+    <View style={styles.leafContainer}>
+      {/* Sağdaki koyu yeşil büyük yaprak */}
+      <View style={styles.leaf1} />
+      {/* Soldaki açık yeşil küçük yaprak */}
+      <View style={styles.leaf2} />
+    </View>
+  );
+};
 
 function CreateAvatar({ navigation, route }: Props) {
   const { finalData } = route.params;
@@ -71,7 +71,7 @@ function CreateAvatar({ navigation, route }: Props) {
     navigation.goBack();
   }
 
- 
+
 
   const getUserName = async () => {
 
@@ -89,7 +89,7 @@ function CreateAvatar({ navigation, route }: Props) {
     setLoading(true);
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 seconds timeout
+    const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 seconds timeout
 
     try {
       console.log(`${API_URL}/api/auth/register`)
@@ -104,7 +104,7 @@ function CreateAvatar({ navigation, route }: Props) {
         }),
         signal: controller.signal,
       });
-      
+
       clearTimeout(timeoutId);
 
       const data = await res.json();

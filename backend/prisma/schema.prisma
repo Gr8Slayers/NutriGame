@@ -17,6 +17,7 @@ model User {
   password  String
   createdAt DateTime  @default(now())
   profile   UserProfile?  // sadece Prisma için, DB kolonu değil
+  streak    Streak?   // Her kullanıcının bir streak kaydı olacak
 }
 
 model UserProfile {
@@ -126,6 +127,16 @@ model PostComment {
   text      String
   createdAt DateTime @default(now())
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+model Streak {
+  id             Int      @id @default(sequence())
+  userId         Int      @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currentStreak  Int      @default(0)
+  longestStreak  Int      @default(0)
+  lastActiveDate DateTime @default(now())
+  totalPoints    Int      @default(0)
 }
 
 //npx prisma db push yapılmalı
