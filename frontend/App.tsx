@@ -24,6 +24,7 @@ import FindFriends from './screens/FindFriends';
 import Challenges from './screens/Challenges';
 import CreateChallenge from './screens/CreateChallenge';
 import ChallengeProgress from './screens/ChallengeProgress';
+import WeeklySummary from './screens/WeeklySummary';
 import { UserProfile, UpdatedMealParams } from './types';
 
 // Navigation tipi
@@ -57,6 +58,7 @@ export type RootStackParamList = {
   Menu: undefined;
   ProfileSettingsMenu: UserProfile;
   EditProfile: UserProfile;
+  WeeklySummary: undefined;
   Chatbot: undefined;
   ScanFood: undefined;
   SocialFeed: undefined;
@@ -65,6 +67,7 @@ export type RootStackParamList = {
   Challenges: undefined;
   CreateChallenge: undefined;
   ChallengeProgress: { challengeId: string };
+
 };
 
 const theme = {
@@ -135,6 +138,7 @@ export default function App() {
               <Stack.Screen name="Menu" component={Menu} />
               <Stack.Screen name="ProfileSettingsMenu" component={ProfileSettingsMenu} />
               <Stack.Screen name="EditProfile" component={EditProfile} />
+              <Stack.Screen name="WeeklySummary" component={WeeklySummary} />
               <Stack.Screen name="SocialFeed" component={SocialFeed} />
               <Stack.Screen name="NewPost" component={NewPost} />
               <Stack.Screen name="FindFriends" component={FindFriends} />
@@ -157,6 +161,7 @@ export default function App() {
               <Stack.Screen name="Menu" component={Menu} />
               <Stack.Screen name="ProfileSettingsMenu" component={ProfileSettingsMenu} />
               <Stack.Screen name="EditProfile" component={EditProfile} />
+              <Stack.Screen name="WeeklySummary" component={WeeklySummary} />
               <Stack.Screen name="SocialFeed" component={SocialFeed} />
               <Stack.Screen name="NewPost" component={NewPost} />
               <Stack.Screen name="FindFriends" component={FindFriends} />

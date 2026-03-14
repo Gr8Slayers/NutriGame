@@ -198,7 +198,7 @@ export default function AddMeal({ route, navigation }: Props) {
     // Future date check
     const today = new Date();
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-    
+
     if (selectedDate > todayStr) {
       Alert.alert("Uyarı", "Gelecek tarihlere kayıt ekleyemezsiniz.");
       return;
@@ -515,7 +515,7 @@ export default function AddMeal({ route, navigation }: Props) {
                   <View style={styles.stepperControls}>
                     <TouchableOpacity
                       style={styles.stepperButton}
-                      onPress={() => setStepperValue(prev => Math.min(10, prev + 0.5))}
+                      onPress={() => setStepperValue(prev => Math.max(0.5, prev - 0.5))}
                     >
                       <Ionicons name="remove" size={30} color="#fff" />
                     </TouchableOpacity>

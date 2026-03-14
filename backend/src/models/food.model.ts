@@ -163,11 +163,30 @@ export const foodModel = {
         });
     },
 
-    getWaterTotal: async (user_id: number, date: Date) => {
+    async getWaterTotal(user_id: number, date: Date) {
         return await prisma.waterLog.findFirst({
             where: {
                 userId: user_id,
                 date: date
+            }
+        });
+    },
+
+    getWeeklyMealTotals: async (userId: number) => {
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        sevenDaysAgo.setHours(0, 0, 0, 0); // Start of the day 7 days ago
+
+        return await prisma.mealTotals.findMany({
+            where: {
+                userId: userId,
+                meal_category: 'OVERALL',
+                date: {
+                    gte: sevenDaysAgo
+                }
+            },
+            orderBy: {
+                date: 'asc'
             }
         });
     }

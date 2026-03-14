@@ -211,6 +211,14 @@ export default function Menu() {
                     <Ionicons name="chevron-forward" size={20} color="#5c544d" />
                 </TouchableOpacity>
 
+                <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate("WeeklySummary")}>
+                    <View style={styles.menuIconBox}>
+                        <Ionicons name="pie-chart-outline" size={20} color="#47dd7caf" />
+                    </View>
+                    <Text style={styles.menuText}>Weekly Summary</Text>
+                    <Ionicons name="chevron-forward" size={20} color="#5c544d" />
+                </TouchableOpacity>
+
                 <TouchableOpacity style={styles.menuItem} onPress={() => Alert.alert("Coming Soon", "Notifications will be available soon!")}>
                     <View style={styles.menuIconBox}>
                         <Ionicons name="notifications-outline" size={20} color="#47dd7caf" />

@@ -55,7 +55,11 @@ export class FoodController {
             // 3. Block future dates
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            if (parsedDate > today) {
+
+            const targetDate = new Date(parsedDate);
+            targetDate.setHours(0, 0, 0, 0);
+
+            if (targetDate > today) {
                 return res.status(400).json({ success: false, message: 'Future dates are not allowed for logging.' });
             }
 
@@ -215,7 +219,11 @@ export class FoodController {
             // 3. Block future dates
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            if (parsedDate > today) {
+
+            const targetDate = new Date(parsedDate);
+            targetDate.setHours(0, 0, 0, 0);
+
+            if (targetDate > today) {
                 return res.status(400).json({ success: false, message: 'Future dates are not allowed for logging.' });
             }
 
@@ -292,6 +300,22 @@ export class FoodController {
 
         } catch (err) {
             next(err)
+        }
+    }
+
+    async get_weekly_summary(req: Request, res: Response, next: NextFunction) {
+        try {
+            const user_id = req.user!.id;
+            const weeklyData = await foodModel.getWeeklyMealTotals(user_id);
+
+            return res.status(200).json({
+                success: true,
+                message: "Weekly summary successfully found.",
+                data: weeklyData
+            });
+
+        } catch (err) {
+            next(err);
         }
     }
 }

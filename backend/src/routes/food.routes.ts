@@ -16,5 +16,6 @@ router.post('/add_to_water', authMiddleware, foodController.add_to_water);
 router.post('/delete_from_water', authMiddleware, foodController.delete_from_water);
 router.get('/get_water_total', authMiddleware, foodController.get_water_total);
 
+router.get('/get_weekly_summary', authMiddleware, foodController.get_weekly_summary);
 
 export default router;

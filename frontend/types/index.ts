@@ -22,6 +22,14 @@ export interface UpdatedMealParams {
     }
 }
 
+export interface WeeklySummary {
+    date: string;
+    t_calorie: number;
+    t_protein: number;
+    t_fat: number;
+    t_carb: number;
+}
+
 export interface PublicUser {
     id: string;
     username: string;
