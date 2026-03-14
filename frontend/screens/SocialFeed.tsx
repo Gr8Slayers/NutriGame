@@ -10,6 +10,7 @@ import {
     TextInput,
     KeyboardAvoidingView,
     Platform,
+    Alert
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -60,8 +61,9 @@ function SocialFeed({ navigation }: Props) {
             const recipePosts: Post[] = (Array.isArray(data) ? data : data.data ?? [])
                 .filter((p: Post) => p.isRecipe === true);
             setFeedData(recipePosts);
-        } catch (error) {
-            console.error('Ağ hatası:', error);
+        } catch (error: any) {
+            console.error('Ağ hatası (SocialFeed):', error.message || error);
+            Alert.alert('Network Error', `Could not connect to server at ${API_URL}. Check your IP_ADDRESS in .env (${IP_ADDRESS})`);
         } finally {
             setLoading(false);
             setRefreshing(false);
