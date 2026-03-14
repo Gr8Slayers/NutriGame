@@ -210,7 +210,38 @@ export default StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.5,
     shadowRadius: 3.84,
-  }
+  },
+  rewardOverlay: {
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 100,
+  },
+  rewardCard: {
+    backgroundColor: '#14281d',
+    padding: 40,
+    borderRadius: 30,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#c8a96e',
+    elevation: 20,
+    shadowColor: '#c8a96e',
+    shadowOpacity: 0.5,
+    shadowRadius: 15,
+  },
+  rewardTitle: {
+    color: '#f7e5c5',
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginTop: 20,
+    textAlign: 'center',
+  },
+  rewardText: {
+    color: '#c8a96e',
+    fontSize: 18,
+    marginTop: 10,
+    fontWeight: '600',
+  },
 
 
 

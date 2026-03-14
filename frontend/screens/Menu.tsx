@@ -195,6 +195,14 @@ export default function Menu() {
                     <Ionicons name="chevron-forward" size={20} color="#5c544d" />
                 </TouchableOpacity>
 
+                <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate("Challenges")}>
+                    <View style={styles.menuIconBox}>
+                        <Ionicons name="trophy-outline" size={20} color="#47dd7caf" />
+                    </View>
+                    <Text style={styles.menuText}>Challenges</Text>
+                    <Ionicons name="chevron-forward" size={20} color="#5c544d" />
+                </TouchableOpacity>
+
                 <TouchableOpacity style={styles.menuItem} onPress={() => Alert.alert("Coming Soon", "Dietary preferences will be available soon!")}>
                     <View style={styles.menuIconBox}>
                         <Ionicons name="nutrition-outline" size={20} color="#47dd7caf" />

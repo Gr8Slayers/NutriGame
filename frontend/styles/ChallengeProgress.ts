@@ -1,0 +1,55 @@
+import { StyleSheet } from 'react-native';
+
+export default StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#0a1812' },
+  centered: { flex: 1, backgroundColor: '#0a1812', justifyContent: 'center', alignItems: 'center' },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 50,
+    paddingBottom: 20,
+    backgroundColor: '#14281d'
+  },
+  headerTitle: { color: '#f7e5c5', fontSize: 20, fontWeight: 'bold' },
+  content: { padding: 24 },
+  title: { color: '#f7e5c5', fontSize: 28, fontWeight: 'bold', marginBottom: 12 },
+  description: { color: '#a0896e', fontSize: 16, marginBottom: 32, lineHeight: 24 },
+  progressContainer: { marginBottom: 40 },
+  progressHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
+  progressLabel: { color: '#f7e5c5', fontSize: 18, fontWeight: '600' },
+  progressValue: { color: '#c8a96e', fontSize: 20, fontWeight: 'bold' },
+  progressBarBg: { height: 16, backgroundColor: '#0d1a14', borderRadius: 8, overflow: 'hidden', borderWidth: 1, borderColor: '#1d3528' },
+  progressBarFill: { height: '100%', backgroundColor: '#47dd7caf' },
+  rewardButton: {
+    backgroundColor: '#c8a96e',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 18,
+    borderRadius: 15,
+    gap: 12,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 5,
+  },
+  rewardButtonText: { color: '#000', fontSize: 18, fontWeight: 'bold' },
+  infoBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#14281d',
+    padding: 16,
+    borderRadius: 12,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: '#2a3d33'
+  },
+  infoText: { color: '#a0896e', fontSize: 15 },
+  detailsList: { marginTop: 40, backgroundColor: '#14281d', borderRadius: 16, padding: 20, borderWidth: 1, borderColor: '#2a3d33' },
+  detailItem: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#2a3d33' },
+  detailLabel: { color: '#a0896e', fontSize: 15 },
+  detailText: { color: '#f7e5c5', fontSize: 16, fontWeight: 'bold' }
+});
