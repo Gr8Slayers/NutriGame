@@ -1,130 +1,54 @@
-/**
- * Kişisel verileri maskelemek için regex tabanlı fonksiyonlar
- * Email, telefon, URL gibi hassas bilgileri tespit edip maskeler
- */
+'use strict';
 
-export class PrivacyMasker {
-  constructor() {
-    // Email pattern
-    this.emailPattern = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g;
-    
-    // Telefon pattern (Türkiye ve uluslararası formatlar)
-    this.phonePattern = /(\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{2,4}[-.\s]?\d{2,4}/g;
-    
-    // URL pattern
-    this.urlPattern = /http[s]?:\/\/(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+/g;
-    
-    // Türk kimlik numarası pattern (11 haneli)
-    this.tcPattern = /\b[1-9]\d{10}\b/g;
-    
-    // Kredi kartı pattern
-    this.creditCardPattern = /\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b/g;
-  }
+// Patterns for detecting and stripping personal identifiable information (PII)
+// before sending user messages to external AI services (OWASP MASVS compliance)
 
-  /**
-   * Metindeki kişisel verileri maskeler
-   * @param {string} text - Maskelenecek metin
-   * @returns {{maskedText: string, detectedEntities: Array}} Maskelenmiş metin ve tespit edilen varlıklar
-   */
-  maskText(text) {
-    if (!text || text.trim().length === 0) {
-      return { maskedText: text, detectedEntities: [] };
-    }
-
-    const detectedEntities = [];
-    let maskedText = text;
-
-    // Email maskele
-    const emails = [...text.matchAll(this.emailPattern)];
-    emails.forEach(match => {
-      detectedEntities.push({
-        type: 'EMAIL_ADDRESS',
-        text: match[0],
-        start: match.index,
-        end: match.index + match[0].length
-      });
-    });
-    maskedText = maskedText.replace(this.emailPattern, '[EMAIL]');
-
-    // Telefon maskele
-    const phones = [...text.matchAll(this.phonePattern)];
-    phones.forEach(match => {
-      detectedEntities.push({
-        type: 'PHONE_NUMBER',
-        text: match[0],
-        start: match.index,
-        end: match.index + match[0].length
-      });
-    });
-    maskedText = maskedText.replace(this.phonePattern, '[TELEFON]');
-
-    // URL maskele
-    const urls = [...text.matchAll(this.urlPattern)];
-    urls.forEach(match => {
-      detectedEntities.push({
-        type: 'URL',
-        text: match[0],
-        start: match.index,
-        end: match.index + match[0].length
-      });
-    });
-    maskedText = maskedText.replace(this.urlPattern, '[URL]');
-
-    // TC Kimlik No maskele
-    const tcIds = [...text.matchAll(this.tcPattern)];
-    tcIds.forEach(match => {
-      detectedEntities.push({
-        type: 'TC_IDENTITY',
-        text: match[0],
-        start: match.index,
-        end: match.index + match[0].length
-      });
-    });
-    maskedText = maskedText.replace(this.tcPattern, '[TC_NO]');
-
-    // Kredi kartı maskele
-    const cards = [...text.matchAll(this.creditCardPattern)];
-    cards.forEach(match => {
-      detectedEntities.push({
-        type: 'CREDIT_CARD',
-        text: match[0],
-        start: match.index,
-        end: match.index + match[0].length
-      });
-    });
-    maskedText = maskedText.replace(this.creditCardPattern, '[KART_NO]');
-
-    return { maskedText, detectedEntities };
-  }
-}
-
-// Singleton instance
-let maskerInstance = null;
+const PII_PATTERNS = [
+  // Turkish ID number (11 digits)
+  { pattern: /\b\d{11}\b/g, replacement: '[ID_REMOVED]' },
+  // Email addresses
+  { pattern: /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g, replacement: '[EMAIL_REMOVED]' },
+  // Phone numbers (Turkish and international formats)
+  { pattern: /(\+?90[\s\-]?)?(0?5\d{2}[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2})/g, replacement: '[PHONE_REMOVED]' },
+  { pattern: /\+\d{1,3}[\s\-]?\(?\d{1,4}\)?[\s\-]?\d{1,4}[\s\-]?\d{1,9}/g, replacement: '[PHONE_REMOVED]' },
+  // Credit/debit card numbers
+  { pattern: /\b(?:\d[ \-]?){13,16}\b/g, replacement: '[CARD_REMOVED]' },
+  // Home addresses (common patterns)
+  { pattern: /\b\d+\s+[A-Za-z\u00C0-\u024F]+\s+(street|st|avenue|ave|road|rd|boulevard|blvd|lane|ln|drive|dr|caddesi|sokak|sk|mah|mahallesi)\b/gi, replacement: '[ADDRESS_REMOVED]' },
+  // Social security / passport numbers
+  { pattern: /\b[A-Z]{1,2}\d{6,9}\b/g, replacement: '[DOC_REMOVED]' },
+];
 
 /**
- * Singleton pattern ile PrivacyMasker instance'ı döndür
- * @returns {PrivacyMasker}
+ * Strips PII from a message before sending to external AI services.
+ * @param {string} message
+ * @returns {string} sanitized message
  */
-export function getPrivacyMasker() {
-  if (!maskerInstance) {
-    maskerInstance = new PrivacyMasker();
+function filterPersonalInformation(message) {
+  if (!message || typeof message !== 'string') return message;
+
+  let sanitized = message;
+  for (const { pattern, replacement } of PII_PATTERNS) {
+    sanitized = sanitized.replace(pattern, replacement);
   }
-  return maskerInstance;
+  return sanitized;
 }
 
 /**
- * Kullanıcı mesajını maskeler ve detayları döndürür
- * @param {string} message - Kullanıcı mesajı
- * @returns {Object} Maskeleme sonuçları
+ * Strips PII from an array of conversation history messages.
+ * @param {Array<{role: string, parts: Array<{text: string}>}>} history
+ * @returns {Array} sanitized history
  */
-export function maskUserMessage(message) {
-  const masker = getPrivacyMasker();
-  const { maskedText, detectedEntities } = masker.maskText(message);
-  
-  return {
-    original: message,
-    masked: maskedText,
-    detectedEntities,
-    hasPersonalData: detectedEntities.length > 0
-  };
+function filterHistoryPersonalInformation(history) {
+  if (!Array.isArray(history)) return history;
+
+  return history.map((entry) => ({
+    ...entry,
+    parts: entry.parts.map((part) => ({
+      ...part,
+      text: filterPersonalInformation(part.text),
+    })),
+  }));
 }
+
+module.exports = { filterPersonalInformation, filterHistoryPersonalInformation };

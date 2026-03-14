@@ -1,189 +1,146 @@
-/**
- * Express server for Mental Health Chatbot
- */
+'use strict';
 
-import express from 'express';
-import cors from 'cors';
-import { getChatbot } from './chatbotService.js';
+require('dotenv').config();
+
+const express = require('express');
+const cors = require('cors');
+const rateLimit = require('express-rate-limit');
+const chatbotService = require('./chatbotService');
 
 const app = express();
-const PORT = process.env.PORT || 8001;
+const PORT = process.env.PORT || 3001;
 
-// Middleware
+// ── Middleware ────────────────────────────────────────────────────────────────
+
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  res.status(500).json({
-    error: 'Internal server error',
-    message: err.message
-  });
+// Global rate limiter (coarse guard; fine-grained limit is inside chatbotService)
+const globalLimiter = rateLimit({
+  windowMs: 60_000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later.' },
 });
+app.use(globalLimiter);
+
+// ── Error handler ─────────────────────────────────────────────────────────────
+
+function handleChatError(err, res) {
+  console.error('[ChatbotService Error]', err.message, err.cause || '');
+  const status = err.statusCode || 500;
+  const body = { error: err.message };
+  if (err.retryAfterMs) {
+    body.retryAfterMs = err.retryAfterMs;
+    res.setHeader('Retry-After', Math.ceil(err.retryAfterMs / 1000));
+  }
+  return res.status(status).json(body);
+}
+
+// ── Routes ────────────────────────────────────────────────────────────────────
 
 /**
- * GET / - API ana sayfası
+ * POST /api/chat
+ * Body: { userId: string, chatId?: string, message: string }
+ * Returns: { chatId: string, response: string }
+ *
+ * ChatbotController.chat()
  */
-app.get('/', (req, res) => {
-  res.json({
-    service: 'Mental Health Chatbot API',
-    status: 'running',
-    endpoints: {
-      'POST /chat': 'Chatbot ile konuş',
-      'POST /clear-history': 'Konuşma geçmişini temizle',
-      'GET /history': 'Konuşma geçmişini getir',
-      'GET /health': 'Servis sağlık kontrolü'
-    }
-  });
+app.post('/api/chat', async (req, res) => {
+  const { userId, chatId, message } = req.body;
+
+  if (!userId) {
+    return res.status(400).json({ error: 'userId is required.' });
+  }
+
+  try {
+    const result = await chatbotService.chat(userId, chatId || null, message);
+    return res.status(200).json(result);
+  } catch (err) {
+    return handleChatError(err, res);
+  }
 });
 
 /**
- * GET /health - Servis sağlık kontrolü
+ * POST /api/chat/stream
+ * Body: { userId: string, chatId?: string, message: string }
+ * Returns: Server-Sent Events stream
+ *   data: { chunk: string }    – partial text
+ *   data: { done: true, chatId: string } – end of stream
+ *   data: { error: string }    – on failure
+ *
+ * ChatbotController.chatStream()
+ */
+app.post('/api/chat/stream', async (req, res) => {
+  const { userId, chatId, message } = req.body;
+
+  if (!userId) {
+    return res.status(400).json({ error: 'userId is required.' });
+  }
+
+  try {
+    // chatStream sets its own headers and writes directly to res
+    await chatbotService.chatStream(userId, chatId || null, message, res);
+  } catch (err) {
+    // Headers may not have been sent yet if error was thrown before streaming began
+    if (!res.headersSent) {
+      return handleChatError(err, res);
+    }
+    // If streaming already started, write error as SSE event
+    res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
+    res.end();
+  }
+});
+
+/**
+ * GET /api/chat/history/:chatId
+ * Returns: { chatId: string, history: Array<{ role, parts }> }
+ *
+ * ChatbotController.getChatHistory()
+ */
+app.get('/api/chat/history/:chatId', (req, res) => {
+  const { chatId } = req.params;
+  if (!chatId) {
+    return res.status(400).json({ error: 'chatId is required.' });
+  }
+  const result = chatbotService.getChatHistory(chatId);
+  return res.status(200).json(result);
+});
+
+/**
+ * POST /api/chat/new
+ * Creates a new conversation session.
+ * Returns: { chatId: string }
+ */
+app.post('/api/chat/new', (req, res) => {
+  const chatId = chatbotService.createNewSession();
+  return res.status(201).json({ chatId });
+});
+
+/**
+ * DELETE /api/chat/:chatId
+ * Deletes a conversation session from cache.
+ * Returns: { success: boolean }
+ */
+app.delete('/api/chat/:chatId', (req, res) => {
+  const { chatId } = req.params;
+  const deleted = chatbotService.deleteSession(chatId);
+  return res.status(200).json({ success: deleted });
+});
+
+/**
+ * GET /health
+ * Health check endpoint.
  */
 app.get('/health', (req, res) => {
-  try {
-    const chatbot = getChatbot();
-    res.json({
-      status: 'healthy',
-      model: chatbot.modelId,
-      apiConfigured: !!chatbot.apiKey
-    });
-  } catch (error) {
-    res.status(500).json({
-      status: 'unhealthy',
-      error: error.message
-    });
-  }
+  return res.status(200).json({ status: 'ok', service: 'nutrigame-chatbot' });
 });
 
-/**
- * POST /chat - Chatbot ile konuş
- * 
- * Request body:
- * {
- *   "message": "I'm feeling stressed",
- *   "maskPersonalData": true,
- *   "includeHistory": false,
- *   "maxNewTokens": 512,
- *   "temperature": 0.7,
- *   "topP": 0.9
- * }
- */
-app.post('/chat', async (req, res) => {
-  try {
-    const {
-      message,
-      maskPersonalData = true,
-      includeHistory = false,
-      maxNewTokens = 512,
-      temperature = 0.7,
-      topP = 0.9
-    } = req.body;
+// ── Start ─────────────────────────────────────────────────────────────────────
 
-    // Validation
-    if (!message || typeof message !== 'string' || message.trim() === '') {
-      return res.status(400).json({
-        error: 'Message is required and must be a non-empty string'
-      });
-    }
-
-    if (maxNewTokens < 50 || maxNewTokens > 2048) {
-      return res.status(400).json({
-        error: 'maxNewTokens must be between 50 and 2048'
-      });
-    }
-
-    if (temperature < 0 || temperature > 1) {
-      return res.status(400).json({
-        error: 'temperature must be between 0 and 1'
-      });
-    }
-
-    if (topP < 0 || topP > 1) {
-      return res.status(400).json({
-        error: 'topP must be between 0 and 1'
-      });
-    }
-
-    // Get chatbot instance
-    const chatbot = getChatbot();
-
-    // Send message to chatbot
-    const result = await chatbot.chat({
-      message,
-      maskPersonalData,
-      includeHistory,
-      maxNewTokens,
-      temperature,
-      topP
-    });
-
-    // Check for errors
-    if (result.error) {
-      const statusCode = result.statusCode || 500;
-      return res.status(statusCode).json(result);
-    }
-
-    res.json(result);
-  } catch (error) {
-    console.error('Chat error:', error);
-    res.status(500).json({
-      error: 'Beklenmeyen hata',
-      message: error.message,
-      errorType: 'server_error'
-    });
-  }
-});
-
-/**
- * POST /clear-history - Konuşma geçmişini temizle
- */
-app.post('/clear-history', (req, res) => {
-  try {
-    const chatbot = getChatbot();
-    chatbot.clearHistory();
-    res.json({
-      status: 'success',
-      message: 'Konuşma geçmişi temizlendi'
-    });
-  } catch (error) {
-    console.error('Clear history error:', error);
-    res.status(500).json({
-      error: 'Hata',
-      message: error.message
-    });
-  }
-});
-
-/**
- * GET /history - Konuşma geçmişini getir
- */
-app.get('/history', (req, res) => {
-  try {
-    const chatbot = getChatbot();
-    const history = chatbot.getHistory();
-    res.json({
-      history,
-      count: history.length
-    });
-  } catch (error) {
-    console.error('Get history error:', error);
-    res.status(500).json({
-      error: 'Hata',
-      message: error.message
-    });
-  }
-});
-
-// Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Mental Health Chatbot API running on http://localhost:${PORT}`);
-  console.log(`📚 Endpoints:`);
-  console.log(`   POST   http://localhost:${PORT}/chat`);
-  console.log(`   POST   http://localhost:${PORT}/clear-history`);
-  console.log(`   GET    http://localhost:${PORT}/history`);
-  console.log(`   GET    http://localhost:${PORT}/health`);
+  console.log(`[NutriCoach Chatbot Service] Running on port ${PORT}`);
 });
 
-export default app;
+module.exports = app;

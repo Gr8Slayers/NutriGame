@@ -55,10 +55,10 @@ def validate_merged_dataset(json_path, image_dirs):
         
         total_checked += 1
         if total_checked % 5000 == 0:
-            print(f"   📊 Kontrol edildi: {total_checked:,}/{len(images):,}")
+            print(f"   Kontrol edildi: {total_checked:,}/{len(images):,}")
     
-    print(f"✅ Bulunan resimler: {len(existing_images):,}")
-    print(f"❌ Eksik resimler: {len(missing_images):,}")
+    print(f" Bulunan resimler: {len(existing_images):,}")
+    print(f" Eksik resimler: {len(missing_images):,}")
     
     if missing_images:
         print(f"\nİlk 10 eksik dosya:")
@@ -68,7 +68,7 @@ def validate_merged_dataset(json_path, image_dirs):
             print(f"   ... ve {len(missing_images) - 10} tane daha")
     
     # 2. BBOX DOĞRULAMA
-    print(f"\n📐 BBOX DOĞRULAMA")
+    print(f"\n BBOX DOĞRULAMA")
     print("-" * 20)
     
     # Image ID mapping oluştur
@@ -122,15 +122,15 @@ def validate_merged_dataset(json_path, image_dirs):
         
         processed_annotations += 1
         if processed_annotations % 10000 == 0:
-            print(f"   📊 İşlendi: {processed_annotations:,}/{len(annotations):,}")
+            print(f"    İşlendi: {processed_annotations:,}/{len(annotations):,}")
     
-    print(f"✅ Geçerli bbox'lar: {len(annotations) - len(bbox_errors) - len(negative_errors) - len(out_of_bounds_errors):,}")
-    print(f"❌ Format hataları: {len(bbox_errors):,}")
-    print(f"❌ Negatif koordinatlar: {len(negative_errors):,}")
-    print(f"❌ Sınır dışı bbox'lar: {len(out_of_bounds_errors):,}")
+    print(f" Geçerli bbox'lar: {len(annotations) - len(bbox_errors) - len(negative_errors) - len(out_of_bounds_errors):,}")
+    print(f" Format hataları: {len(bbox_errors):,}")
+    print(f" Negatif koordinatlar: {len(negative_errors):,}")
+    print(f" Sınır dışı bbox'lar: {len(out_of_bounds_errors):,}")
     
     # 3. KATEGORİ ANALİZİ
-    print(f"\n🏷️  KATEGORİ ANALİZİ")
+    print(f"\n  KATEGORİ ANALİZİ")
     print("-" * 20)
     
     category_counts = Counter()
@@ -151,7 +151,7 @@ def validate_merged_dataset(json_path, image_dirs):
     
     # Az örnekli kategoriler
     low_sample_categories = [(cat_id, count) for cat_id, count in category_counts.items() if count < 10]
-    print(f"\n⚠️  10'dan az örnekli kategoriler: {len(low_sample_categories)}")
+    print(f"\n  10'dan az örnekli kategoriler: {len(low_sample_categories)}")
     
     if low_sample_categories:
         for cat_id, count in low_sample_categories:
@@ -159,7 +159,7 @@ def validate_merged_dataset(json_path, image_dirs):
             print(f"   {cat_name}: {count}")
     
     # 4. ÖZET VE ÖNERİLER
-    print(f"\n📋 ÖZET")
+    print(f"\n ÖZET")
     print("=" * 20)
     
     total_errors = len(missing_images) + len(bbox_errors) + len(negative_errors) + len(out_of_bounds_errors)
@@ -170,7 +170,7 @@ def validate_merged_dataset(json_path, image_dirs):
     print(f"Toplam annotation: {len(annotations):,}")
     print(f"Bbox hataları: {len(bbox_errors) + len(negative_errors) + len(out_of_bounds_errors):,}")
     print(f"Az örnekli kategoriler: {len(low_sample_categories)}")
-    print(f"Genel durum: {'✅ TEMİZ' if total_errors == 0 else '⚠️  TEMİZLENMELİ'}")
+    print(f"Genel durum: {' TEMİZ' if total_errors == 0 else '  TEMİZLENMELİ'}")
     
     return {
         'missing_images': missing_images,
