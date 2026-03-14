@@ -64,8 +64,10 @@ beforeAll(async () => {
     if (dbUser) testUserId = Number(dbUser.id);
 
     // 2. Create a test food item in the FoodLookup table
-    await prisma.foodLookup.create({
-        data: testFood,
+    await prisma.foodLookup.upsert({
+        where: { food_id: testFood.food_id },
+        update: testFood,
+        create: testFood,
     });
 });
 
