@@ -1,4 +1,4 @@
-path: D:\Desktop\Bitirme\NutriGame\object_detection\processed_datasets\merged
+path: .
 train: images/train
 val:   images/val
 test:  images/test
