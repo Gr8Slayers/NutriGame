@@ -60,6 +60,38 @@ export const userModel = {
     });
   },
 
+  //searchUsers: username'e göre kullanıcı arama
+  searchUsers: async (query: string, currentUserId: number) => {
+    const users = await prisma.user.findMany({
+      where: {
+        username: { contains: query, mode: 'insensitive' },
+        NOT: { id: currentUserId },
+      },
+      select: {
+        id: true,
+        username: true,
+        profile: { select: { avatar_url: true } },
+      },
+      take: 20,
+    });
+
+    const followedIds = await prisma.userFollow.findMany({
+      where: {
+        followerId: currentUserId,
+        followingId: { in: users.map(u => u.id) },
+      },
+      select: { followingId: true },
+    });
+    const followedSet = new Set(followedIds.map(f => f.followingId));
+
+    return users.map(u => ({
+      id: String(u.id),
+      username: u.username,
+      avatarUrl: u.profile?.avatar_url ?? null,
+      isFollowing: followedSet.has(u.id),
+    }));
+  },
+
 };
 
 // ──────────────────────────────────────────────────────────────────────────────

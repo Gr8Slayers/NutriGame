@@ -21,7 +21,9 @@ const API_URL = `http://${IP_ADDRESS}:3000`;
 
 type Props = NativeStackScreenProps<RootStackParamList, 'FindFriends'>;
 
-export default function FindFriends({ navigation }: Props) {
+export default function FindFriends({ navigation, route }: Props) {
+    const selectMode = route.params?.selectMode ?? false;
+    const onSelectUser = route.params?.onSelectUser;
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<PublicUser[]>([]);
     const [loading, setLoading] = useState(false);
@@ -86,7 +88,7 @@ export default function FindFriends({ navigation }: Props) {
         );
         try {
             const token = await SecureStore.getItemAsync('userToken');
-            await fetch(`${API_URL}/api/user/follow/${user.id}`, {
+            await fetch(`${API_URL}/api/social/follow/${user.id}`, {
                 method: user.isFollowing ? 'DELETE' : 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -106,6 +108,13 @@ export default function FindFriends({ navigation }: Props) {
         }
     }, []);
 
+    const handleSelectUser = useCallback((item: PublicUser) => {
+        if (onSelectUser) {
+            onSelectUser(item.id, item.username);
+        }
+        navigation.goBack();
+    }, [onSelectUser, navigation]);
+
     const renderUser = useCallback(
         ({ item }: { item: PublicUser }) => (
             <View style={styles.userCard}>
@@ -124,26 +133,36 @@ export default function FindFriends({ navigation }: Props) {
                 <Text style={styles.username} numberOfLines={1}>
                     {item.username}
                 </Text>
-                <TouchableOpacity
-                    style={[
-                        styles.followButton,
-                        item.isFollowing && styles.followingButton,
-                    ]}
-                    onPress={() => handleFollowToggle(item)}
-                    activeOpacity={0.75}
-                >
-                    <Text
-                        style={[
-                            styles.followButtonText,
-                            item.isFollowing && styles.followingButtonText,
-                        ]}
+                {selectMode ? (
+                    <TouchableOpacity
+                        style={styles.followButton}
+                        onPress={() => handleSelectUser(item)}
+                        activeOpacity={0.75}
                     >
-                        {item.isFollowing ? 'Unfollow' : 'Follow'}
-                    </Text>
-                </TouchableOpacity>
+                        <Text style={styles.followButtonText}>Select</Text>
+                    </TouchableOpacity>
+                ) : (
+                    <TouchableOpacity
+                        style={[
+                            styles.followButton,
+                            item.isFollowing && styles.followingButton,
+                        ]}
+                        onPress={() => handleFollowToggle(item)}
+                        activeOpacity={0.75}
+                    >
+                        <Text
+                            style={[
+                                styles.followButtonText,
+                                item.isFollowing && styles.followingButtonText,
+                            ]}
+                        >
+                            {item.isFollowing ? 'Unfollow' : 'Follow'}
+                        </Text>
+                    </TouchableOpacity>
+                )}
             </View>
         ),
-        [handleFollowToggle]
+        [handleFollowToggle, handleSelectUser, selectMode]
     );
 
     const ListEmpty = () => {

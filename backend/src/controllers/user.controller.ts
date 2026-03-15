@@ -71,6 +71,20 @@ export class UserController {
         }
     }
 
+    async searchUsers(req: Request, res: Response, next: NextFunction) {
+        try {
+            const currentUserId = req.user!.id;
+            const query = (req.query.query as string)?.trim();
+            if (!query) {
+                return res.status(400).json({ success: false, message: 'query param is required' });
+            }
+            const users = await userModel.searchUsers(query, Number(currentUserId));
+            return res.status(200).json({ success: true, data: users });
+        } catch (err) {
+            next(err);
+        }
+    }
+
     async getDailyTargets(req: Request, res: Response, next: NextFunction) {
         try {
             const userId = req.user!.id;

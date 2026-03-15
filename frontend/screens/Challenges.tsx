@@ -26,19 +26,14 @@ const Challenges = ({ navigation }: Props) => {
   const fetchData = async () => {
     try {
       const token = await SecureStore.getItemAsync('userToken');
-      // In a real app, these would be separate endpoints or a single dashboard endpoint
-      // For now, if endpoints don't exist yet, we'll keep the mock logic but wrapped in a real fetch structure or handled gracefully.
-      // Let's assume there's a general challenges endpoint or similar.
-      // Since backend only has progress/complete for now, I'll fetch progress for a dummy list or show how it's done.
-
-      // Realistically, we'd do:
-      // const res = await fetch(`${API_URL}/gamification/challenges`, { headers: { 'Authorization': `Bearer ${token}` } });
-      // const data = await res.json();
-      // setChallenges(data.activeChallenges);
-      // setInvites(data.invites);
-
-      setChallenges([]);
-      setInvites([]);
+      const res = await fetch(`${API_URL}/gamification/challenges`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.success) {
+        setChallenges(data.data.activeChallenges);
+        setInvites(data.data.invites);
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -68,6 +63,20 @@ const Challenges = ({ navigation }: Props) => {
     </TouchableOpacity>
   );
 
+  const respondToInvite = async (challengeId: string, accept: boolean) => {
+    try {
+      const token = await SecureStore.getItemAsync('userToken');
+      await fetch(`${API_URL}/gamification/challenge/respond`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ challengeId, accept }),
+      });
+      fetchData();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const renderInvite = ({ item }: { item: any }) => (
     <View style={styles.itemCard}>
       <View style={styles.iconBox}>
@@ -75,13 +84,13 @@ const Challenges = ({ navigation }: Props) => {
       </View>
       <View style={{ flex: 1 }}>
         <Text style={styles.itemTitle}>{item.title}</Text>
-        <Text style={styles.itemSubtitle}>From {item.sender}</Text>
+        <Text style={styles.itemSubtitle}>From user #{item.senderId}</Text>
       </View>
       <View style={styles.actions}>
-        <TouchableOpacity style={styles.acceptBtn} onPress={() => navigation.navigate('ChallengeProgress', { challengeId: item.id })}>
+        <TouchableOpacity style={styles.acceptBtn} onPress={() => respondToInvite(item.id, true)}>
           <Ionicons name="checkmark" size={20} color="#000" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.declineBtn}>
+        <TouchableOpacity style={styles.declineBtn} onPress={() => respondToInvite(item.id, false)}>
           <Ionicons name="close" size={20} color="#f7e5c5" />
         </TouchableOpacity>
       </View>

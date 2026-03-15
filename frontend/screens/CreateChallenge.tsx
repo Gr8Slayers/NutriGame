@@ -15,6 +15,7 @@ interface State {
   title: string;
   type: string;
   targetUserID: string;
+  targetUsername: string;
   endDate: string;
   isSubmitting: boolean;
 }
@@ -26,6 +27,7 @@ class CreateChallenge extends React.Component<Props, State> {
       title: '',
       type: 'sugar',
       targetUserID: '',
+      targetUsername: '',
       endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       isSubmitting: false
     };
@@ -66,14 +68,16 @@ class CreateChallenge extends React.Component<Props, State> {
   }
 
   private selectTargetUser = (): void => {
-     // Navigate to a friend selection screen or use a search
-     // For now, clear it to remove mock logic
-     Alert.alert('Select Friend', 'Please search for a friend to invite.');
-     this.props.navigation.navigate('FindFriends');
+    this.props.navigation.navigate('FindFriends', {
+      selectMode: true,
+      onSelectUser: (userId: string, username: string) => {
+        this.setState({ targetUserID: userId, targetUsername: username });
+      }
+    });
   }
 
   render() {
-    const { title, type, targetUserID, endDate, isSubmitting } = this.state;
+    const { title, type, targetUserID, targetUsername, endDate, isSubmitting } = this.state;
 
     return (
       <View style={styles.container}>
@@ -114,7 +118,7 @@ class CreateChallenge extends React.Component<Props, State> {
           <TouchableOpacity style={styles.inviteButton} onPress={this.selectTargetUser}>
              <Ionicons name="person-add" size={20} color="#c8a96e" />
              <Text style={styles.inviteButtonText}>
-                {targetUserID ? `Selected: ${targetUserID}` : 'Select Friend A or B'}
+                {targetUsername ? `Selected: ${targetUsername}` : 'Select Friend'}
              </Text>
           </TouchableOpacity>
 
