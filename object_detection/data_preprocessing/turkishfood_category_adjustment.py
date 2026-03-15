@@ -3,17 +3,18 @@ TurkishFood25 COCO kategori eslesme ve donusum scripti.
 
 Kaynak: raw_datasets/turkish25_coco/instances_{train,val,test}.json
   - 85 kategori var (proje genelinde kullanilan liste kopyalanmis)
-  - Fiilen kullanilan 16 sinif: asure->None, baklava, biber_dolmasi, borek->Bread,
-    cig_kofte, enginar->None, et_sote, gozleme->Bread, hamsi->Fish,
-    hunkar_begendi->Et_Sote, icli_kofte->Izmir_Kofte, ispanak->Spinach,
-    izmir_kofte, karniyarik->Etli_Turlu, kebap->Adana_Kebap, kisir->Salad,
-    kuru_fasulye->None, lahmacun, lokum->None, manti->Pasta,
-    mucver->Kabak_Mucver, pirinc_pilavi->Rice, simit->Bread,
-    taze_fasulye->Green_Beans, yaprak_sarma->Biber_Dolmasi
+  - Fiilen kullanilan 16 sinif:
+      asure->None, baklava->Baklava, biber_dolmasi->Biber_Dolmasi,
+      borek->Borek (613 ann), cig_kofte->Cig_Kofte, enginar->None,
+      et_sote->Et_Sote, gozleme->Gozleme (414 ann), hamsi->Fish,
+      hunkar_begendi->Et_Sote, icli_kofte->Izmir_Kofte, ispanak->Spinach,
+      izmir_kofte->Izmir_Kofte, karniyarik->Etli_Turlu, kebap->Adana_Kebap,
+      kisir->Salad, kuru_fasulye->None, lahmacun->Lahmacun, lokum->None,
+      manti->Pasta, mucver->Kabak_Mucver, pirinc_pilavi->Rice,
+      simit->Simit (391 ann), taze_fasulye->Green_Beans,
+      yaprak_sarma->Biber_Dolmasi
 
-Sorun: JSON'daki category_id'ler 85'lik (TARGET_85) sisteme gore,
-       final_data_yolo ise 90'lik (TARGET_90) sistemi kullaniyor.
-       Bu script id'leri dogru 90'lik sisteme remap eder.
+Gorev: JSON'daki category_id'leri 115'lik hedef sisteme remap eder.
 
 Kullanim:
     python turkishfood_category_adjustment.py           # simule et
@@ -31,7 +32,6 @@ SPLITS      = ["train", "val", "test"]
 
 # Genisletilmis hedef sinif sistemi (115 sinif)
 TARGET_NAME_TO_ID = {
-    # Mevcut 90 sinif (0-89)
     "Adana_Kebap": 0,  "Almond": 1,       "Ankara_Tava": 2,  "Apple": 3,
     "Asparagus": 4,    "Avocado": 5,       "Ayran": 6,        "Bacon": 7,
     "Baklava": 8,      "Banana": 9,        "Beans": 10,       "Bell_Pepper": 11,
@@ -190,7 +190,6 @@ TF25_TO_TARGET = {
     "Yayla_Corbasi":  "Yayla_Corbasi",
     "Zucchini":       "Zucchini",
     "Ankara_Tava":    "Ankara_Tava",
-    "Green_Beans":    "Green_Beans",
 }
 
 

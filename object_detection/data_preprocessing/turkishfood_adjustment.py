@@ -129,6 +129,7 @@ def fix_size_mismatch(data: dict, images_dir: Path, split: str) -> tuple:
         img["height"] = actual_h
 
         ann = ann_map.get(img["id"])
+        old_bbox = None
         if ann is not None:
             old_bbox = ann["bbox"][:]
             new_bbox = calc_pseudo_bbox(actual_w, actual_h)
@@ -138,8 +139,10 @@ def fix_size_mismatch(data: dict, images_dir: Path, split: str) -> tuple:
         fixed_count += 1
 
         if preview_shown < 5:
+            old_bbox_str = [round(v) for v in old_bbox] if old_bbox is not None else "ann yok"
+            new_bbox_str = [round(v) for v in ann["bbox"]] if ann is not None else "ann yok"
             print(f"    {img['file_name']}: boyut {old_size} -> ({actual_w},{actual_h}), "
-                  f"bbox: {[round(v) for v in old_bbox]} -> {[round(v) for v in ann['bbox']] if ann else 'ann yok'}")
+                  f"bbox: {old_bbox_str} -> {new_bbox_str}")
             preview_shown += 1
 
     if fixed_count > 5:

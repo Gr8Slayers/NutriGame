@@ -35,7 +35,6 @@ SPLITS      = ["train", "val", "test"]
 # data.yaml ile senkronize tutulmali.
 # -------------------------------------------------------------------
 TARGET_NAME_TO_ID = {
-    # Mevcut 90 sinif (0-89)
     "Adana_Kebap": 0,  "Almond": 1,       "Ankara_Tava": 2,  "Apple": 3,
     "Asparagus": 4,    "Avocado": 5,       "Ayran": 6,        "Bacon": 7,
     "Baklava": 8,      "Banana": 9,        "Beans": 10,       "Bell_Pepper": 11,
@@ -259,7 +258,6 @@ GFSD_TO_TARGET = {
     "pie":              None,             # VAGUE (farkli cesit - apple pie ayri)
     "sweets":           None,             # VAGUE
     "talkan-zhent":     None,             # REGIONAL
-    "waffles":          "Waffle",         # (yukarida tekrar, harmless)
 
     # --- Orta Asya Ozgul ---
     "asip":             None,             # REGIONAL
@@ -336,7 +334,6 @@ GFSD_TO_TARGET = {
     "bacon":            "Bacon",
     "cereal based cooked food": None,     # VAGUE
     "fruits":           None,             # VAGUE
-    "pancakes":         "Pancakes",       # (yukarida da var)
     "seafood":          None,             # VAGUE
     "snacks":           None,             # VAGUE
     "soy product":      None,             # REGIONAL/VAGUE

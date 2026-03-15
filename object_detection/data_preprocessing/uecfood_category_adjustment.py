@@ -28,7 +28,6 @@ ANN_FILE    = DATASET_DIR / "annotations" / "instances_all.json"
 
 # Genisletilmis hedef sinif sistemi (115 sinif)
 TARGET_NAME_TO_ID = {
-    # Mevcut 90 sinif (0-89)
     "Adana_Kebap": 0,  "Almond": 1,       "Ankara_Tava": 2,  "Apple": 3,
     "Asparagus": 4,    "Avocado": 5,       "Ayran": 6,        "Bacon": 7,
     "Baklava": 8,      "Banana": 9,        "Beans": 10,       "Bell_Pepper": 11,
