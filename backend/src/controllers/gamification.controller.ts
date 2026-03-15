@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { Challenge, ChallengeParticipant } from '@prisma/client';
 import { gamificationModel } from '../models/gamification.model';
 
 export class GamificationController {
@@ -155,9 +156,9 @@ export class GamificationController {
 
             // Progress'i hesapla
             const activeWithProgress = await Promise.all(
-                activeChallenges.map(async (c) => {
+                activeChallenges.map(async (c: any) => {
                     const progress = await gamificationModel.calculateProgress(c.id, userId);
-                    const myParticipant = c.participants.find((p) => p.userId === userId);
+                    const myParticipant = c.participants.find((p: ChallengeParticipant) => p.userId === userId);
                     return {
                         id: String(c.id),
                         title: c.title,
@@ -171,8 +172,8 @@ export class GamificationController {
                 })
             );
 
-            const inviteList = invites.map((c) => {
-                const creator = c.participants.find((p) => p.role === 'creator');
+            const inviteList = invites.map((c: any) => {
+                const creator = c.participants.find((p: ChallengeParticipant) => p.role === 'creator');
                 return {
                     id: String(c.id),
                     title: c.title,
@@ -212,14 +213,14 @@ export class GamificationController {
                 return;
             }
 
-            const isParticipant = challenge.participants.some((p) => p.userId === userId);
+            const isParticipant = challenge.participants.some((p: ChallengeParticipant) => p.userId === userId);
             if (!isParticipant) {
                 res.status(403).json({ success: false, message: 'Not a participant of this challenge' });
                 return;
             }
 
             const progress = await gamificationModel.calculateProgress(challengeId, userId);
-            const myParticipant = challenge.participants.find((p) => p.userId === userId);
+            const myParticipant = challenge.participants.find((p: ChallengeParticipant) => p.userId === userId);
 
             const durationDays = Math.ceil(
                 (new Date(challenge.endDate).getTime() - new Date(challenge.startDate).getTime()) / (1000 * 60 * 60 * 24)
@@ -268,7 +269,7 @@ export class GamificationController {
                 return;
             }
 
-            const participant = challenge.participants.find((p) => p.userId === userId);
+            const participant = challenge.participants.find((p: ChallengeParticipant) => p.userId === userId);
             if (!participant) {
                 res.status(403).json({ success: false, message: 'Not a participant of this challenge' });
                 return;

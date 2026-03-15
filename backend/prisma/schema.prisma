@@ -139,4 +139,28 @@ model Streak {
   totalPoints    Int      @default(0)
 }
 
+model Challenge {
+  id           Int      @id @default(sequence())
+  title        String
+  type         String   // calorie, water, sugar, step
+  startDate    DateTime @default(now())
+  endDate      DateTime
+  status       String   // pending, active, completed, cancelled
+  creatorId    Int
+  participants ChallengeParticipant[]
+}
+
+model ChallengeParticipant {
+  id             Int       @id @default(sequence())
+  challengeId    Int
+  userId         Int
+  role           String    // creator, invitee
+  status         String    // pending, accepted, declined
+  rewardClaimed  Boolean   @default(false)
+  joinedAt       DateTime  @default(now())
+  challenge      Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
+  @@unique([challengeId, userId])
+}
+
 //npx prisma db push yapılmalı

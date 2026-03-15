@@ -1,5 +1,5 @@
 import prisma from '../config/prisma';
-import { Streak } from '@prisma/client';
+import { Streak, Challenge, ChallengeParticipant } from '@prisma/client';
 
 export class GamificationModel {
 
