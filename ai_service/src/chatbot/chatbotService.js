@@ -8,7 +8,7 @@ const { filterPersonalInformation, filterHistoryPersonalInformation } = require(
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
-const GEMINI_MODEL = 'gemini-2.0-flash';
+const GEMINI_MODEL = 'gemini-2.5-flash';
 const MAX_MESSAGE_LENGTH = parseInt(process.env.MAX_MESSAGE_LENGTH) || 2000;
 const MAX_MESSAGES_PER_MINUTE = parseInt(process.env.MAX_MESSAGES_PER_MINUTE) || 10;
 const CONVERSATION_TTL_MS = parseInt(process.env.CONVERSATION_TTL_MS) || 3_600_000; // 1 hour
