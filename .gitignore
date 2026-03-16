@@ -57,6 +57,9 @@ ENV/
 *.mp4
 *.avi
 *.mov
+*.exe
+*.bat
+*.ps1
 
 # Dataset directories
 data/
