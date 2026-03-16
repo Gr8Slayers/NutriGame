@@ -104,3 +104,12 @@ pnpm-debug.log
 /ai_service/dist/
 /ai_service/node_modules/
 /ai_service/venv/
+
+
+# Results
+!/object_detection/finetuning/yolov8/images/*.jpg
+!/object_detection/finetuning/yolov8/images/*.png
+!/object_detection/finetuning/yolov8/large/infer_results/*.jpg
+!/object_detection/finetuning/yolov8/large/infer_results/*.png
+!/object_detection/finetuning/yolov8/medium/infer_results/*.jpg
+!/object_detection/finetuning/yolov8/medium/infer_results/*.png
