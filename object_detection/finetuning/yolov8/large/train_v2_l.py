@@ -28,9 +28,9 @@ results = model.train(
     optimizer  = "auto",
     patience   = 20,
     save       = True,
-    plots      = True,
+    plots      = False,
     val        = True,
-    cache      = "ram",
+    cache      = False,
 )
 
 print(f"\nEgitim tamamlandi.")
