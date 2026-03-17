@@ -1,0 +1,115 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Model files
+*.pt
+*.pth
+*.onnx
+*.h5
+*.pb
+*.weights
+*.caffemodel
+
+# Data files
+# *.json
+# !**/annotations/*.json
+*.csv
+*.txt
+!requirements.txt
+!README.txt
+*.xml
+*.zip
+*.tar
+*.gz
+*.jpg
+*.jpeg
+*.png
+*.bmp
+*.tiff
+*.mp4
+*.avi
+*.mov
+*.exe
+*.bat
+*.ps1
+
+# Dataset directories
+data/
+dataset/
+datasets/
+images/
+videos/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+events.out*
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Prisma
+/backend/prisma/dev.db
+/backend/prisma/dev.db-journal
+
+# Environment variables
+.env
+.env*.local
+
+# AI Service specific
+/ai_service/models/
+/ai_service/mock_data/
+/ai_service/dist/
+/ai_service/node_modules/
+/ai_service/venv/
+
+
+# Results
+!/object_detection/finetuning/yolov8/images/*.jpg
+!/object_detection/finetuning/yolov8/images/*.png
+!/object_detection/finetuning/yolov8/large/infer_results/*.jpg
+!/object_detection/finetuning/yolov8/large/infer_results/*.png
+!/object_detection/finetuning/yolov8/medium/infer_results/*.jpg
+!/object_detection/finetuning/yolov8/medium/infer_results/*.png
