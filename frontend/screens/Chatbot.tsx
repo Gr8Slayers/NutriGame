@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { View, TouchableOpacity, ScrollView, Platform, KeyboardAvoidingView, Animated, Dimensions, Easing, Text, FlatList, Modal, Alert } from 'react-native';
 import Markdown from 'react-native-markdown-display';
-import { GiftedChat, Avatar, IMessage, Bubble, MessageText, BubbleProps, MessageTextProps, InputToolbar, Composer, Send } from 'react-native-gifted-chat';
+import { GiftedChat, Avatar, IMessage, Bubble, MessageText, InputToolbar, Composer, Send } from 'react-native-gifted-chat';
 import { Ionicons } from '@expo/vector-icons';
 import { TypingAnimation } from 'react-native-typing-animation';
 import * as SecureStore from 'expo-secure-store';

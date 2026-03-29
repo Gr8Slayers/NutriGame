@@ -18,6 +18,7 @@ model User {
   createdAt DateTime  @default(now())
   profile   UserProfile?  // sadece Prisma için, DB kolonu değil
   streak    Streak?   // Her kullanıcının bir streak kaydı olacak
+  mealPhotos MealPhoto[]
 }
 
 model UserProfile {
@@ -84,7 +85,17 @@ model WaterLog {
 
   @@unique([userId, date]) //1 user 1 gun icin birden fazla row olusturamaz
 }
+model MealPhoto {
+  photoId      Int      @id @default(sequence())
+  userId       Int
+  date         DateTime @db.Date @default(now()) 
+  mealCategory String  
+  imageUrl     String   // Yüklenen resmin Render, S3 veya local sunucudaki adresi
+  uploadedAt   DateTime @default(now())
 
+  // User tablosu ile olan 1-to-Many "uploads" ilişkisinin bağlantısı
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
 
 model UserFollow {
   id          Int      @id @default(sequence())

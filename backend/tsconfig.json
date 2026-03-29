@@ -9,5 +9,9 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*", "ai_service/**/*.d.ts"]
+  "include": [
+    "src/**/*",
+    "ai_service/**/*.d.ts",
+    "ai_service/**/*.ts"
+  ]
 }
