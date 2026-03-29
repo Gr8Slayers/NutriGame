@@ -19,6 +19,7 @@ model User {
   profile   UserProfile?  // sadece Prisma için, DB kolonu değil
   streak    Streak?   // Her kullanıcının bir streak kaydı olacak
   mealPhotos MealPhoto[]
+  chatSessions ChatSession[]
 }
 
 model UserProfile {
@@ -172,6 +173,25 @@ model ChallengeParticipant {
   challenge      Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
 
   @@unique([challengeId, userId])
+}
+
+model ChatSession {
+  id        String        @id @default(uuid())
+  userId    Int
+  title     String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  messages  ChatMessage[]
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ChatMessage {
+  id        Int      @id @default(sequence())
+  sessionId String
+  role      String   // 'user' or 'model'
+  content   String   @db.String(2000) // Gemini limitlerine uygun
+  createdAt DateTime @default(now())
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 }
 
 //npx prisma db push yapılmalı

@@ -19,7 +19,7 @@ export default function Chatbot() {
     const [messages, setMessages] = useState<IMessage[]>([]);
     const navigation = useNavigation();
     const [showMenu, setShowMenu] = useState(false);
-    const [history, setHistory] = useState<any[]>([]); //backende gönderilecek sohbet geçmişi
+    const [history, setHistory] = useState<any[]>([]);
     const [chatID, setChatID] = useState<string | null>(null);
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
@@ -49,7 +49,31 @@ export default function Chatbot() {
 
     useEffect(() => {
         setMessages(setNewChat());
+        fetchHistory();
     }, []);
+
+    const fetchHistory = async () => {
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+            if (!token) return;
+
+            const response = await fetch(`${API_URL}/api/chat/history`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.history && Array.isArray(data.history)) {
+                    setHistory(data.history);
+                }
+            }
+        } catch (error) {
+            console.error('Geçmiş çekilirken hata:', error);
+        }
+    };
 
     const setNewChat = (): IMessage[] => {
         return [
@@ -130,19 +154,15 @@ export default function Chatbot() {
             const backendChatId = data.chatId;
             if (!chatID && backendChatId) {
                 setChatID(backendChatId);
-                // Create new history entry
-                setHistory(prevHistory => {
-                    const newChatSession = {
-                        id: backendChatId,
-                        title: userMessage,
-                        createdAt: new Date(),
-                        messages: GiftedChat.append(setNewChat(), newMessages),
-                    };
-                    return [newChatSession, ...prevHistory];
-                });
+
+                // Sol menüye (history listesine) yeni sohbetin sadece başlığını ekle
+                setHistory(prevHistory => [
+                    { id: backendChatId, title: userMessage, createdAt: new Date().toISOString() },
+                    ...prevHistory
+                ]);
             }
 
-            // Create AI response message
+            // AI cevabını ekranda göster
             const aiMessage: IMessage = {
                 _id: Date.now(),
                 text: data.response,
@@ -154,24 +174,12 @@ export default function Chatbot() {
                 },
             };
 
-            // Append AI response to messages
             setMessages(previousMessages => GiftedChat.append(previousMessages, [aiMessage]));
 
-            // Update history with AI response
-            setHistory(prevHistory =>
-                prevHistory.map(chat =>
-                    chat.id === (backendChatId || chatID)
-                        ? { ...chat, messages: GiftedChat.append(chat.messages, [aiMessage]) }
-                        : chat
-                )
-            );
 
         } catch (error: any) {
             console.error('Chatbot API error:', error);
-            Alert.alert(
-                'Connection Error',
-                `Could not connect to the chatbot service. Make sure the server is running.`
-            );
+            Alert.alert('Connection Error', `Could not connect to the chatbot service.`);
         } finally {
             setIsTyping(false);
         }
@@ -299,10 +307,46 @@ export default function Chatbot() {
         );
     };
 
-    const loadChat = (chat: any) => {
+    const loadChat = async (chat: any) => {
         setChatID(chat.id);
-        setMessages(chat.messages);
         toggleMenu();
+
+        setMessages([]);
+
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+
+            const response = await fetch(`${API_URL}/api/chat/history/${chat.id}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.messages) {
+                    const messagesWithAvatar = data.messages.map((msg: any) => {
+                        if (msg.user._id === 2) { // Eğer mesaj AI'a aitse
+                            return {
+                                ...msg,
+                                user: {
+                                    ...msg.user,
+                                    avatar: require('../assets/logo.png')
+                                }
+                            };
+                        }
+                        return msg; // Kullanıcı mesajıysa aynen bırak
+                    });
+
+                    setMessages(messagesWithAvatar);
+                }
+            } else {
+                Alert.alert("Hata", "Sohbet detayları yüklenemedi.");
+            }
+        } catch (error) {
+            console.error('Sohbet yüklenirken hata:', error);
+        }
     };
 
     const renderHistoryItem = ({ item }: { item: any }) => (

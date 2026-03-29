@@ -9,6 +9,7 @@ import {
   createNewSession,
   deleteSession,
 } from '../../ai_service/ai_service/src/chatbot/chatbotService';
+import { chatbotModel } from '../models/chatbot.model';
 
 /**
  * POST /api/chat
@@ -16,21 +17,56 @@ import {
  * Returns: { chatId: string, response: string }
  */
 export async function handleChat(req: any, res: Response) {
-  const userId = String(req.user!.id);
-  const { message, chatId } = req.body;
-  if (!req.user || !req.user.id) {
-    return res.status(401).json({ success: false, message: 'Kimlik doğrulama hatası (User ID bulunamadı).' });
-  }
-
-  if (!message) {
-    return res.status(400).json({ success: false, message: 'message is required.' });
-  }
-
   try {
-    const result = await chat(userId, chatId || null, message);
-    return res.status(200).json({ success: true, ...result });
+    const userId = parseInt(req.user?.id || req.userId);
+    const { message, chatId } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({ success: false, message: 'Kimlik doğrulama hatası (User ID bulunamadı).' });
+    }
+    if (!message) {
+      return res.status(400).json({ success: false, message: 'message is required.' });
+    }
+
+    let currentChatId = chatId;
+
+    if (!currentChatId) {
+      const title = message.substring(0, 30) + "..."; // İlk mesajı başlık yap
+      const newSession = await chatbotModel.createSession(userId, title);
+      currentChatId = newSession.id;
+    }
+
+    await chatbotModel.addMessage(currentChatId, 'user', message);
+
+    const result = await chat(String(userId), currentChatId, message);
+
+    await chatbotModel.addMessage(currentChatId, 'model', result.response);
+
+    return res.status(200).json({
+      success: true,
+      chatId: currentChatId,
+      response: result.response
+    });
+
   } catch (err: any) {
     return handleChatError(err, res);
+  }
+}
+
+/**
+ * GET /api/chat/history
+ */
+export async function handleGetAllHistory(req: Request, res: Response) {
+  try {
+    const userId = parseInt((req as any).user?.id || (req as any).userId);
+    if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+
+    const sessions = await chatbotModel.getUserSessions(userId);
+
+    return res.status(200).json({ success: true, history: sessions });
+  } catch (error: any) {
+    console.error("[Chatbot Controller] handleGetAllHistory hatası:", error);
+    return res.status(500).json({ success: false, message: 'Server error while fetching history' });
   }
 }
 
@@ -38,23 +74,54 @@ export async function handleChat(req: any, res: Response) {
  * GET /api/chat/history/:chatId
  * Returns: { chatId: string, history: Array }
  */
-export function handleGetHistory(req: Request, res: Response) {
-  const { chatId } = req.params;
-  if (!chatId) {
-    return res.status(400).json({ success: false, message: 'chatId is required.' });
+export async function handleGetHistory(req: Request, res: Response) {
+  try {
+    const { chatId } = req.params;
+    if (!chatId) {
+      return res.status(400).json({ success: false, message: 'chatId is required.' });
+    }
+    const rawMessages = await chatbotModel.getSessionMessages(chatId);
+
+    const formattedMessages = rawMessages.map((msg) => ({
+      _id: msg.id,
+      text: msg.content,
+      createdAt: msg.createdAt,
+      user: {
+        _id: msg.role === 'user' ? 1 : 2,
+        name: msg.role === 'user' ? 'You' : 'NutriCoach',
+      }
+    }));
+
+    // GiftedChat için ters çeviriyoruz
+    const giftedChatMessages = formattedMessages.reverse();
+
+    return res.status(200).json({ success: true, messages: giftedChatMessages });
+  } catch (error: any) {
+    console.error("[Chatbot Controller] handleGetHistory hatası:", error);
+    return res.status(500).json({ success: false, message: 'Server error while fetching session details' });
   }
-  const result = getChatHistory(chatId);
-  return res.status(200).json({ success: true, ...result });
 }
+
+
+
+
 
 /**
  * POST /api/chat/new
  * Creates a new conversation session.
  * Returns: { chatId: string }
  */
-export function handleNewSession(_req: Request, res: Response) {
-  const chatId = createNewSession();
-  return res.status(201).json({ success: true, chatId });
+export async function handleNewSession(_req: Request, res: Response) {
+  try {
+    const userId = parseInt((_req as any).user?.id || (_req as any).userId);
+    if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+
+    const session = await chatbotModel.createSession(userId, "New Chat");
+    return res.status(201).json({ success: true, chatId: session.id });
+  } catch (error: any) {
+    console.error("[Chatbot Controller] handleNewSession hatası:", error);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
 }
 
 /**
@@ -63,9 +130,23 @@ export function handleNewSession(_req: Request, res: Response) {
  * Returns: { success: boolean }
  */
 export async function handleDeleteSession(req: Request, res: Response) {
-  const { chatId } = req.params;
-  const deleted = deleteSession(chatId);
-  return res.status(200).json({ success: deleted });
+  try {
+    const { chatId } = req.params;
+    if (!chatId) return res.status(400).json({ success: false, message: 'Chat ID is required' });
+
+    await chatbotModel.deleteSession(chatId);
+
+    try {
+      deleteSession(chatId);
+    } catch (e) {
+      console.log("RAM'de silinecek session bulunamadı, atlandı.");
+    }
+
+    return res.status(200).json({ success: true });
+  } catch (error: any) {
+    console.error("[Chatbot Controller] handleDeleteSession hatası:", error);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
 }
 
 /**

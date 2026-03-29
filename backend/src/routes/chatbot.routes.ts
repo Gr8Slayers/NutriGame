@@ -7,6 +7,7 @@ import { authMiddleware } from '../middleware/auth.middleware';
 import {
   handleChat,
   handleGetHistory,
+  handleGetAllHistory,
   handleNewSession,
   handleDeleteSession,
 } from '../controllers/chatbot.controller';
@@ -24,6 +25,8 @@ router.post('/new', authMiddleware, handleNewSession);
 
 // GET /api/chat/history/:chatId — Get conversation history
 router.get('/history/:chatId', authMiddleware, handleGetHistory);
+
+router.get('/history', handleGetAllHistory);
 
 // DELETE /api/chat/:chatId — Delete a conversation session
 router.delete('/:chatId', authMiddleware, handleDeleteSession);
