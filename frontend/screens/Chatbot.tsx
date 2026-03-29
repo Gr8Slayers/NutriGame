@@ -1,12 +1,15 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { View, TouchableOpacity, ScrollView, Platform, KeyboardAvoidingView, Animated, Dimensions, Easing, Text, FlatList, Modal } from 'react-native';
+import { View, TouchableOpacity, ScrollView, Platform, KeyboardAvoidingView, Animated, Dimensions, Easing, Text, FlatList, Modal, Alert } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 import { GiftedChat, Avatar, IMessage, Bubble, MessageText, BubbleProps, MessageTextProps, InputToolbar, Composer, Send } from 'react-native-gifted-chat';
 import { Ionicons } from '@expo/vector-icons';
+import * as SecureStore from 'expo-secure-store';
 
 import styles from '../styles/Chatbot';
 import { useNavigation } from '@react-navigation/native';
+import { IP_ADDRESS } from "@env";
 
+const API_URL = `http://${IP_ADDRESS}:3000`;
 
 const { width } = Dimensions.get('window');
 const MENU_WIDTH = width * 0.7;
@@ -16,9 +19,10 @@ export default function Chatbot() {
     const navigation = useNavigation();
     const [showMenu, setShowMenu] = useState(false);
     const [history, setHistory] = useState<any[]>([]); //backende gönderilecek sohbet geçmişi
-    const [chatID, setChatID] = useState<string | number | null>(null);
+    const [chatID, setChatID] = useState<string | null>(null);
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+    const [isTyping, setIsTyping] = useState(false);
 
     const slideAnim = React.useRef(new Animated.Value(-MENU_WIDTH)).current;
 
@@ -61,28 +65,117 @@ export default function Chatbot() {
         ]
     }
 
-    const onSend = useCallback((messages: IMessage[] = []) => {
-        setMessages(previousMessages => GiftedChat.append(previousMessages, messages));
+    /**
+     * Sends the user's message to the backend chatbot API and appends the AI response.
+     */
+    const onSend = useCallback(async (newMessages: IMessage[] = []) => {
+        // Immediately add user's message to the chat
+        setMessages(previousMessages => GiftedChat.append(previousMessages, newMessages));
+
+        const userMessage = newMessages[0]?.text;
+        if (!userMessage) return;
+
+        // Update local history state
         setHistory(prevHistory => {
-            if (chatID) { //zaten kayıtlı chat varsa güncelle
+            if (chatID) {
                 return prevHistory.map(chat =>
                     chat.id === chatID
-                        ? { ...chat, messages: GiftedChat.append(chat.messages, messages) }
+                        ? { ...chat, messages: GiftedChat.append(chat.messages, newMessages) }
                         : chat
                 );
             } else {
-                const newChatId = Date.now().toString();
-                setChatID(newChatId);
-                const newChatSession = {
-                    id: newChatId,
-                    title: messages[0].text,
-                    createdAt: new Date(),
-                    messages: GiftedChat.append(setNewChat(), messages)
-                };
-                return [newChatSession, ...prevHistory];
+                // Will be updated once we get chatId from backend
+                return prevHistory;
             }
         });
-    }, [chatID, setNewChat()]);
+
+        // Show typing indicator
+        setIsTyping(true);
+
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+            if (!token) {
+                Alert.alert('Error', 'You need to be logged in to use the chatbot.');
+                setIsTyping(false);
+                return;
+            }
+
+            const response = await fetch(`${API_URL}/api/chat/send`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    message: userMessage,
+                    chatId: chatID,
+                }),
+            });
+
+            const data = await response.json();
+            console.log("Sunucudan Gelen Saf Yanıt:", data);
+
+            if (!response.ok) {
+                // Handle rate limit error
+                if (response.status === 429) {
+                    Alert.alert('Too Many Messages', data.message || 'Please wait before sending another message.');
+                } else {
+                    Alert.alert('Error', data.message || 'Failed to get AI response.');
+                }
+                setIsTyping(false);
+                return;
+            }
+
+            // Update chatId if this is a new conversation
+            const backendChatId = data.chatId;
+            if (!chatID && backendChatId) {
+                setChatID(backendChatId);
+                // Create new history entry
+                setHistory(prevHistory => {
+                    const newChatSession = {
+                        id: backendChatId,
+                        title: userMessage,
+                        createdAt: new Date(),
+                        messages: GiftedChat.append(setNewChat(), newMessages),
+                    };
+                    return [newChatSession, ...prevHistory];
+                });
+            }
+
+            // Create AI response message
+            const aiMessage: IMessage = {
+                _id: Date.now(),
+                text: data.response,
+                createdAt: new Date(),
+                user: {
+                    _id: 2,
+                    name: 'AI Bot',
+                    avatar: require('../assets/logo.png'),
+                },
+            };
+
+            // Append AI response to messages
+            setMessages(previousMessages => GiftedChat.append(previousMessages, [aiMessage]));
+
+            // Update history with AI response
+            setHistory(prevHistory =>
+                prevHistory.map(chat =>
+                    chat.id === (backendChatId || chatID)
+                        ? { ...chat, messages: GiftedChat.append(chat.messages, [aiMessage]) }
+                        : chat
+                )
+            );
+
+        } catch (error: any) {
+            console.error('Chatbot API error:', error);
+            Alert.alert(
+                'Connection Error',
+                `Could not connect to the chatbot service. Make sure the server is running.`
+            );
+        } finally {
+            setIsTyping(false);
+        }
+    }, [chatID]);
 
     const renderBubble = (props: any) => {
         const { currentMessage } = props;
@@ -155,7 +248,7 @@ export default function Chatbot() {
             <Composer
                 {...props}
                 textInputStyle={styles.composer}
-                placeholder={'Msage...'}
+                placeholder={'Message...'}
                 placeholderTextColor={'#8e8e93'}
                 multiline={true}
             />
@@ -217,9 +310,24 @@ export default function Chatbot() {
         </TouchableOpacity>
     );
 
-    const deleteChat = (chatId: string) => {
+    const deleteChat = async (chatIdToDelete: string) => {
+        // Also delete on backend
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+            if (token) {
+                await fetch(`${API_URL}/api/chat/${chatIdToDelete}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+            }
+        } catch (error) {
+            console.error('Failed to delete chat on backend:', error);
+        }
+
         setHistory((prevHistory) =>
-            prevHistory.filter((chat) => chat.id !== chatId)
+            prevHistory.filter((chat) => chat.id !== chatIdToDelete)
         );
         setDeleteModalVisible(false);
         setSelectedChatId(null);
@@ -229,7 +337,7 @@ export default function Chatbot() {
     const openNewChat = () => {
         setChatID(null); // üstüne güncel mesajları kaydetmesin diye
         setMessages(setNewChat());
-        toggleMenu();
+        if (showMenu) toggleMenu();
     }
 
     return (
@@ -373,6 +481,7 @@ export default function Chatbot() {
                             messages={messages}
                             onSend={messages => onSend(messages)}
                             user={{ _id: 1 }}
+                            isTyping={isTyping}
                             renderBubble={renderBubble}
                             renderMessageText={renderMessageText}
                             renderInputToolbar={renderInputToolbar}

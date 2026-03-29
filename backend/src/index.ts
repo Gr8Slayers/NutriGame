@@ -12,6 +12,7 @@ import userRoutes from './routes/user.routes';
 import foodRoutes from './routes/food.routes';
 import socialRoutes from './routes/social.routes';
 import gamificationRoutes from './routes/gamification.routes';
+import chatbotRoutes from './routes/chatbot.routes';
 import { authMiddleware } from './middleware/auth.middleware';
 
 dotenv.config();
@@ -75,6 +76,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/food', foodRoutes);
 app.use('/api/social', socialRoutes);
 app.use('/api/gamification', gamificationRoutes);
+app.use('/api/chat', chatbotRoutes);
 
 // Server başlat
 app.listen(port, () => {
