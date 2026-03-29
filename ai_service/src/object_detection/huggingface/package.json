@@ -6,9 +6,9 @@
   "main": "hf-gradio-api.js",
   "scripts": {
     "start": "node backend-integration.js",
-    "test": "node --experimental-vm-modules node_modules/.bin/jest --testPathPattern=test/ --forceExit",
-    "test:unit": "node --experimental-vm-modules node_modules/.bin/jest --testPathPattern=test/unit --forceExit",
-    "test:api": "node --experimental-vm-modules node_modules/.bin/jest --testPathPattern=test/api --forceExit"
+    "test": "node --experimental-vm-modules node_modules/jest-cli/bin/jest.js --config=jest.config.js --forceExit",
+    "test:unit": "node --experimental-vm-modules node_modules/jest-cli/bin/jest.js --config=jest.config.js --testPathPattern=test/unit --forceExit",
+    "test:api": "node --experimental-vm-modules node_modules/jest-cli/bin/jest.js --config=jest.config.js --testPathPattern=test/api --forceExit"
   },
   "dependencies": {
     "@gradio/client": "^2.0.1",

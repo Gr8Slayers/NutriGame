@@ -8,6 +8,8 @@
  *   parseDetectionText  calorie parsing + NOT_FOOD error
  */
 
+import { jest } from '@jest/globals';
+
 // ─── Inline implementations (same logic as backend-integration.js) ───────────
 // Duplicated here so unit tests are fully isolated from the HTTP layer.
 
