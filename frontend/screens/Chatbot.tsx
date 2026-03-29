@@ -3,6 +3,7 @@ import { View, TouchableOpacity, ScrollView, Platform, KeyboardAvoidingView, Ani
 import Markdown from 'react-native-markdown-display';
 import { GiftedChat, Avatar, IMessage, Bubble, MessageText, BubbleProps, MessageTextProps, InputToolbar, Composer, Send } from 'react-native-gifted-chat';
 import { Ionicons } from '@expo/vector-icons';
+import { TypingAnimation } from 'react-native-typing-animation';
 import * as SecureStore from 'expo-secure-store';
 
 import styles from '../styles/Chatbot';
@@ -69,7 +70,6 @@ export default function Chatbot() {
      * Sends the user's message to the backend chatbot API and appends the AI response.
      */
     const onSend = useCallback(async (newMessages: IMessage[] = []) => {
-        // Immediately add user's message to the chat
         setMessages(previousMessages => GiftedChat.append(previousMessages, newMessages));
 
         const userMessage = newMessages[0]?.text;
@@ -268,6 +268,35 @@ export default function Chatbot() {
             </Send>
         );
 
+    };
+
+    const renderFooter = () => {
+        if (!isTyping) return null;
+
+        return (
+            <View style={{
+                padding: 10,
+                marginLeft: 10,
+                marginBottom: 5,
+                flexDirection: 'row',
+                alignItems: 'center'
+            }}>
+
+                <View style={{
+                    backgroundColor: 'transparent',
+                    paddingVertical: 8,
+                    paddingHorizontal: 15,
+                    borderRadius: 20,
+                }}>
+                    <TypingAnimation
+                        dotColor="#ABC270"
+                        dotMargin={5}
+                        dotRadius={3}
+                        dotY={0}
+                    />
+                </View>
+            </View>
+        );
     };
 
     const loadChat = (chat: any) => {
@@ -482,6 +511,7 @@ export default function Chatbot() {
                             onSend={messages => onSend(messages)}
                             user={{ _id: 1 }}
                             isTyping={isTyping}
+                            renderFooter={renderFooter}
                             renderBubble={renderBubble}
                             renderMessageText={renderMessageText}
                             renderInputToolbar={renderInputToolbar}
