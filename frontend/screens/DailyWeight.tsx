@@ -27,6 +27,9 @@ const DailyWeight: React.FC<Props> = ({ navigation }) => {
     const [todayWeight, setTodayWeight] = useState<string>('');
     const [todayMood, setTodayMood] = useState<string>('');
     const [isSubmittingWeight, setIsSubmittingWeight] = useState(false);
+    
+    const [targetWeight, setTargetWeight] = useState<number | null>(null);
+    const [startWeight, setStartWeight] = useState<number | null>(null);
 
     const fetchProgressData = useCallback(async () => {
         try {
@@ -47,9 +50,26 @@ const DailyWeight: React.FC<Props> = ({ navigation }) => {
         }
     }, []);
 
+    const fetchUserProfile = useCallback(async () => {
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+            const response = await fetch(`${API_URL}/api/user/profile`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const res = await response.json();
+            if (res.success && res.data) {
+                setTargetWeight(res.data.target_weight);
+                setStartWeight(res.data.weight);
+            }
+        } catch (error) {
+            console.error("Error fetching profile:", error);
+        }
+    }, []);
+
     useEffect(() => {
         fetchProgressData();
-    }, [fetchProgressData]);
+        fetchUserProfile();
+    }, [fetchProgressData, fetchUserProfile]);
 
     const handleSaveProgress = async () => {
         if (!todayWeight && !todayMood) return;
@@ -142,6 +162,35 @@ const DailyWeight: React.FC<Props> = ({ navigation }) => {
             </View>
         );
     };
+
+    const latestWeightLog = [...progressData].reverse().find(d => d.currentWeight !== null && d.currentWeight !== undefined);
+    const currentWeightDisplay = latestWeightLog ? latestWeightLog.currentWeight : startWeight;
+
+    let goalText = "";
+    let progressPercentage = 0;
+
+    if (currentWeightDisplay && targetWeight && startWeight) {
+        const diff = currentWeightDisplay - targetWeight;
+        if (Math.abs(diff) < 0.1) {
+            goalText = "Goal Reached! 🏆";
+            progressPercentage = 100;
+        } else {
+            const totalDiff = startWeight - targetWeight;
+            if (totalDiff > 0) { // Losing weight goal
+                goalText = diff > 0 ? `${diff.toFixed(1)} kg left to your goal!` : `You have surpassed your goal by ${Math.abs(diff).toFixed(1)} kg!`;
+                progressPercentage = Math.max(0, Math.min(100, ((totalDiff - diff) / totalDiff) * 100));
+            } else if (totalDiff < 0) { // Gaining weight goal
+                goalText = diff < 0 ? `${Math.abs(diff).toFixed(1)} kg left to your goal!` : `You have surpassed your goal by ${diff.toFixed(1)} kg!`;
+                const toGain = targetWeight - startWeight;
+                const gained = currentWeightDisplay - startWeight;
+                progressPercentage = Math.max(0, Math.min(100, (gained / toGain) * 100));
+            } else {
+                goalText = "Maintenance Mode";
+                progressPercentage = 100;
+            }
+        }
+    }
+
     return (
         <View style={styles.container}>
             <View style={styles.header}>
@@ -152,6 +201,21 @@ const DailyWeight: React.FC<Props> = ({ navigation }) => {
                 <View style={{ width: 40 }} />
             </View>
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+                
+                {targetWeight && startWeight && currentWeightDisplay ? (
+                    <View style={[styles.chartCard, { width: '95%', padding: 15, marginBottom: 5 }]}>
+                        <Text style={{ color: '#f7e5c5', fontSize: 16, fontWeight: 'bold', marginBottom: 10 }}>Goal Approach</Text>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
+                            <Text style={{ color: '#a0896e' }}>Current: {currentWeightDisplay}kg</Text>
+                            <Text style={{ color: '#a0896e' }}>Target: {targetWeight}kg</Text>
+                        </View>
+                        <View style={{ height: 10, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 5, overflow: 'hidden' }}>
+                            <View style={{ height: '100%', width: `${progressPercentage}%`, backgroundColor: '#4ecdc4', borderRadius: 5 }} />
+                        </View>
+                        <Text style={{ color: '#c8a96e', fontSize: 12, marginTop: 8, textAlign: 'center' }}>{goalText}</Text>
+                    </View>
+                ) : null}
+
                 <View style={[styles.chartCard, { width: '95%' }]}>
                     <Text style={styles.chartTitle}>Weight Input & Trend (7 Days)</Text>
                     <View style={{ width: '100%', gap: 50 }}>
