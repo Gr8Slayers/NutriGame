@@ -113,3 +113,13 @@ export interface Comment {
 }
 
 
+export interface DailyProgress {
+    id: number;
+    userId: number;
+    date: string;
+    totalCaloriesConsumed: number;
+    calorieGoal: number;
+    goalAchieved: boolean;
+    currentWeight?: number;
+    mood?: string;
+}

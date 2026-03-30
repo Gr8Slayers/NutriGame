@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import styles from '../styles/WeeklySummary';
 import { IP_ADDRESS } from "@env";
 import * as SecureStore from 'expo-secure-store';
-import { WeeklySummary as WeeklySummaryData } from '../types';
+import { WeeklySummary as WeeklySummaryData, DailyProgress } from '../types';
 
 const API_URL = `http://${IP_ADDRESS}:3000`;
 
@@ -18,6 +18,9 @@ const WeeklySummary: React.FC<Props> = ({ navigation }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [weeklyData, setWeeklyData] = useState<WeeklySummaryData[]>([]);
     const [averages, setAverages] = useState({ calorie: 0, protein: 0, fat: 0, carb: 0 });
+    const [progressData, setProgressData] = useState<DailyProgress[]>([]);
+    const [todayWeight, setTodayWeight] = useState<string>('');
+    const [isSubmittingWeight, setIsSubmittingWeight] = useState(false);
 
     const fetchWeeklyData = useCallback(async () => {
         try {
@@ -41,6 +44,8 @@ const WeeklySummary: React.FC<Props> = ({ navigation }) => {
             setIsLoading(false);
         }
     }, []);
+
+
 
     const calculateAverages = (data: WeeklySummaryData[]) => {
         if (data.length === 0) return;
@@ -98,6 +103,8 @@ const WeeklySummary: React.FC<Props> = ({ navigation }) => {
         );
     };
 
+
+
     if (isLoading) {
         return (
             <View style={[styles.container, { justifyContent: 'center' }]}>
@@ -125,6 +132,7 @@ const WeeklySummary: React.FC<Props> = ({ navigation }) => {
                         </View>
                     )}
                 </View>
+
 
                 <View style={styles.statsRow}>
                     <View style={styles.statCard}>

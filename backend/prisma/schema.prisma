@@ -20,6 +20,7 @@ model User {
   streak    Streak?   // Her kullanıcının bir streak kaydı olacak
   mealPhotos MealPhoto[]
   chatSessions ChatSession[]
+  dailyProgresses DailyProgress[]
 }
 
 model UserProfile {
@@ -194,3 +195,18 @@ model ChatMessage {
 }
 
 //npx prisma db push yapılmalı
+
+model DailyProgress {
+  id                    Int      @id @default(sequence())
+  userId                Int
+  date                  DateTime @db.Date @default(now())
+  totalCaloriesConsumed Float    @default(0)
+  calorieGoal           Float    @default(0)
+  goalAchieved          Boolean  @default(false)
+  currentWeight         Float?
+  mood                  String?
+
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+}

@@ -14,6 +14,7 @@ import socialRoutes from './routes/social.routes';
 import gamificationRoutes from './routes/gamification.routes';
 import chatbotRoutes from './routes/chatbot.routes';
 import foodRecognitionRoutes from './routes/food.recognition.routes';
+import dailyProgressRoutes from './routes/dailyprogress.routes';
 import { authMiddleware } from './middleware/auth.middleware';
 
 dotenv.config();
@@ -79,6 +80,7 @@ app.use('/api/social', socialRoutes);
 app.use('/api/gamification', gamificationRoutes);
 app.use('/api/chat', chatbotRoutes);
 app.use('/api/scan', foodRecognitionRoutes);
+app.use('/api/progress', dailyProgressRoutes);
 
 // Server başlat
 app.listen(port, () => {
