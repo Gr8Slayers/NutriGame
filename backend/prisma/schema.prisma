@@ -82,9 +82,8 @@ model WaterLog {
   water_log_id    Int      @id @default(sequence())
   userId          Int      
   date            DateTime @db.Date @default(now()) // prisma sadece Date kabul etmiyor Datetime var sadece, yanina ekledigim aciklama db de Date olarak tutlmayi sagliyor
-  t_amount        Int //yeni eklenen su miktarini o anki totale ekleyip yeni totali kaydediyorum
-
-  @@unique([userId, date]) //1 user 1 gun icin birden fazla row olusturamaz
+  amount          Int // loglanan su miktarı
+  portion_name    String // e.g. "Cup", "Small Bottle" vb.
 }
 model MealPhoto {
   photoId      Int      @id @default(sequence())

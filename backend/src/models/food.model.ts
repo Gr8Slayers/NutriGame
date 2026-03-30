@@ -129,47 +129,49 @@ export const foodModel = {
         });
     },
 
-    addtoWaterLog: async (user_id: number, date: Date, ml: number) => {
-        return await prisma.waterLog.upsert({
-            where: { userId_date: { userId: user_id, date: date } },
-            update: { t_amount: { increment: ml } },
-            create: { userId: user_id, date: date, t_amount: ml }
+    addtoWaterLog: async (user_id: number, date: Date, entries: { name: string, amount: number }[]) => {
+        const data = entries.map(e => ({
+            userId: user_id,
+            date: date,
+            amount: e.amount,
+            portion_name: e.name
+        }));
+        return await prisma.waterLog.createMany({
+            data: data
         });
     },
 
-    deletefromWaterLog: async (user_id: number, water_log_id: number, ml: number) => {
-        return await prisma.$transaction(async (tx) => {
-            // bu meal_log_id ye sahip bir log var mi kontrol ediliyor
-            const fetched_water_log = await tx.waterLog.findUnique({
-                where: {
-                    water_log_id: water_log_id
-                }
-            });
-
-            if (!fetched_water_log || fetched_water_log.t_amount < ml) {
-                return { success: false, message: "The meal log is not found by the provided meal_log_id or the amount to be deleted is exceeds the total amount." };
+    deletefromWaterLog: async (user_id: number, water_log_id: number) => {
+        const fetched_water_log = await prisma.waterLog.findUnique({
+            where: {
+                water_log_id: water_log_id
             }
-
-            // parametre olarak verilen miktar total miktardan eksiltiliyor
-            await tx.waterLog.update({
-                where: {
-                    water_log_id: water_log_id
-                },
-                data: {
-                    t_amount: { decrement: ml }
-                }
-            })
-            return { success: true };
         });
+
+        if (!fetched_water_log) {
+            return { success: false, message: "The water log is not found by the provided water_log_id." };
+        }
+
+        await prisma.waterLog.delete({
+            where: {
+                water_log_id: water_log_id
+            }
+        });
+        return { success: true };
     },
 
     async getWaterTotal(user_id: number, date: Date) {
-        return await prisma.waterLog.findFirst({
+        const logs = await prisma.waterLog.findMany({
             where: {
                 userId: user_id,
                 date: date
             }
         });
+        const sum = logs.reduce((acc, curr) => acc + curr.amount, 0);
+        return {
+            t_amount: sum,
+            logs: logs
+        };
     },
 
     getWeeklyMealTotals: async (userId: number) => {

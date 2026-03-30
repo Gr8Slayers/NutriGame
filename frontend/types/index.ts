@@ -29,6 +29,25 @@ export interface WeeklySummary {
     t_fat: number;
     t_carb: number;
 }
+export interface WaterPortion {
+    id: string;
+    name: string;
+    amount: number;
+    iconName: string;
+    iconColor: string;
+}
+
+export interface AddedEntry {
+    key: string;
+    name: string;
+    amount: number;
+}
+
+export interface SavedLog {
+    water_log_id: number;
+    amount: number;
+    portion_name: string;
+}
 
 export interface PublicUser {
     id: string;

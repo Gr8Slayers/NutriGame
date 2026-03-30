@@ -8,6 +8,7 @@ import * as SecureStore from 'expo-secure-store';
 import { RootStackParamList } from '../App';
 import WaterWave from "../components/waterContainer";
 import styles from '../styles/AddWater';
+import { WaterPortion, AddedEntry, SavedLog } from '../types';
 
 import { IP_ADDRESS } from "@env";
 
@@ -15,19 +16,7 @@ const API_URL = `http://${IP_ADDRESS}:3000`;
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AddWater'>;
 
-interface WaterPortion {
-     id: string;
-     name: string;
-     amount: number;
-     iconName: string;
-     iconColor: string;
-}
 
-interface AddedEntry {
-     key: string;
-     name: string;
-     amount: number;
-}
 
 const waterPortions: WaterPortion[] = [
      { id: '1', name: 'Cup', amount: 250, iconName: 'cup', iconColor: '#0277BD' },
@@ -39,6 +28,7 @@ const waterPortions: WaterPortion[] = [
 export default function AddWater({ route, navigation }: Props) {
      const { selectedDate, type } = route.params;
      const [currentWater, setCurrentWater] = useState<number>(0);
+     const [savedLogs, setSavedLogs] = useState<SavedLog[]>([]);
      const [addedEntries, setAddedEntries] = useState<AddedEntry[]>([]);
      const [modalVisible, setModalVisible] = useState(false);
      const [waterGoal, setWaterGoal] = useState<number>(0);
@@ -64,12 +54,15 @@ export default function AddWater({ route, navigation }: Props) {
                const data = await res.json();
                if (res.ok && data.data) {
                     setCurrentWater(data.data.t_amount || 0);
+                    setSavedLogs(data.data.logs || []);
                } else {
                     setCurrentWater(0);
+                    setSavedLogs([]);
                }
           } catch (error) {
                console.log("Error fetching water data:", error);
                setCurrentWater(0);
+               setSavedLogs([]);
           }
      }, [selectedDate]);
 
@@ -104,7 +97,7 @@ export default function AddWater({ route, navigation }: Props) {
           // Future date check
           const today = new Date();
           const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-          
+
           if (selectedDate > todayStr) {
                Alert.alert("Uyarı", "Gelecek tarihlere kayıt ekleyemezsiniz.");
                return;
@@ -122,36 +115,37 @@ export default function AddWater({ route, navigation }: Props) {
           setAddedEntries(prev => prev.filter(e => e.key !== key));
      };
 
-     const handleDeleteSaved = async () => {
-          try {
-               const token = await SecureStore.getItemAsync('userToken');
-               const params = new URLSearchParams({ date: selectedDate }).toString();
-               const totalRes = await fetch(`${API_URL}/api/food/get_water_total?${params}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-               });
-               const totalData = await totalRes.json();
-               if (!totalRes.ok || !totalData.data) {
-                    Alert.alert('Hata', 'Su kaydı bulunamadı.');
-                    return;
-               }
-               const { water_log_id, t_amount } = totalData.data;
-               const res = await fetch(`${API_URL}/api/food/delete_from_water`, {
-                    method: 'POST',
-                    headers: {
-                         'Content-Type': 'application/json',
-                         'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ water_log_id, water_amount: t_amount })
-               });
-               if (res.ok) {
-                    setCurrentWater(0);
-               } else {
-                    const d = await res.json();
-                    Alert.alert('Hata', d.message || 'Silme başarısız.');
-               }
-          } catch (e) {
-               Alert.alert('Hata', 'Bağlantı hatası.');
-          }
+     const handleDeleteSaved = async (logId: number, amount: number) => {
+          Alert.alert(
+               'Sil',
+               `Kayıtlı ${amount} ml silinsin mi?`,
+               [
+                    { text: 'İptal', style: 'cancel' },
+                    {
+                         text: 'Sil', style: 'destructive', onPress: async () => {
+                              try {
+                                   const token = await SecureStore.getItemAsync('userToken');
+                                   const res = await fetch(`${API_URL}/api/food/delete_from_water`, {
+                                        method: 'POST',
+                                        headers: {
+                                             'Content-Type': 'application/json',
+                                             'Authorization': `Bearer ${token}`
+                                        },
+                                        body: JSON.stringify({ water_log_id: logId })
+                                   });
+                                   if (res.ok) {
+                                        fetchWaterData();
+                                   } else {
+                                        const d = await res.json();
+                                        Alert.alert('Hata', d.message || 'Silme başarısız.');
+                                   }
+                              } catch (e) {
+                                   Alert.alert('Hata', 'Bağlantı hatası.');
+                              }
+                         }
+                    }
+               ]
+          );
      };
 
      const handleSave = async () => {
@@ -172,7 +166,7 @@ export default function AddWater({ route, navigation }: Props) {
                     },
                     body: JSON.stringify({
                          date: selectedDate,
-                         water_amount: addedAmount
+                         entries: addedEntries.map(e => ({ name: e.name, amount: e.amount }))
                     })
                });
 
@@ -181,7 +175,11 @@ export default function AddWater({ route, navigation }: Props) {
                     Alert.alert('Başarılı', `${addedAmount} ml su eklendi!`, [
                          {
                               text: 'Tamam',
-                              onPress: () => navigation.goBack()
+                              onPress: () => {
+                                   setAddedEntries([]);
+                                   fetchWaterData();
+                                   navigation.goBack();
+                              }
                          }
                     ]);
                } else {
@@ -301,27 +299,19 @@ export default function AddWater({ route, navigation }: Props) {
 
                                    <ScrollView style={styles.modalScroll}>
                                         {/* Kayıtlı (backend'de olan) */}
-                                        {currentWater > 0 && (
-                                             <View style={styles.modalItem}>
+                                        {savedLogs.map((log) => (
+                                             <View key={log.water_log_id} style={styles.modalItem}>
                                                   <View>
-                                                       <Text style={styles.modalItemCal}>{currentWater} ml</Text>
+                                                       <Text style={styles.modalItemName}>{log.portion_name}</Text>
+                                                       <Text style={styles.modalItemCal}>{log.amount} ml</Text>
                                                   </View>
                                                   <TouchableOpacity
-                                                       onPress={() =>
-                                                            Alert.alert(
-                                                                 'Sil',
-                                                                 `Kayıtlı ${currentWater} ml silinsin mi?`,
-                                                                 [
-                                                                      { text: 'İptal', style: 'cancel' },
-                                                                      { text: 'Sil', style: 'destructive', onPress: handleDeleteSaved }
-                                                                 ]
-                                                            )
-                                                       }
+                                                       onPress={() => handleDeleteSaved(log.water_log_id, log.amount)}
                                                   >
                                                        <Ionicons name="trash-outline" size={20} color="#e57373" />
                                                   </TouchableOpacity>
                                              </View>
-                                        )}
+                                        ))}
 
                                         {/* Eklenecek (henüz kaydedilmemiş) */}
                                         {addedEntries.map((item, index) => (

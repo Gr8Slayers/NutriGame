@@ -156,7 +156,7 @@ export class GamificationModel {
                 where: {
                     userId,
                     date: { gte: startDate, lte: effectiveEnd },
-                    t_amount: { gte: 2000 },
+                    amount: { gte: 2000 },
                 },
             });
             successfulDays = logs.length;

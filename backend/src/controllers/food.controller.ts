@@ -198,11 +198,11 @@ export class FoodController {
     async add_to_water(req: Request, res: Response, next: NextFunction) {
         try {
             const user_id = req.user!.id; // Assuming jwt/auth middleware sets req.user
-            const { date, water_amount } = req.body;
+            const { date, entries } = req.body;
 
 
-            if (!date || !water_amount) {
-                return res.status(400).json({ success: false, message: 'Please provide required information { date, water_amount }.' });
+            if (!date || !entries || !Array.isArray(entries) || entries.length === 0) {
+                return res.status(400).json({ success: false, message: 'Please provide required information { date, entries[name, amount] }.' });
             }
 
             // 1. Check format (YYYY-MM-DD)
@@ -227,7 +227,7 @@ export class FoodController {
                 return res.status(400).json({ success: false, message: 'Future dates are not allowed for logging.' });
             }
 
-            const addedWater = await foodModel.addtoWaterLog(user_id, parsedDate, water_amount);
+            const addedWater = await foodModel.addtoWaterLog(user_id, parsedDate, entries);
 
             if (!addedWater) {
                 res.status(400).json({ success: false, message: 'Water could not be added to the water log.' });
@@ -243,16 +243,16 @@ export class FoodController {
     async delete_from_water(req: Request, res: Response, next: NextFunction) {
         try {
             const user_id = req.user!.id; // Assuming jwt/auth middleware sets req.user
-            const { water_log_id, water_amount } = req.body;
+            const { water_log_id } = req.body;
 
-            if (!water_log_id || !water_amount) {
-                return res.status(400).json({ success: false, message: 'Please provide required information { date }.' });
+            if (!water_log_id) {
+                return res.status(400).json({ success: false, message: 'Please provide required information { water_log_id }.' });
             }
 
-            const deletedWater = await foodModel.deletefromWaterLog(user_id, water_log_id, water_amount);
+            const deletedWater = await foodModel.deletefromWaterLog(user_id, water_log_id);
 
             if (deletedWater.success !== true) {
-                res.status(400).json({ success: false, message: 'Water could not be deleted from the water log.' });
+                return res.status(400).json({ success: false, message: deletedWater.message || 'Water could not be deleted from the water log.' });
             }
 
             return res.status(200).json({ success: true, message: 'Water is successfully deleted from the water log.' });
@@ -286,13 +286,13 @@ export class FoodController {
 
             const fetched_water_total = await foodModel.getWaterTotal(user_id, parsedDate);
 
-            if (!fetched_water_total) {
+            if (!fetched_water_total || fetched_water_total.logs.length === 0) {
                 //res.status(400).json({ success: false, message: 'Water summary could not be found.' });
                 // burada herhangi bir kayit bulmadigi durumda 0 mis gibi kabul ediyor, boylelikle ui da totale 0 gosteriyor yani bu bir hata degil aslinda
                 return res.status(200).json({
                     success: true,
                     message: "No total waterlog found matching that date.",
-                    data: 0
+                    data: { t_amount: 0, logs: [] }
                 });
             }
 
