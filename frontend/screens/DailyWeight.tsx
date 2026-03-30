@@ -27,7 +27,7 @@ const DailyWeight: React.FC<Props> = ({ navigation }) => {
     const [todayWeight, setTodayWeight] = useState<string>('');
     const [todayMood, setTodayMood] = useState<string>('');
     const [isSubmittingWeight, setIsSubmittingWeight] = useState(false);
-    
+
     const [targetWeight, setTargetWeight] = useState<number | null>(null);
     const [startWeight, setStartWeight] = useState<number | null>(null);
 
@@ -201,7 +201,7 @@ const DailyWeight: React.FC<Props> = ({ navigation }) => {
                 <View style={{ width: 40 }} />
             </View>
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-                
+
                 {targetWeight && startWeight && currentWeightDisplay ? (
                     <View style={[styles.chartCard, { width: '95%', padding: 15, marginBottom: 5 }]}>
                         <Text style={{ color: '#f7e5c5', fontSize: 16, fontWeight: 'bold', marginBottom: 10 }}>Goal Approach</Text>
