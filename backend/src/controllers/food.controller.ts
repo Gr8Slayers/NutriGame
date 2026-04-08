@@ -131,7 +131,7 @@ export class FoodController {
                     .filter((p: any) => p.product_name && p.nutriments && p.nutriments['energy-kcal_100g'] !== undefined)
                     .map((p: any) => ({
                         food_id: null,
-                        food_name: p.product_name,
+                        food_name: this.cleanFoodName(p.product_name),
                         p_unit: 'g',
                         p_amount: 100,
                         p_calorie: Math.round(p.nutriments['energy-kcal_100g'] || 0),
@@ -139,7 +139,13 @@ export class FoodController {
                         p_fat: Math.round((p.nutriments['fat_100g'] || 0) * 10) / 10,
                         p_carb: Math.round((p.nutriments['carbohydrates_100g'] || 0) * 10) / 10,
                         source: 'off'
-                    }));
+                    }))
+                    .filter((item: any) =>
+                        item.food_name.length >= 2 &&          // çok kısa isimler
+                        item.food_name.length <= 80 &&         // çok uzun isimler
+                        item.p_calorie > 0 &&                  // 0 kalori
+                        item.p_calorie <= 900                  // gerçek dışı kalori (100g başına)
+                    );
 
                 console.log(`[OFF API] Success! ${mapped.length} items found.`);
                 return { data: mapped, source: 'api' };
@@ -178,6 +184,62 @@ export class FoodController {
 
         console.log(`[Fallback] "${query}" → ${matched.length} items from static list.`);
         return { data: matched, source: 'fallback' };
+    }
+
+    // ════════════════════════════════════════════════════════
+    //  Yemek ismi temizleme (OFF API verileri genelde kirli gelir)
+    // ════════════════════════════════════════════════════════
+    private cleanFoodName(rawName: string): string {
+        let name = rawName.trim();
+
+        // Emoji ve özel sembolleri kaldır (★, ®, ™, ©, vb.)
+        name = name.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '');
+        name = name.replace(/[®™©★☆♥♡●•◆▪▲►]/g, '');
+
+        // HTML entities temizle
+        name = name.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#\d+;/g, '');
+
+        // Parantez/köşeli parantez içindeki marka/kod bilgilerini kaldır
+        // Örn: "Yumurta (Migros Brand)" → "Yumurta"
+        name = name.replace(/\s*\([^)]*\)\s*/g, ' ');
+        name = name.replace(/\s*\[[^\]]*\]\s*/g, ' ');
+
+        // Tire ile ayrılmış marka prefix'ini kaldır (ilk kısım 3 kelimeden kısaysa)
+        // Örn: "Migros - Haşlanmış Yumurta" → "Haşlanmış Yumurta"
+        const dashParts = name.split(/\s*[-–—]\s*/);
+        if (dashParts.length >= 2) {
+            const prefix = dashParts[0].trim();
+            // Prefix 3 kelimeden az ve tamamen büyük harfle başlıyorsa marka olabilir
+            if (prefix.split(/\s+/).length <= 2 && prefix.length <= 20) {
+                name = dashParts.slice(1).join(' - ');
+            }
+        }
+
+        // Sondaki gramaj/oran bilgilerini kaldır: "Yumurta 1/2", "Peynir 200g"
+        name = name.replace(/\s+\d+\/\d+\s*$/, '');
+        name = name.replace(/\s+\d+\s*(g|kg|ml|l|oz|cl)\s*$/i, '');
+
+        // Sondaki virgül/nokta/tire temizle
+        name = name.replace(/[,.\-–—:;]+\s*$/, '');
+
+        // Çoklu boşlukları teke indir
+        name = name.replace(/\s{2,}/g, ' ').trim();
+
+        // Title Case: her kelimenin ilk harfi büyük (2 harften kısa kelimeleri atla)
+        name = name
+            .split(' ')
+            .map(word => {
+                if (word.length <= 2) return word.toLowerCase();
+                return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+            })
+            .join(' ');
+
+        // İlk harf her zaman büyük
+        if (name.length > 0) {
+            name = name.charAt(0).toUpperCase() + name.slice(1);
+        }
+
+        return name;
     }
 
     async add_to_meal(req: Request, res: Response, next: NextFunction) {
