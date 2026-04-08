@@ -1,6 +1,6 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { View, Text, TextInput, Button, ScrollView, Alert, TouchableOpacity, FlatList, Image, KeyboardAvoidingView, Platform, Modal, Animated } from 'react-native';
+import { View, Text, TextInput, Button, ScrollView, Alert, TouchableOpacity, Image, KeyboardAvoidingView, Platform, Modal, Animated } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import styles from '../styles/AddMeal';
 import CalorieCircle from '../components/calorieCircle';
@@ -59,6 +59,19 @@ export default function AddMeal({ route, navigation }: Props) {
   const [savedCarb, setSavedCarb] = useState(0);
   const [savedFat, setSavedFat] = useState(0);
   const [mealGoal, setMealGoal] = useState(500); // personalized meal goal
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (searchText.trim().length > 0) {
+        getFood();
+      } else {
+        setFilteredData([]);
+      }
+    }, 800);
+
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchText]);
 
   // Fetch meal log items (for the list)
   const fetchDailyData = useCallback(async () => {
@@ -182,7 +195,6 @@ export default function AddMeal({ route, navigation }: Props) {
   //Search yapıldıkça liste filtrelenir.
   const handleSearch = (text: string) => {
     setSearchText(text);
-    getFood();
   };
 
   //seçilen yemekler eklenecek porsiyon seçimi açılacak.
@@ -246,6 +258,13 @@ export default function AddMeal({ route, navigation }: Props) {
             meal_category: type,
             food_id: item.food_id,
             p_count: item.portionValue || 1,
+            food_name: item.food_name,
+            p_calorie: item.p_calorie,
+            p_protein: item.p_protein,
+            p_fat: item.p_fat,
+            p_carb: item.p_carb,
+            p_unit: item.p_unit,
+            p_amount: item.p_amount,
           })
         });
       });
@@ -332,7 +351,7 @@ export default function AddMeal({ route, navigation }: Props) {
 
   const renderItem = ({ item }: { item: any }) => (
     <View style={styles.foodItem}>
-      <View>
+      <View style={{ flex: 1 }}>
         <Text style={styles.foodName}>{item.food_name}</Text>
 
         <View style={styles.calContainer}>
@@ -436,16 +455,17 @@ export default function AddMeal({ route, navigation }: Props) {
             </TouchableOpacity>
           </View>
 
-          <FlatList
-            data={filteredData}
-            keyExtractor={(item) => item.id}
-            renderItem={renderItem}
-            contentContainerStyle={styles.listContent}
-            scrollEnabled={false}
-            ListEmptyComponent={
+          <View style={styles.listContent}>
+            {filteredData.length > 0 ? (
+              filteredData.map((item: any, index: number) => (
+                <View key={`${item.food_name}_${index}`}>
+                  {renderItem({ item })}
+                </View>
+              ))
+            ) : (
               <Text style={styles.emptyText}>{searchText.length > 0 ? `No food found matching "${searchText}"` : 'No food found'}</Text>
-            }
-          />
+            )}
+          </View>
 
 
           <Modal

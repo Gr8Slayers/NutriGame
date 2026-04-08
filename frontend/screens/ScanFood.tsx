@@ -23,6 +23,8 @@ export default function ScanFood() {
     const [totalCalories, setTotalCalories] = useState<number | null>(null);
     const [annotatedImage, setAnnotatedImage] = useState<string | null>(null);
     const [mealCategory, setMealCategory] = useState<'Breakfast' | 'Lunch' | 'Dinner' | 'Snack'>('Breakfast');
+    const [addToLogModalVisible, setAddToLogModalVisible] = useState(false);
+    const [isSavingLog, setIsSavingLog] = useState(false);
 
     useEffect(() => {
         if (permission && !permission.granted) {
@@ -205,6 +207,77 @@ export default function ScanFood() {
         }
     };
 
+    const handleAddToLog = async () => {
+        if (!detections || detections.length === 0) return;
+        setIsSavingLog(true);
+
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+            if (!token) {
+                Alert.alert("Hata", "Oturum bulunamadı.");
+                setIsSavingLog(false);
+                return;
+            }
+
+            const today = new Date();
+            const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+            let successCount = 0;
+            let failCount = 0;
+
+            for (const item of detections) {
+                const calories = item.estimatedCalories || 0;
+                if (calories <= 0) continue;
+
+                try {
+                    const response = await fetch(`${API_URL}/api/food/add_to_meal`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            date: dateStr,
+                            meal_category: mealCategory,
+                            source: 'off',
+                            food_name: item.class || 'Scanned Food',
+                            p_calorie: calories,
+                            p_protein: 0,
+                            p_fat: 0,
+                            p_carb: 0,
+                            p_count: 1,
+                            p_unit: 'porsiyon',
+                            p_amount: 1
+                        })
+                    });
+
+                    if (response.ok) {
+                        successCount++;
+                    } else {
+                        failCount++;
+                    }
+                } catch {
+                    failCount++;
+                }
+            }
+
+            setAddToLogModalVisible(false);
+
+            if (successCount > 0 && failCount === 0) {
+                Alert.alert("Başarılı ✅", `${successCount} yiyecek günlük loguna eklendi.`);
+            } else if (successCount > 0 && failCount > 0) {
+                Alert.alert("Kısmen Başarılı", `${successCount} yiyecek eklendi, ${failCount} tanesi eklenemedi.`);
+            } else {
+                Alert.alert("Hata", "Yiyecekler loga eklenemedi.");
+            }
+        } catch (error) {
+            console.error("Add to log error:", error);
+            Alert.alert("Hata", "Bir bağlantı hatası oluştu.");
+        } finally {
+            setIsSavingLog(false);
+        }
+    };
+
     // Fotoğraf çekildikten veya değerlendirildikten sonraki sonuç ekranı
     if (!isCameraActive && photos.length > 0) {
         return (
@@ -254,8 +327,8 @@ export default function ScanFood() {
                         <Text style={styles.text}>Retake All</Text>
                     </TouchableOpacity>
 
-                    {detections && (
-                        <TouchableOpacity style={[styles.button, { backgroundColor: '#fc8500' }]} onPress={() => Alert.alert("Coming Soon", "Add to meal log feature is coming soon!")}>
+                    {detections && detections.length > 0 && (
+                        <TouchableOpacity style={[styles.button, { backgroundColor: '#fc8500' }]} onPress={() => setAddToLogModalVisible(true)}>
                             <Text style={styles.text}>Save Log</Text>
                         </TouchableOpacity>
                     )}
@@ -394,6 +467,63 @@ export default function ScanFood() {
                             </View>
                         ))}
                     </ScrollView>
+                </View>
+            </Modal>
+
+            {/* Add to Daily Log Confirmation Modal */}
+            <Modal
+                visible={addToLogModalVisible}
+                animationType="fade"
+                transparent={true}
+                onRequestClose={() => setAddToLogModalVisible(false)}
+            >
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.7)' }}>
+                    <View style={{ width: '85%', backgroundColor: '#1e1e1e', borderRadius: 20, padding: 25, borderWidth: 1, borderColor: '#333' }}>
+                        <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 20, textAlign: 'center', marginBottom: 5 }}>Günlüğe Ekle</Text>
+                        <Text style={{ color: '#aaa', fontSize: 13, textAlign: 'center', marginBottom: 20 }}>Bu yiyecekleri günlük kalori loguna eklemek ister misiniz?</Text>
+
+                        <ScrollView style={{ maxHeight: 200, marginBottom: 15 }}>
+                            {detections && detections.map((item: any, index: number) => (
+                                <View key={index} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#333' }}>
+                                    <Text style={{ color: 'white', fontSize: 15, textTransform: 'capitalize', flex: 1 }}>{item.class}</Text>
+                                    <Text style={{ color: '#fc8500', fontSize: 15, fontWeight: '600' }}>{item.estimatedCalories ? `${item.estimatedCalories} kcal` : '—'}</Text>
+                                </View>
+                            ))}
+                        </ScrollView>
+
+                        {/* Total */}
+                        {detections && detections.length > 0 && (
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 12, borderTopWidth: 2, borderTopColor: '#47dd7caf', marginBottom: 20 }}>
+                                <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 17 }}>Toplam</Text>
+                                <Text style={{ color: '#47dd7caf', fontWeight: 'bold', fontSize: 17 }}>
+                                    {detections.reduce((sum: number, d: any) => sum + (d.estimatedCalories || 0), 0)} kcal
+                                </Text>
+                            </View>
+                        )}
+
+                        <Text style={{ color: '#888', fontSize: 11, textAlign: 'center', marginBottom: 15 }}>Öğün: {mealCategory}</Text>
+
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10 }}>
+                            <TouchableOpacity
+                                style={{ flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: '#333', alignItems: 'center' }}
+                                onPress={() => setAddToLogModalVisible(false)}
+                                disabled={isSavingLog}
+                            >
+                                <Text style={{ color: '#ccc', fontWeight: '600', fontSize: 15 }}>Vazgeç</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={{ flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: '#47dd7caf', alignItems: 'center', opacity: isSavingLog ? 0.6 : 1 }}
+                                onPress={handleAddToLog}
+                                disabled={isSavingLog}
+                            >
+                                {isSavingLog ? (
+                                    <ActivityIndicator color="white" size="small" />
+                                ) : (
+                                    <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 15 }}>Evet, Ekle ✅</Text>
+                                )}
+                            </TouchableOpacity>
+                        </View>
+                    </View>
                 </View>
             </Modal>
         </View>

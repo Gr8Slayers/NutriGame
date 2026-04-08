@@ -5,7 +5,7 @@ import FormData from 'form-data';
 import { foodRecognitionModel } from '../models/foodrecognition.model';
 
 // Constants for constraints
-const AI_TIMEOUT_MS = 15000;
+const AI_TIMEOUT_MS = 120000;
 const DETECTION_API_URL = 'https://nutrigame.onrender.com/predict';
 
 // ─── Yardımcı Sınıflar (Güvenlik ve Performans) ──────────────────────────────

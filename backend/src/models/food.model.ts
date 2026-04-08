@@ -174,6 +174,34 @@ export const foodModel = {
         };
     },
 
+    saveOffFoodToLookup: async (food_name: string, p_unit: string, p_amount: number, p_calorie: number, p_protein: number, p_fat: number, p_carb: number) => {
+        // Check if this food already exists (by exact name match)
+        const existing = await prisma.foodLookup.findFirst({
+            where: { food_name: { equals: food_name, mode: 'insensitive' } }
+        });
+        if (existing) return existing;
+
+        // Generate next food_id
+        const maxRecord = await prisma.foodLookup.findFirst({
+            orderBy: { food_id: 'desc' },
+            select: { food_id: true }
+        });
+        const nextFoodId = (maxRecord?.food_id ?? 0) + 1;
+
+        return await prisma.foodLookup.create({
+            data: {
+                food_id: nextFoodId,
+                food_name,
+                p_unit,
+                p_amount,
+                p_calorie,
+                p_protein,
+                p_fat,
+                p_carb
+            }
+        });
+    },
+
     getWeeklyMealTotals: async (userId: number) => {
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);

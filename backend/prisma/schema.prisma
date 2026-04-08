@@ -50,6 +50,14 @@ model FoodLookup{
   p_carb          Float //birimi zaten hep gram bu yuzden ozellestirmiyorum direkt miktar tutuluyor
 }
 
+// Önbellek tablosu: OFF API sonuçlarını 7 gün boyunca saklıyor
+model FoodSearchCache {
+  id          Int      @id @default(sequence())
+  query       String   @unique  // arama terimi (lowercase)
+  results     String   // JSON olarak saklanan sonuçlar
+  createdAt   DateTime @default(now())
+}
+
 model MealLog {
   meal_log_id     Int      @id @default(sequence())
   userId          Int      
