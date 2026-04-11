@@ -84,7 +84,11 @@ const Challenges = ({ navigation }: Props) => {
       </View>
       <View style={{ flex: 1 }}>
         <Text style={styles.itemTitle}>{item.title}</Text>
-        <Text style={styles.itemSubtitle}>From user #{item.senderId}</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('UserProfile', { userId: item.senderId })}>
+          <Text style={[styles.itemSubtitle, { textDecorationLine: 'underline' }]}>
+            From {item.senderUsername || `user #${item.senderId}`}
+          </Text>
+        </TouchableOpacity>
       </View>
       <View style={styles.actions}>
         <TouchableOpacity style={styles.acceptBtn} onPress={() => respondToInvite(item.id, true)}>

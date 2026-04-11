@@ -1,19 +1,11 @@
 import { Router } from 'express';
 import multer from 'multer';
-import path from 'path';
 import { foodRecognitionController } from '../controllers/foodrecognition.controller';
 import { authMiddleware } from '../middleware/auth.middleware';
 
 const router = Router();
 
-const storage = multer.diskStorage({
-    // Store temporarily in backend/uploads alongside profile pictures
-    destination: path.join(__dirname, '..', '..', '..', 'uploads'),
-    filename: (_req: any, file: any, cb: any) => {
-        const ext = path.extname(file.originalname) || '.jpg';
-        cb(null, `scan_${Date.now()}_${Math.random().toString(36).slice(2)}${ext}`);
-    },
-});
+const storage = multer.memoryStorage();
 
 const upload = multer({
     storage,

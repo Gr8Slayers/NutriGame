@@ -15,6 +15,8 @@ const API_URL = `http://${IP_ADDRESS}:3000`;
 // Helper to resolve avatar paths
 const getAvatarSource = (path: string | undefined) => {
     if (!path) return require('../assets/default_avatar.png');
+    if (path.startsWith('http')) return { uri: path };
+    if (path.startsWith('/')) return { uri: `${API_URL}${path}` };
 
     const cleanPath = path.trim();
     switch (cleanPath) {

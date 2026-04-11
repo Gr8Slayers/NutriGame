@@ -176,7 +176,54 @@ export const socialModel = {
         if (!post || post.userId !== userId) {
             return { success: false, message: 'Post bulunamadı veya yetkiniz yok.' };
         }
+
+        // Eğer resim veritabanımızda yüklüyse, onu da sil
+        if (post.imageUrl && post.imageUrl.includes('/api/images/')) {
+            try {
+                const parts = post.imageUrl.split('/api/images/');
+                const imageId = parts[parts.length - 1]; // UUID kısmını al
+                await prisma.uploadedFile.delete({ where: { id: imageId } });
+            } catch (err) {
+                console.error('Resim silinirken hata (post silme):', err);
+                // Resim silinemese bile postun silinmesine engel olmasın
+            }
+        }
+
         await prisma.post.delete({ where: { id: postId } });
         return { success: true };
+    },
+
+    // Takipçileri getir
+    getFollowers: async (userId: number) => {
+        const follows = await prisma.userFollow.findMany({
+            where: { followingId: userId }
+        });
+
+        return await Promise.all(follows.map(async (f) => {
+            const user = await prisma.user.findUnique({ where: { id: f.followerId } });
+            const profile = await prisma.userProfile.findUnique({ where: { userId: f.followerId } });
+            return {
+                id: String(f.followerId),
+                username: user?.username ?? 'Unknown',
+                avatarUrl: profile?.avatar_url ?? null,
+            };
+        }));
+    },
+
+    // Takip edilenleri getir
+    getFollowing: async (userId: number) => {
+        const follows = await prisma.userFollow.findMany({
+            where: { followerId: userId }
+        });
+
+        return await Promise.all(follows.map(async (f) => {
+            const user = await prisma.user.findUnique({ where: { id: f.followingId } });
+            const profile = await prisma.userProfile.findUnique({ where: { userId: f.followingId } });
+            return {
+                id: String(f.followingId),
+                username: user?.username ?? 'Unknown',
+                avatarUrl: profile?.avatar_url ?? null,
+            };
+        }));
     },
 };

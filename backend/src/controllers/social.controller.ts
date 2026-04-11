@@ -208,6 +208,36 @@ export class SocialController {
             next(err);
         }
     }
+
+    // GET /api/social/followers/:userId
+    async get_followers(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = parseInt(req.params.userId);
+            if (isNaN(userId)) {
+                return res.status(400).json({ success: false, message: 'Geçersiz kullanıcı ID.' });
+            }
+
+            const followers = await socialModel.getFollowers(userId);
+            return res.status(200).json({ success: true, data: followers });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    // GET /api/social/following/:userId
+    async get_following(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = parseInt(req.params.userId);
+            if (isNaN(userId)) {
+                return res.status(400).json({ success: false, message: 'Geçersiz kullanıcı ID.' });
+            }
+
+            const following = await socialModel.getFollowing(userId);
+            return res.status(200).json({ success: true, data: following });
+        } catch (err) {
+            next(err);
+        }
+    }
 }
 
 export const socialController = new SocialController();

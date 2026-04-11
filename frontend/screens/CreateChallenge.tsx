@@ -13,7 +13,9 @@ type Props = NativeStackScreenProps<RootStackParamList, 'CreateChallenge'>;
 
 interface State {
   title: string;
+  description: string;
   type: string;
+  goalValue: string;
   targetUserID: string;
   targetUsername: string;
   endDate: string;
@@ -25,7 +27,9 @@ class CreateChallenge extends React.Component<Props, State> {
     super(props);
     this.state = {
       title: '',
+      description: '',
       type: 'sugar',
+      goalValue: '',
       targetUserID: '',
       targetUsername: '',
       endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
@@ -49,7 +53,7 @@ class CreateChallenge extends React.Component<Props, State> {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ title, type, targetUserId: targetUserID, endDate })
+        body: JSON.stringify({ title, type, targetUserId: targetUserID, endDate, description: this.state.description, goalValue: this.state.goalValue ? Number(this.state.goalValue) : undefined })
       });
       const res = await response.json();
 
@@ -97,6 +101,25 @@ class CreateChallenge extends React.Component<Props, State> {
             placeholderTextColor="#6b5440"
             value={title}
             onChangeText={(t) => this.setState({ title: t })}
+          />
+
+          <Text style={styles.label}>Description</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="e.g. Avoid sugar for 7 days"
+            placeholderTextColor="#6b5440"
+            value={this.state.description}
+            onChangeText={(t) => this.setState({ description: t })}
+          />
+
+          <Text style={styles.label}>Goal Value</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="e.g. 2000 (ml for water, kcal for calorie)"
+            placeholderTextColor="#6b5440"
+            value={this.state.goalValue}
+            onChangeText={(t) => this.setState({ goalValue: t })}
+            keyboardType="numeric"
           />
 
           <Text style={styles.label}>Category</Text>

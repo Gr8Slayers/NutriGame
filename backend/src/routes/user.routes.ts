@@ -10,5 +10,6 @@ router.patch('/profile', authMiddleware, userController.updateUserProfile.bind(u
 router.get('/profile', authMiddleware, userController.getUserProfile.bind(userController));
 router.delete('/profile', authMiddleware, userController.deleteAccount.bind(userController));
 router.get('/daily_targets', authMiddleware, userController.getDailyTargets.bind(userController));
+router.get('/profile/:userId', authMiddleware, userController.getPublicProfile.bind(userController));
 
 export default router;

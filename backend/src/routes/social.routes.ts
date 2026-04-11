@@ -21,5 +21,7 @@ router.get('/comments/:postId', authMiddleware, socialController.get_comments.bi
 // Takip işlemleri
 router.post('/follow/:targetUserId', authMiddleware, socialController.follow_user.bind(socialController));
 router.delete('/follow/:targetUserId', authMiddleware, socialController.unfollow_user.bind(socialController));
+router.get('/followers/:userId', authMiddleware, socialController.get_followers.bind(socialController));
+router.get('/following/:userId', authMiddleware, socialController.get_following.bind(socialController));
 
 export default router;

@@ -1,7 +1,5 @@
 import { Request, Response } from 'express';
-import fs from 'fs';
-import axios from 'axios';
-import FormData from 'form-data';
+import prisma from '../config/prisma';
 import { foodRecognitionModel } from '../models/foodrecognition.model';
 
 // Constants for constraints
@@ -139,21 +137,19 @@ export class FoodRecognitionController {
         const { mealCategory } = req.body;
 
         if (!userId || !mealCategory) {
-            if (req.file) fs.unlinkSync(req.file.path);
             return res.status(400).json({ success: false, message: 'User authentication and mealCategory are required.' });
         }
 
         // 3. EXIF Silme İşlemi (Gizlilik için)
         try {
-            const raw = fs.readFileSync(req.file.path);
-            const cleaned = this.imagePreprocessor.stripExif(raw, req.file.mimetype);
-            fs.writeFileSync(req.file.path, cleaned);
+            const cleaned = this.imagePreprocessor.stripExif(req.file.buffer, req.file.mimetype);
+            req.file.buffer = cleaned;
         } catch (err) {
             console.log("EXIF temizleme atlandı:", err);
         }
 
         try {
-            // Dinamik import
+            // Dinamik import (CommonJS/ESM uyumu için)
             const { analyzeFoodFromHF } = await import('../../ai_service/ai_service/src/object_detection/huggingface/hf-gradio-api.js');
 
             const timeoutPromise = new Promise((_, reject) => {
@@ -166,25 +162,29 @@ export class FoodRecognitionController {
 
             // Race the AI call against the timeout
             const result: any = await Promise.race([
-                analyzeFoodFromHF(req.file.path),
+                analyzeFoodFromHF(req.file.buffer),
                 timeoutPromise
             ]);
 
             // Başarılı olursa circuit breaker'ı sıfırla
             this.circuitBreaker.onSuccess();
 
-            const imageUrl = `/uploads/${req.file.filename}`;
+            // Yapay zeka servisinden başarıyla dönüldü, resmi DB'ye kaydet
+            const savedImage = await prisma.uploadedFile.create({
+                data: {
+                    data: req.file.buffer,
+                    mimetype: req.file.mimetype
+                }
+            });
+
+            // Geri dönecek kalıcı URL (Veritabanından okuyan endpoint'i işaret eder)
+            const imageUrl = `/api/images/${savedImage.id}`;
 
             const savedPhoto = await foodRecognitionModel.addMealPhoto({
                 userId: userId,
                 mealCategory: mealCategory,
                 imageUrl: imageUrl
             });
-
-
-
-            // Clean up the temp file
-            fs.unlink(req.file.path, () => { });
 
             return res.status(200).json({
                 success: true,
@@ -198,10 +198,6 @@ export class FoodRecognitionController {
         } catch (error: any) {
             // Hata olursa circuit breaker'ı tetikle
             this.circuitBreaker.onFailure();
-
-            if (req.file) {
-                fs.unlink(req.file.path, () => { });
-            }
 
             console.error("[FoodRecognition Error]: ", error.message);
 
@@ -248,36 +244,31 @@ export class FoodRecognitionController {
             const userId = req.user?.id;
             const { mealCategory } = req.body;
             if (!userId || !mealCategory) {
-                (req.files as Express.Multer.File[]).forEach(file => {
-                    if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
-                });
                 return res.status(400).json({ success: false, message: 'User authentication and mealCategory are required.' });
             }
 
             const files = req.files as Express.Multer.File[];
             console.log(`Processing ${files.length} images for user ${userId} (${mealCategory})`);
 
-            // EXIF Temizliği
-            for (const file of files) {
-                try {
-                    const raw = fs.readFileSync(file.path);
-                    const cleaned = this.imagePreprocessor.stripExif(raw, file.mimetype);
-                    fs.writeFileSync(file.path, cleaned);
-                } catch { }
-            }
+            const { analyzeFoodFromHF } = await import('../../ai_service/ai_service/src/object_detection/huggingface/hf-gradio-api.js');
 
             const detectionPromises = files.map(async (file) => {
                 try {
-                    const formData = new FormData();
-                    formData.append('image', fs.createReadStream(file.path));
+                    // EXIF Temizliği ve Analiz
+                    const cleanedBuffer = this.imagePreprocessor.stripExif(file.buffer, file.mimetype);
 
-                    const response = await axios.post(DETECTION_API_URL, formData, {
-                        headers: formData.getHeaders(),
-                        timeout: 300000 // 5 dakika (Render'ın uyanması için)
+                    const result: any = await analyzeFoodFromHF(cleanedBuffer);
+
+                    // Başarılı analiz sonrası DB'ye kaydet (Resmi de DB'ye kaydediyoruz)
+                    const savedImage = await prisma.uploadedFile.create({
+                        data: {
+                            data: cleanedBuffer,
+                            mimetype: file.mimetype
+                        }
                     });
 
-                    // Başarılı analiz sonrası DB'ye kaydet
-                    const imageUrl = `/uploads/${file.filename}`;
+                    const imageUrl = `/api/images/${savedImage.id}`;
+
                     await foodRecognitionModel.mealPhoto.create({
                         data: {
                             userId: userId,
@@ -286,16 +277,12 @@ export class FoodRecognitionController {
                         }
                     });
 
-                    if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
-
                     return {
                         filename: file.originalname,
                         success: true,
-                        detections: response.data
+                        detections: result.detections
                     };
                 } catch (error: any) {
-                    if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
-
                     return {
                         filename: file.originalname,
                         success: false,
@@ -315,14 +302,6 @@ export class FoodRecognitionController {
 
         } catch (error: any) {
             this.circuitBreaker.onFailure();
-
-            if (req.files) {
-                (req.files as Express.Multer.File[]).forEach(file => {
-                    if (fs.existsSync(file.path)) {
-                        fs.unlinkSync(file.path);
-                    }
-                });
-            }
 
             return res.status(500).json({
                 success: false,

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
-import { Challenge, ChallengeParticipant } from '@prisma/client';
+import { ChallengeParticipant } from '@prisma/client';
 import { gamificationModel } from '../models/gamification.model';
+import prisma from '../config/prisma';
 
 export class GamificationController {
 
@@ -107,7 +108,7 @@ export class GamificationController {
                 return;
             }
 
-            const { title, type, targetUserId, endDate } = req.body;
+            const { title, type, targetUserId, endDate, description, goalValue } = req.body;
 
             if (!title || !type || !targetUserId || !endDate) {
                 res.status(400).json({ success: false, message: 'title, type, targetUserId and endDate are required' });
@@ -121,7 +122,7 @@ export class GamificationController {
             }
 
             const targetId = Number(targetUserId);
-            if (isNaN(targetId) || targetId === creatorId) {
+            if (isNaN(targetId)) {
                 res.status(400).json({ success: false, message: 'Invalid targetUserId' });
                 return;
             }
@@ -132,7 +133,7 @@ export class GamificationController {
                 return;
             }
 
-            const challenge = await gamificationModel.createChallenge(creatorId, title, type, end, targetId);
+            const challenge = await gamificationModel.createChallenge(creatorId, title, type, end, targetId, description, goalValue ? Number(goalValue) : undefined);
 
             res.status(201).json({ success: true, data: challenge, message: 'Challenge created successfully' });
         } catch (error) {
@@ -172,16 +173,24 @@ export class GamificationController {
                 })
             );
 
-            const inviteList = invites.map((c: any) => {
+            const inviteList = await Promise.all(invites.map(async (c: any) => {
                 const creator = c.participants.find((p: ChallengeParticipant) => p.role === 'creator');
+                let senderUsername = '';
+                if (creator) {
+                    const user = await prisma.user.findUnique({ where: { id: creator.userId }, select: { username: true } });
+                    senderUsername = user?.username ?? '';
+                }
                 return {
                     id: String(c.id),
                     title: c.title,
+                    description: c.description,
                     type: c.type,
+                    goalValue: c.goalValue,
                     endDate: c.endDate,
                     senderId: creator ? String(creator.userId) : '',
+                    senderUsername,
                 };
-            });
+            }));
 
             res.status(200).json({
                 success: true,
@@ -231,8 +240,9 @@ export class GamificationController {
                 data: {
                     id: String(challenge.id),
                     title: challenge.title,
-                    description: `${challenge.type.charAt(0).toUpperCase() + challenge.type.slice(1)} challenge`,
+                    description: challenge.description || `${challenge.type.charAt(0).toUpperCase() + challenge.type.slice(1)} challenge`,
                     type: challenge.type,
+                    goalValue: challenge.goalValue,
                     progress,
                     durationDays,
                     startDate: challenge.startDate,
@@ -287,6 +297,9 @@ export class GamificationController {
 
             await gamificationModel.claimReward(id, userId);
 
+            // Badge ödüllendir (challenge tipine göre)
+            await gamificationModel.awardBadge(userId, challenge.type);
+
             // Streak'e bonus puan ekle
             const streak = await gamificationModel.getStreakByUserId(userId);
             if (streak) {
@@ -295,7 +308,7 @@ export class GamificationController {
                 });
             }
 
-            res.status(200).json({ success: true, message: 'Reward claimed! +50 bonus points added.' });
+            res.status(200).json({ success: true, message: 'Reward claimed! Badge earned & +50 bonus points added.' });
         } catch (error) {
             console.error('Error in completeChallenge:', error);
             res.status(500).json({ success: false, message: 'Internal server error' });
@@ -330,6 +343,30 @@ export class GamificationController {
 
     public async evaluateChallengeCompletion(req: Request, res: Response): Promise<void> {
         res.status(200).json({ success: true, message: 'Challenge evaluation completed' });
+    }
+
+    public async getBadges(req: Request, res: Response): Promise<void> {
+        try {
+            const targetUserId = Number(req.params.userId);
+            if (!targetUserId || isNaN(targetUserId)) {
+                res.status(400).json({ success: false, message: 'Valid userId is required' });
+                return;
+            }
+
+            const userBadges = await gamificationModel.getUserBadges(targetUserId);
+            const badges = userBadges.map(ub => ({
+                id: String(ub.badge.id),
+                name: ub.badge.name,
+                description: ub.badge.description,
+                iconName: ub.badge.iconName,
+                earnedAt: ub.earnedAt.toISOString(),
+            }));
+
+            res.status(200).json({ success: true, data: badges });
+        } catch (error) {
+            console.error('Error in getBadges:', error);
+            res.status(500).json({ success: false, message: 'Internal server error' });
+        }
     }
 }
 

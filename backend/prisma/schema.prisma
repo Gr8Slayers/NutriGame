@@ -162,7 +162,9 @@ model Streak {
 model Challenge {
   id           Int      @id @default(sequence())
   title        String
+  description  String?  // e.g. "Drink 2L water daily"
   type         String   // calorie, water, sugar, step
+  goalValue    Float?   // e.g. 2000 (ml for water, kcal for calorie)
   startDate    DateTime @default(now())
   endDate      DateTime
   status       String   // pending, active, completed, cancelled
@@ -181,6 +183,24 @@ model ChallengeParticipant {
   challenge      Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
 
   @@unique([challengeId, userId])
+}
+
+model Badge {
+  id          Int         @id @default(sequence())
+  name        String      @unique
+  description String
+  iconName    String      // Ionicons icon name: "water", "flame", "trophy"
+  userBadges  UserBadge[]
+}
+
+model UserBadge {
+  id        Int      @id @default(sequence())
+  userId    Int
+  badgeId   Int
+  earnedAt  DateTime @default(now())
+  badge     Badge    @relation(fields: [badgeId], references: [id])
+
+  @@unique([userId, badgeId])
 }
 
 model ChatSession {
@@ -217,4 +237,11 @@ model DailyProgress {
   user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, date])
+}
+
+model UploadedFile {
+  id        String   @id @default(uuid())
+  data      Bytes
+  mimetype  String
+  createdAt DateTime @default(now())
 }

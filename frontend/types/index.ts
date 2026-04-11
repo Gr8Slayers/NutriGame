@@ -10,6 +10,8 @@ export interface UserProfile {
     activity_level?: string;
     level?: number;
     streak?: number;
+    followerCount?: number;
+    followingCount?: number;
 }
 
 // Updated Meal Parameters

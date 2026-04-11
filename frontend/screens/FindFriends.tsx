@@ -118,21 +118,27 @@ export default function FindFriends({ navigation, route }: Props) {
     const renderUser = useCallback(
         ({ item }: { item: PublicUser }) => (
             <View style={styles.userCard}>
-                <View style={styles.avatarContainer}>
-                    {item.avatarUrl ? (
-                        <Image
-                            source={{ uri: item.avatarUrl }}
-                            style={styles.avatar}
-                        />
-                    ) : (
-                        <View style={styles.avatarPlaceholder}>
-                            <Ionicons name="person" size={22} color="#c8a96e" />
-                        </View>
-                    )}
-                </View>
-                <Text style={styles.username} numberOfLines={1}>
-                    {item.username}
-                </Text>
+                <TouchableOpacity
+                    style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}
+                    onPress={() => !selectMode && navigation.navigate('UserProfile', { userId: item.id })}
+                    activeOpacity={selectMode ? 1 : 0.7}
+                >
+                    <View style={styles.avatarContainer}>
+                        {item.avatarUrl ? (
+                            <Image
+                                source={{ uri: item.avatarUrl }}
+                                style={styles.avatar}
+                            />
+                        ) : (
+                            <View style={styles.avatarPlaceholder}>
+                                <Ionicons name="person" size={22} color="#c8a96e" />
+                            </View>
+                        )}
+                    </View>
+                    <Text style={styles.username} numberOfLines={1}>
+                        {item.username}
+                    </Text>
+                </TouchableOpacity>
                 {selectMode ? (
                     <TouchableOpacity
                         style={styles.followButton}
@@ -162,7 +168,7 @@ export default function FindFriends({ navigation, route }: Props) {
                 )}
             </View>
         ),
-        [handleFollowToggle, handleSelectUser, selectMode]
+        [handleFollowToggle, handleSelectUser, selectMode, navigation]
     );
 
     const ListEmpty = () => {

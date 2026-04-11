@@ -19,4 +19,7 @@ router.post('/challenge/respond', authMiddleware, (req, res) => gamificationCont
 router.post('/progress/event', authMiddleware, (req, res) => gamificationController.handleProgressEvent(req, res));
 router.post('/challenge/evaluate', authMiddleware, (req, res) => gamificationController.evaluateChallengeCompletion(req, res));
 
+// Badges
+router.get('/badges/:userId', authMiddleware, (req, res) => gamificationController.getBadges(req, res));
+
 export default router;

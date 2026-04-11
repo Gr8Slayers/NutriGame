@@ -119,9 +119,12 @@ export default function ProfileSettingsMenu() {
                     <Text style={styles.statLabel}>Badges</Text>
                 </View>
                 <View style={styles.statCard}>
-                    {/* TODO: Get friends count from API */}
-                    <Text style={styles.statValue}>{0 || 0}</Text>
-                    <Text style={styles.statLabel}>Friends</Text>
+                    <Text style={styles.statValue}>{userData?.followerCount || 0}</Text>
+                    <Text style={styles.statLabel}>Followers</Text>
+                </View>
+                <View style={styles.statCard}>
+                    <Text style={styles.statValue}>{userData?.followingCount || 0}</Text>
+                    <Text style={styles.statLabel}>Following</Text>
                 </View>
             </View>
 

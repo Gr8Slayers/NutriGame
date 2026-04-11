@@ -22,6 +22,66 @@ import * as SecureStore from 'expo-secure-store';
 import { Post, Comment } from '../types';
 
 const API_URL = `http://${IP_ADDRESS}:3000`;
+const DEFAULT_AVATAR = require('../assets/default_avatar.png');
+
+const getAvatarSource = (path: string | undefined) => {
+    if (!path) return DEFAULT_AVATAR;
+    if (path.startsWith('http')) return { uri: path };
+    if (path.startsWith('/')) return { uri: `${API_URL}${path}` };
+
+    // Legacy support for fixed asset paths
+    switch (path.trim()) {
+        case "../assets/avatars/av1.png": return require('../assets/avatars/av1.png');
+        case "../assets/avatars/av2.png": return require('../assets/avatars/av2.png');
+        case "../assets/avatars/av3.png": return require('../assets/avatars/av3.png');
+        case "../assets/avatars/av4.png": return require('../assets/avatars/av4.png');
+        case "../assets/avatars/av5.png": return require('../assets/avatars/av5.png');
+        case "../assets/avatars/av6.png": return require('../assets/avatars/av6.png');
+        case "../assets/avatars/av7.png": return require('../assets/avatars/av7.png');
+        case "../assets/avatars/av8.png": return require('../assets/avatars/av8.png');
+        case "../assets/avatars/av9.png": return require('../assets/avatars/av9.png');
+        case "../assets/avatars/av10.png": return require('../assets/avatars/av10.png');
+        case "../assets/avatars/av11.png": return require('../assets/avatars/av11.png');
+        case "../assets/avatars/avatar12.png": return require('../assets/avatars/avatar12.png');
+        case "../assets/avatars/avatar13.png": return require('../assets/avatars/avatar13.png');
+        case "../assets/avatars/avatar14.png": return require('../assets/avatars/avatar14.png');
+        case "../assets/avatars/avatar15.png": return require('../assets/avatars/avatar15.png');
+        case "../assets/avatars/avatar16.png": return require('../assets/avatars/avatar16.png');
+        case "../assets/avatars/avatar17.png": return require('../assets/avatars/avatar17.png');
+        case "../assets/avatars/avatar18.png": return require('../assets/avatars/avatar18.png');
+        case "../assets/avatars/avatar19.png": return require('../assets/avatars/avatar19.png');
+        case "../assets/avatars/avatar20.png": return require('../assets/avatars/avatar20.png');
+        case "../assets/avatars/avatar21.png": return require('../assets/avatars/avatar21.png');
+        case "../assets/avatars/avatar22.png": return require('../assets/avatars/avatar22.png');
+        case "../assets/avatars/avatar23.png": return require('../assets/avatars/avatar23.png');
+        case "../assets/avatars/avatar24.png": return require('../assets/avatars/avatar24.png');
+        case "../assets/avatars/avatar25.png": return require('../assets/avatars/avatar25.png');
+        case "../assets/avatars/avatar26.png": return require('../assets/avatars/avatar26.png');
+        case "../assets/avatars/avatar27.png": return require('../assets/avatars/avatar27.png');
+        case "../assets/avatars/avatar28.png": return require('../assets/avatars/avatar28.png');
+        case "../assets/avatars/avatar29.png": return require('../assets/avatars/avatar29.png');
+        case "../assets/avatars/avatar30.png": return require('../assets/avatars/avatar30.png');
+        case "../assets/avatars/avatar31.png": return require('../assets/avatars/avatar31.png');
+        case "../assets/avatars/avatar32.png": return require('../assets/avatars/avatar32.png');
+        case "../assets/avatars/avatar33.png": return require('../assets/avatars/avatar33.png');
+        case "../assets/avatars/avatar34.png": return require('../assets/avatars/avatar34.png');
+        default: return DEFAULT_AVATAR;
+    }
+}
+
+const getImageUrl = (url: string | null | undefined) => {
+    if (!url) return null;
+    if (url.startsWith('http')) {
+        if (url.includes('localhost') || url.includes('127.0.0.1')) {
+            const parts = url.split('/api/images/');
+            if (parts.length > 1) {
+                return `${API_URL}/api/images/${parts[1]}`;
+            }
+        }
+        return url;
+    }
+    return `${API_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+};
 
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SocialFeed'>;
@@ -173,22 +233,23 @@ function SocialFeed({ navigation }: Props) {
         return (
             <View style={styles.card}>
                 <View style={styles.cardHeader}>
-                    <View style={styles.avatarContainer}>
-                        {post.userAvatar
-                            ? <Image source={{ uri: post.userAvatar }} style={styles.avatar} />
-                            : <View style={styles.avatarPlaceholder}>
-                                <Ionicons name="person" size={20} color="#c8a96e" />
-                            </View>
-                        }
-                    </View>
-                    <View style={styles.userInfo}>
-                        <Text style={styles.username}>{post.username}</Text>
-                        <Text style={styles.timestamp}>
-                            {new Date(post.createdAt).toLocaleDateString('en-US', {
-                                day: 'numeric', month: 'long', year: 'numeric',
-                            })}
-                        </Text>
-                    </View>
+                    <TouchableOpacity
+                        style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}
+                        onPress={() => navigation.navigate('UserProfile', { userId: post.userId })}
+                        activeOpacity={0.7}
+                    >
+                        <View style={styles.avatarContainer}>
+                            <Image source={getAvatarSource(post.userAvatar)} style={styles.avatar} />
+                        </View>
+                        <View style={styles.userInfo}>
+                            <Text style={styles.username}>{post.username}</Text>
+                            <Text style={styles.timestamp}>
+                                {new Date(post.createdAt).toLocaleDateString('en-US', {
+                                    day: 'numeric', month: 'long', year: 'numeric',
+                                })}
+                            </Text>
+                        </View>
+                    </TouchableOpacity>
                     <View style={styles.recipeBadge}>
                         <Ionicons name="restaurant-outline" size={12} color="#fff" />
                         <Text style={styles.recipeBadgeText}>Recipe</Text>
@@ -196,10 +257,12 @@ function SocialFeed({ navigation }: Props) {
                 </View>
 
                 {/* Görsel */}
-                {post.imageUrl
-                    ? <Image source={{ uri: post.imageUrl }} style={styles.postImage} />
-                    : null
-                }
+                {post.imageUrl ? (
+                    <Image
+                        source={{ uri: getImageUrl(post.imageUrl) as string }}
+                        style={styles.postImage}
+                    />
+                ) : null}
 
                 {recipe && (
                     <View style={styles.recipeHeader}>
@@ -269,12 +332,7 @@ function SocialFeed({ navigation }: Props) {
                         ) : (
                             comments.map(c => (
                                 <View key={c.id} style={styles.commentRow}>
-                                    {c.userAvatar
-                                        ? <Image source={{ uri: c.userAvatar }} style={styles.commentAvatar} />
-                                        : <View style={styles.commentAvatarPlaceholder}>
-                                            <Ionicons name="person" size={12} color="#c8a96e" />
-                                        </View>
-                                    }
+                                    <Image source={getAvatarSource(c.userAvatar)} style={styles.commentAvatar} />
                                     <View style={styles.commentBubble}>
                                         <Text style={styles.commentUsername}>{c.username}</Text>
                                         <Text style={styles.commentText}>{c.text}</Text>

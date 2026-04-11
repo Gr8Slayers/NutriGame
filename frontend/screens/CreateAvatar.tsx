@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { View, Image, TouchableOpacity, Alert, StyleSheet, Text, ScrollView, Button } from 'react-native';
+import { View, Image, TouchableOpacity, Alert, StyleSheet, Text, ScrollView, Button, ActivityIndicator } from 'react-native';
+import { Asset } from 'expo-asset';
+import { useState, useEffect } from 'react';
 
 import { Menu } from 'react-native-paper';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -85,14 +86,45 @@ function CreateAvatar({ navigation, route }: Props) {
 
   };
   const handleContinue = async () => {
-    if (loading) return;
+    if (loading || !selected) {
+      if (!selected) Alert.alert('Hata', 'Lütfen bir avatar seçin.');
+      return;
+    }
     setLoading(true);
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 seconds timeout
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 seconds
 
     try {
-      console.log(`${API_URL}/api/auth/register`)
+      // 1. Seçilen avatarı veritabanına yükle
+      const avatarObj = avatars.find(a => a.path === selected);
+      if (!avatarObj) throw new Error('Avatar bulunamadı.');
+
+      // Yerel aseti URI'ye çevir ve indir
+      const asset = Asset.fromModule(avatarObj.src);
+      await asset.downloadAsync();
+
+      const formData = new FormData();
+      formData.append('image', {
+        uri: asset.localUri || asset.uri,
+        name: `avatar_${Date.now()}.png`,
+        type: 'image/png',
+      } as any);
+
+      const uploadRes = await fetch(`${API_URL}/api/upload`, {
+        method: 'POST',
+        body: formData,
+        signal: controller.signal,
+      });
+
+      if (!uploadRes.ok) {
+        throw new Error('Avatar yüklenemedi.');
+      }
+
+      const uploadData = await uploadRes.json();
+      const finalAvatarUrl = uploadData.imageUrl;
+
+      // 2. Kayıt işlemini yap
       const res = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: {
@@ -100,7 +132,7 @@ function CreateAvatar({ navigation, route }: Props) {
         },
         body: JSON.stringify({
           ...finalData,
-          avatar_url: selected,
+          avatar_url: finalAvatarUrl,
         }),
         signal: controller.signal,
       });
@@ -108,7 +140,6 @@ function CreateAvatar({ navigation, route }: Props) {
       clearTimeout(timeoutId);
 
       const data = await res.json();
-      console.log(data);
       if (res.ok) {
         navigation.navigate("Login");
         Alert.alert('Başarılı', data.message);
@@ -120,12 +151,12 @@ function CreateAvatar({ navigation, route }: Props) {
     }
     catch (error: any) {
       clearTimeout(timeoutId);
-      if (error.name === 'AbortError') {
-        Alert.alert('Bağlantı Hatası', 'Sunucuya bağlanılamadı (Zaman aşımı). Lütfen internetinizi (veya okul Wi-Fi bağlantınızı) kontrol edin.');
-      } else {
-        Alert.alert('Hata', 'Kayıt işlemi sırasında bir hata oluştu. Sunucu kapalı olabilir.');
-      }
       console.error(error);
+      if (error.name === 'AbortError') {
+        Alert.alert('Bağlantı Hatası', 'Zaman aşımı oluştu. Lütfen bağlantınızı kontrol edin.');
+      } else {
+        Alert.alert('Hata', error.message || 'İşlem sırasında bir hata oluştu.');
+      }
     }
     finally {
       setLoading(false);

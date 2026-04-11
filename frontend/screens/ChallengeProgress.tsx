@@ -54,7 +54,7 @@ class ChallengeProgress extends React.Component<Props, State> {
           title: progressData.title || (challengeId === '1' ? 'Water Streak' : 'Challenge'),
           description: progressData.description || 'Challenge detail fetched from server.',
           type: progressData.type || 'sugar',
-          goalValue: 100,
+          goalValue: progressData.goalValue || 100,
           currentProgress: progressData.progress,
           unit: '%',
           durationDays: progressData.durationDays || 7,
@@ -101,7 +101,7 @@ class ChallengeProgress extends React.Component<Props, State> {
       const res = await response.json();
 
       if (res.success) {
-        Alert.alert('Success', 'Challenge Winner badge and bonus points awarded!');
+        Alert.alert('🏆 Badge Earned!', 'Challenge Winner badge and +50 bonus points awarded!');
         this.props.navigation.goBack();
       }
     } catch (e) {
@@ -158,6 +158,18 @@ class ChallengeProgress extends React.Component<Props, State> {
           )}
 
           <View style={styles.detailsList}>
+            {challengeData?.description ? (
+              <View style={styles.detailItem}>
+                <Text style={styles.detailLabel}>Description</Text>
+                <Text style={styles.detailText}>{challengeData.description}</Text>
+              </View>
+            ) : null}
+            {challengeData?.goalValue ? (
+              <View style={styles.detailItem}>
+                <Text style={styles.detailLabel}>Goal</Text>
+                <Text style={styles.detailText}>{challengeData.goalValue} {challengeData?.type === 'water' ? 'ml' : challengeData?.type === 'calorie' ? 'kcal' : ''}</Text>
+              </View>
+            ) : null}
             <View style={styles.detailItem}>
               <Text style={styles.detailLabel}>Type</Text>
               <Text style={styles.detailText}>{challengeData?.type.toUpperCase()}</Text>

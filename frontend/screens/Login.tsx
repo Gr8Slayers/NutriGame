@@ -61,6 +61,9 @@ function Login({ navigation }: Props) {
 
         const token = data.token || "No Token";
         await SecureStore.setItemAsync('userToken', token);
+        if (data.user?.id) {
+          await SecureStore.setItemAsync('userId', String(data.user.id));
+        }
 
         if (remember) {
           await SecureStore.setItemAsync('rememberMeFlag', 'true');

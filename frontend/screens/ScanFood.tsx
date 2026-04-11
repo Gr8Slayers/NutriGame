@@ -7,6 +7,20 @@ import { IP_ADDRESS } from "@env";
 
 const API_URL = `http://${IP_ADDRESS}:3000`;
 
+const getImageUrl = (url: string | null | undefined) => {
+    if (!url) return null;
+    if (url.startsWith('http')) {
+        if (url.includes('localhost') || url.includes('127.0.0.1')) {
+            const parts = url.split('/api/images/');
+            if (parts.length > 1) {
+                return `${API_URL}/api/images/${parts[1]}`;
+            }
+        }
+        return url;
+    }
+    return `${API_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+};
+
 export default function ScanFood() {
 
     const [permission, requestPermission] = useCameraPermissions();
@@ -457,7 +471,7 @@ export default function ScanFood() {
                         {allPhotos.map((item, index) => (
                             <View key={index} style={{ width: '33.33%', padding: 5 }}>
                                 <Image
-                                    source={{ uri: `${API_URL}${item.imageUrl}` }}
+                                    source={{ uri: getImageUrl(item.imageUrl) as string }}
                                     style={{ width: '100%', aspectRatio: 1, borderRadius: 12 }}
                                 />
 

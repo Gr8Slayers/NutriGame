@@ -15,6 +15,7 @@ import gamificationRoutes from './routes/gamification.routes';
 import chatbotRoutes from './routes/chatbot.routes';
 import foodRecognitionRoutes from './routes/food.recognition.routes';
 import dailyProgressRoutes from './routes/dailyprogress.routes';
+import imageRoutes from './routes/image.routes';
 import { authMiddleware } from './middleware/auth.middleware';
 
 dotenv.config();
@@ -31,38 +32,8 @@ app.use((req, res, next) => {
     next();
 });
 
-// Uploads klasörünü public olarak sun
-app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
-
-// Resim yükleme endpoint'i
-const storage = multer.diskStorage({
-    destination: path.join(__dirname, '..', 'uploads'),
-    filename: (_req: Express.Request, file: Express.Multer.File, cb: (error: Error | null, filename: string) => void) => {
-        const ext = path.extname(file.originalname) || '.jpg';
-        cb(null, `${Date.now()}_${Math.random().toString(36).slice(2)}${ext}`);
-    },
-});
-const upload = multer({
-    storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
-    fileFilter: (_req: Express.Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-        if (['image/jpeg', 'image/png', 'image/jpg'].includes(file.mimetype)) {
-            cb(null, true);
-        } else {
-            cb(new Error('Yalnızca JPEG ve PNG desteklenmektedir.'));
-        }
-    },
-});
-
-app.post('/api/upload', authMiddleware, upload.single('image'), (req: any, res: any) => {
-    if (!req.file) {
-        return res.status(400).json({ success: false, message: 'Dosya yüklenemedi.' });
-    }
-    const host = req.headers.host || `localhost:${port}`;
-    const protocol = req.headers['x-forwarded-proto'] || 'http';
-    const imageUrl = `${protocol}://${host}/uploads/${req.file.filename}`;
-    return res.status(200).json({ success: true, imageUrl });
-});
+app.use('/api/images', imageRoutes);
+app.use('/api/upload', imageRoutes); // /api/upload points to the same route for convenience
 
 prisma.$connect()
     .then(() => console.log('📦 Database bağlantısı başarılı'))

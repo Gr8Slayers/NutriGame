@@ -53,7 +53,9 @@ export class UserController {
                     weight: fetchedUser.profile?.weight,
                     target_weight: fetchedUser.profile?.target_weight,
                     reason_to_diet: fetchedUser.profile?.reason_to_diet,
-                    avatar_url: fetchedUser.profile?.avatar_url
+                    avatar_url: fetchedUser.profile?.avatar_url,
+                    followerCount: (fetchedUser as any).followerCount,
+                    followingCount: (fetchedUser as any).followingCount
                 }
             });
         } catch (err) {
@@ -111,6 +113,27 @@ export class UserController {
                 message: 'Daily targets calculated successfully.',
                 data: targets
             });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async getPublicProfile(req: Request, res: Response, next: NextFunction) {
+        try {
+            const currentUserId = req.user!.id;
+            const targetUserId = parseInt(req.params.userId);
+
+            if (isNaN(targetUserId)) {
+                return res.status(400).json({ success: false, message: 'Invalid userId.' });
+            }
+
+            const profile = await userModel.fetchPublicProfile(targetUserId, Number(currentUserId));
+
+            if (!profile) {
+                return res.status(404).json({ success: false, message: 'User not found.' });
+            }
+
+            return res.status(200).json({ success: true, data: profile });
         } catch (err) {
             next(err);
         }

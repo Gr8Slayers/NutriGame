@@ -54,10 +54,23 @@ export const userModel = {
 
   //fetchUser: verilen user id ye sahip user in user ve userporfile tablolarindaki bilgileri donuluyor
   fetchUser: async (userId: number) => {
-    return await prisma.user.findFirst({
+    const user = await prisma.user.findFirst({
       where: { id: userId },
       include: { profile: true },
     });
+
+    if (!user) return null;
+
+    const [followerCount, followingCount] = await Promise.all([
+      prisma.userFollow.count({ where: { followingId: userId } }),
+      prisma.userFollow.count({ where: { followerId: userId } }),
+    ]);
+
+    return {
+      ...user,
+      followerCount,
+      followingCount
+    };
   },
 
   //searchUsers: username'e göre kullanıcı arama
@@ -90,6 +103,66 @@ export const userModel = {
       avatarUrl: u.profile?.avatar_url ?? null,
       isFollowing: followedSet.has(u.id),
     }));
+  },
+
+  // Public profile: başka bir kullanıcının public bilgilerini getir
+  fetchPublicProfile: async (targetUserId: number, currentUserId: number) => {
+    const user = await prisma.user.findUnique({
+      where: { id: targetUserId },
+      include: {
+        profile: true,
+        streak: true,
+      },
+    });
+
+    if (!user) return null;
+
+    // Follower/following counts
+    const [followerCount, followingCount] = await Promise.all([
+      prisma.userFollow.count({ where: { followingId: targetUserId } }),
+      prisma.userFollow.count({ where: { followerId: targetUserId } }),
+    ]);
+
+    // Is current user following this user?
+    const isFollowing = currentUserId !== targetUserId
+      ? !!(await prisma.userFollow.findUnique({
+          where: { followerId_followingId: { followerId: currentUserId, followingId: targetUserId } },
+        }))
+      : false;
+
+    // Recipe post count
+    const postCount = await prisma.post.count({
+      where: { userId: targetUserId, isRecipe: true },
+    });
+
+    // Badges
+    const userBadges = await prisma.userBadge.findMany({
+      where: { userId: targetUserId },
+      include: { badge: true },
+      orderBy: { earnedAt: 'desc' },
+    });
+
+    return {
+      id: String(user.id),
+      username: user.username,
+      avatarUrl: user.profile?.avatar_url ?? null,
+      streak: {
+        currentStreak: user.streak?.currentStreak ?? 0,
+        longestStreak: user.streak?.longestStreak ?? 0,
+        totalPoints: user.streak?.totalPoints ?? 0,
+      },
+      followerCount,
+      followingCount,
+      isFollowing,
+      postCount,
+      badges: userBadges.map(ub => ({
+        id: String(ub.badge.id),
+        name: ub.badge.name,
+        description: ub.badge.description,
+        iconName: ub.badge.iconName,
+        earnedAt: ub.earnedAt.toISOString(),
+      })),
+    };
   },
 
 };

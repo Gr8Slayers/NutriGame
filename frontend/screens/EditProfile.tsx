@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Modal, Image, Alert } from 'react-native';
+import { Asset } from 'expo-asset';
+import { useState } from 'react';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,6 +17,8 @@ const API_URL = `http://${IP_ADDRESS}:3000`;
 // Helper to resolve avatar paths
 const getAvatarSource = (path: string | undefined) => {
     if (!path) return require('../assets/default_avatar.png');
+    if (path.startsWith('http')) return { uri: path };
+    if (path.startsWith('/')) return { uri: `${API_URL}${path}` };
 
     const cleanPath = path.trim();
     switch (cleanPath) {
@@ -120,10 +123,39 @@ export default function EditProfile() {
                 return;
             }
 
+            let finalAvatarUrl = selectedAvatar;
+
+            // Eğer seçilen avatar hala yerel bir yolsa (veya değişmisse), DB'ye yükle
+            if (selectedAvatar && !selectedAvatar.startsWith('http')) {
+                const source = getAvatarSource(selectedAvatar);
+                if (typeof source === 'number') {
+                    const asset = Asset.fromModule(source);
+                    await asset.downloadAsync();
+
+                    const formData = new FormData();
+                    formData.append('image', {
+                        uri: asset.localUri || asset.uri,
+                        name: `avatar_${Date.now()}.png`,
+                        type: 'image/png',
+                    } as any);
+
+                    const uploadRes = await fetch(`${API_URL}/api/upload`, {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (uploadRes.ok) {
+                        const uploadData = await uploadRes.json();
+                        finalAvatarUrl = uploadData.imageUrl;
+                    }
+                }
+            }
+
             const updateData: any = {
                 username,
                 email,
-                avatar_url: selectedAvatar,
+                avatar_url: finalAvatarUrl,
                 reason_to_diet: reasonToDiet,
             };
 
@@ -134,8 +166,8 @@ export default function EditProfile() {
                 updateData.height = parseFloat(height);
             }
 
-            const response = await fetch(`${API_URL}/api/user/profile/update`, {
-                method: 'PUT',
+            const response = await fetch(`${API_URL}/api/user/profile`, {
+                method: 'PATCH',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',

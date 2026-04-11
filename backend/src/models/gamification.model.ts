@@ -43,20 +43,30 @@ export class GamificationModel {
         title: string,
         type: string,
         endDate: Date,
-        targetUserId: number
+        targetUserId: number,
+        description?: string,
+        goalValue?: number
     ) {
+        const isSelfChallenge = creatorId === targetUserId;
+
+        const participants = isSelfChallenge
+            ? [{ userId: creatorId, role: 'creator', status: 'accepted' }]
+            : [
+                { userId: creatorId, role: 'creator', status: 'accepted' },
+                { userId: targetUserId, role: 'invitee', status: 'pending' },
+            ];
+
         return await prisma.challenge.create({
             data: {
                 creatorId,
                 title,
+                description,
                 type,
+                goalValue,
                 endDate,
-                status: 'pending',
+                status: isSelfChallenge ? 'active' : 'pending',
                 participants: {
-                    create: [
-                        { userId: creatorId, role: 'creator', status: 'accepted' },
-                        { userId: targetUserId, role: 'invitee', status: 'pending' },
-                    ],
+                    create: participants,
                 },
             },
             include: { participants: true },
@@ -175,6 +185,49 @@ export class GamificationModel {
 
         const progress = Math.round((successfulDays / durationDays) * 100);
         return Math.min(progress, 100);
+    }
+
+    // ==========================================
+    // BADGE İŞLEMLERİ
+    // ==========================================
+
+    /**
+     * Challenge tipine göre badge ödüllendir
+     * Her challenge tipi için özel bir badge + genel "Challenge Victor" badge verilir
+     */
+    public async awardBadge(userId: number, challengeType: string): Promise<void> {
+        const badgeNameMap: Record<string, string> = {
+            water: 'Water Warrior',
+            calorie: 'Calorie Champion',
+            sugar: 'Sugar Crusher',
+            step: 'Step Master',
+        };
+
+        const specificBadgeName = badgeNameMap[challengeType];
+        const badgeNames = ['Challenge Victor'];
+        if (specificBadgeName) badgeNames.push(specificBadgeName);
+
+        for (const name of badgeNames) {
+            const badge = await prisma.badge.findUnique({ where: { name } });
+            if (!badge) continue;
+
+            await prisma.userBadge.upsert({
+                where: { userId_badgeId: { userId, badgeId: badge.id } },
+                update: {},
+                create: { userId, badgeId: badge.id },
+            });
+        }
+    }
+
+    /**
+     * Kullanıcının kazandığı tüm badge'leri getir
+     */
+    public async getUserBadges(userId: number) {
+        return await prisma.userBadge.findMany({
+            where: { userId },
+            include: { badge: true },
+            orderBy: { earnedAt: 'desc' },
+        });
     }
 }
 
