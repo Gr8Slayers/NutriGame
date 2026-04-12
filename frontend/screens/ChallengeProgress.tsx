@@ -7,6 +7,7 @@ import { RootStackParamList } from '../App';
 import styles from '../styles/ChallengeProgress';
 import { IP_ADDRESS } from "@env";
 import * as SecureStore from 'expo-secure-store';
+import BadgeAwardModal from '../components/BadgeAwardModal';
 
 const API_URL = `http://${IP_ADDRESS}:3000/api`;
 
@@ -25,6 +26,8 @@ interface State {
   isCompleted: boolean;
   isLoading: boolean;
   currentUserId: string | null;
+  isBadgeModalVisible: boolean;
+  earnedBadge: any | null;
 }
 
 class ChallengeProgress extends React.Component<Props, State> {
@@ -37,7 +40,9 @@ class ChallengeProgress extends React.Component<Props, State> {
       dayHistory: [],
       isCompleted: false,
       isLoading: true,
-      currentUserId: null
+      currentUserId: null,
+      isBadgeModalVisible: false,
+      earnedBadge: null
     };
   }
 
@@ -103,12 +108,19 @@ class ChallengeProgress extends React.Component<Props, State> {
       const res = await response.json();
 
       if (res.success) {
-        Alert.alert('🏆 Başarı!', 'Rozet kazanıldı ve puanlar eklendi!');
-        this.props.navigation.goBack();
+        if (res.earnedBadge) {
+          this.setState({
+            earnedBadge: res.earnedBadge,
+            isBadgeModalVisible: true
+          });
+        } else {
+          Alert.alert('Success!', 'Badge earned and points added!');
+          this.props.navigation.goBack();
+        }
       }
     } catch (e) {
       console.error(e);
-      Alert.alert('Hata', 'Ödül alınamadı.');
+      Alert.alert('Error', 'Reward could not be obtained.');
     }
   }
 
@@ -191,12 +203,12 @@ class ChallengeProgress extends React.Component<Props, State> {
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.card}>
             <View style={styles.cardHeader}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15, flex: 1, marginRight: 10 }}>
                 <View style={{ width: 50, height: 50, borderRadius: 12, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' }}>
                   <Ionicons name={challengeData?.type === 'water' ? 'water-outline' : 'flame-outline'} size={30} color="#2ECC71" />
                 </View>
-                <View>
-                  <Text style={styles.cardTitle}>{challengeData?.title}</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.cardTitle} numberOfLines={1} ellipsizeMode="tail">{challengeData?.title}</Text>
                   <Text style={styles.cardSubtitle}>
                     {this.formatDateRange(challengeData.startDate, challengeData.endDate)} · {challengeData.durationDays} day
                   </Text>
@@ -299,6 +311,15 @@ class ChallengeProgress extends React.Component<Props, State> {
             </Text>
           </View>
         </ScrollView>
+
+        <BadgeAwardModal
+          isVisible={this.state.isBadgeModalVisible}
+          onClose={() => {
+            this.setState({ isBadgeModalVisible: false });
+            this.props.navigation.goBack();
+          }}
+          badge={this.state.earnedBadge}
+        />
       </View>
     );
   }

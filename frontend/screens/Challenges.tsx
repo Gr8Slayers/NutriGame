@@ -63,7 +63,7 @@ const Challenges = ({ navigation }: Props) => {
           />
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={styles.itemTitle}>{item.title}</Text>
+          <Text style={styles.itemTitle} numberOfLines={1}>{item.title}</Text>
 
           {/* 1. ANA BAR: Genel İlerleme (Gün Bazlı) */}
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -116,7 +116,7 @@ const Challenges = ({ navigation }: Props) => {
         <Ionicons name="mail-unread" size={24} color="#c8a96e" />
       </View>
       <View style={{ flex: 1 }}>
-        <Text style={styles.itemTitle}>{item.title}</Text>
+        <Text style={styles.itemTitle} numberOfLines={1}>{item.title}</Text>
         <TouchableOpacity onPress={() => navigation.navigate('UserProfile', { userId: item.senderId })}>
           <Text style={[styles.itemSubtitle, { textDecorationLine: 'underline' }]}>
             From {item.senderUsername || `user #${item.senderId}`}

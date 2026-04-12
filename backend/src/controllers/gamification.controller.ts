@@ -333,7 +333,7 @@ export class GamificationController {
             await gamificationModel.claimReward(id, userId);
 
             // Badge ödüllendir (challenge tipine göre)
-            await gamificationModel.awardBadge(userId, challenge.type);
+            const earnedBadge = await gamificationModel.awardBadge(userId, challenge.type);
 
             // Streak'e bonus puan ekle
             const streak = await gamificationModel.getStreakByUserId(userId);
@@ -348,11 +348,15 @@ export class GamificationController {
             if (opponent) {
                 const winnerInfo = await prisma.user.findUnique({ where: { id: userId } });
                 if (winnerInfo) {
-                    await notificationService.sendPushNotification(opponent.userId, "Meydan Okuma Bitti!", `${winnerInfo.username} senin de içinde olduğun "${challenge.title}" meydan okumasını kazandı!`);
+                    await notificationService.sendPushNotification(opponent.userId, "Challenge Completed!", `${winnerInfo.username} won the "${challenge.title}" challenge you participated in!`);
                 }
             }
 
-            res.status(200).json({ success: true, message: 'Reward claimed! Badge earned & +50 bonus points added.' });
+            res.status(200).json({
+                success: true,
+                message: 'Reward claimed! Badge earned & +50 bonus points added.',
+                earnedBadge
+            });
         } catch (error) {
             console.error('Error in completeChallenge:', error);
             res.status(500).json({ success: false, message: 'Internal server error' });

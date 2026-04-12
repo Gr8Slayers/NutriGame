@@ -398,7 +398,7 @@ export class GamificationModel {
     /**
      * Challenge tipine göre sequential (seviyeli) badge ödüllendir
      */
-    public async awardBadge(userId: number, challengeType: string): Promise<void> {
+    public async awardBadge(userId: number, challengeType: string): Promise<any | null> {
         const folderMap: Record<string, string> = {
             water: 'water',
             sugar: 'sugar',
@@ -463,8 +463,11 @@ export class GamificationModel {
                 update: {},
                 create: { userId, badgeId: badge.id },
             });
+
+            return badge;
         }
 
+        return null;
     }
 
     /**
