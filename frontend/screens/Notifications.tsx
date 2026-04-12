@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store';
 import { IP_ADDRESS } from '@env';
@@ -43,7 +43,7 @@ export default function Notifications() {
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Icon name="arrow-back" size={24} color="#f7e5c5" />
+                    <Ionicons name="arrow-back" size={24} color="#f7e5c5" />
                 </TouchableOpacity>
                 <Text style={styles.title}>Notifications</Text>
             </View>
@@ -54,7 +54,7 @@ export default function Notifications() {
                 </View>
             ) : notifications.length === 0 ? (
                 <View style={styles.center}>
-                    <Icon name="notifications-off-outline" size={64} color="#f7e5c5aa" />
+                    <Ionicons name="notifications-off-outline" size={64} color="#f7e5c5aa" />
                     <Text style={styles.emptyText}>You don't have any notifications yet.</Text>
                 </View>
             ) : (
@@ -65,7 +65,7 @@ export default function Notifications() {
                     renderItem={({ item }) => (
                         <View style={styles.notificationCard}>
                             <View style={styles.iconContainer}>
-                                <Icon name="notifications" size={24} color="#FBE577" />
+                                <Ionicons name="notifications" size={24} color="#FBE577" />
                             </View>
                             <View style={styles.textContainer}>
                                 <Text style={styles.notificationTitle}>{item.title}</Text>

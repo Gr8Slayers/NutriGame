@@ -1,9 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ProgressBarAndroid, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import { RootStackParamList } from '../App';
-import { Challenge } from '../types';
 import styles from '../styles/ChallengeProgress';
 import { IP_ADDRESS } from "@env";
 import * as SecureStore from 'expo-secure-store';
@@ -12,9 +12,16 @@ const API_URL = `http://${IP_ADDRESS}:3000/api`;
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ChallengeProgress'>;
 
+interface DayHistoryItem {
+  date: string;
+  status: 'success' | 'fail' | 'today' | 'upcoming';
+}
+
 interface State {
-  challengeData: Challenge | null;
-  currentProgress: number; // 0 to 1
+  challengeData: any;
+  currentProgress: number;
+  todayCurrent: number;
+  dayHistory: DayHistoryItem[];
   isCompleted: boolean;
   isLoading: boolean;
 }
@@ -25,13 +32,27 @@ class ChallengeProgress extends React.Component<Props, State> {
     this.state = {
       challengeData: null,
       currentProgress: 0,
+      todayCurrent: 0,
+      dayHistory: [],
       isCompleted: false,
       isLoading: true
     };
   }
 
+  private focusUnsubscribe: any;
+
   componentDidMount() {
     this.fetchProgress();
+    // Ekran her odağa geldiğinde verileri yenile (örn. geri gelindiğinde)
+    this.focusUnsubscribe = this.props.navigation.addListener('focus', () => {
+      this.fetchProgress();
+    });
+  }
+
+  componentWillUnmount() {
+    if (this.focusUnsubscribe) {
+      this.focusUnsubscribe();
+    }
   }
 
   private fetchProgress = async (): Promise<void> => {
@@ -39,50 +60,27 @@ class ChallengeProgress extends React.Component<Props, State> {
     try {
       const token = await SecureStore.getItemAsync('userToken');
       const response = await fetch(`${API_URL}/gamification/challenge/progress?challengeId=${challengeId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       const res = await response.json();
 
       if (res.success) {
-        const progressData = res.data;
-        
-        // Use basic fallback if challenge data is not fully populated yet
-        const challenge: Challenge = {
-          id: challengeId,
-          title: progressData.title || (challengeId === '1' ? 'Water Streak' : 'Challenge'),
-          description: progressData.description || 'Challenge detail fetched from server.',
-          type: progressData.type || 'sugar',
-          goalValue: progressData.goalValue || 100,
-          currentProgress: progressData.progress,
-          unit: '%',
-          durationDays: progressData.durationDays || 7,
-          startDate: progressData.startDate || new Date().toISOString(),
-          endDate: progressData.endDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-          status: 'active',
-          creatorId: progressData.creatorId || 'user',
-          isGroupChallenge: true
-        };
-
+        const d = res.data;
         this.setState({
-          challengeData: challenge,
-          currentProgress: progressData.progress / 100,
+          challengeData: d,
+          currentProgress: d.progress,
+          todayCurrent: d.todayCurrent || 0,
+          dayHistory: d.dayHistory || [],
           isLoading: false
         }, () => {
-          this.checkCompletion();
+          if (this.state.currentProgress >= 100) {
+            this.setState({ isCompleted: true });
+          }
         });
       }
     } catch (e) {
       console.error(e);
       this.setState({ isLoading: false });
-    }
-  }
-
-  private checkCompletion = async (): Promise<void> => {
-    if (this.state.currentProgress >= 1 && !this.state.isCompleted) {
-      this.setState({ isCompleted: true });
-      Alert.alert('Congratulations!', 'You have reached 100% progress!');
     }
   }
 
@@ -101,85 +99,160 @@ class ChallengeProgress extends React.Component<Props, State> {
       const res = await response.json();
 
       if (res.success) {
-        Alert.alert('🏆 Badge Earned!', 'Challenge Winner badge and +50 bonus points awarded!');
+        Alert.alert('🏆 Başarı!', 'Rozet kazanıldı ve puanlar eklendi!');
         this.props.navigation.goBack();
       }
     } catch (e) {
       console.error(e);
-      Alert.alert('Error', 'Could not claim reward.');
+      Alert.alert('Hata', 'Ödül alınamadı.');
     }
   }
 
+  private formatDateRange = (start: string, end: string) => {
+    const months = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+    const s = new Date(start);
+    const e = new Date(end);
+    return `${s.getDate()} ${months[s.getMonth()]} — ${e.getDate()} ${months[e.getMonth()]}`;
+  }
+
   render() {
-    const { challengeData, currentProgress, isCompleted, isLoading } = this.state;
+    const { challengeData, currentProgress, todayCurrent, dayHistory, isCompleted, isLoading } = this.state;
 
     if (isLoading) {
       return (
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#c8a96e" />
+          <ActivityIndicator size="large" color="#2ECC71" />
         </View>
       );
     }
+
+    const goal = challengeData?.goalValue || 100;
+    const todayPercent = Math.min(100, Math.round((todayCurrent / goal) * 100));
+    const successfulDays = dayHistory.filter(h => h.status === 'success').length;
+    const remaining = Math.max(0, goal - todayCurrent);
+    const unit = challengeData?.type === 'water' ? 'ml' : challengeData?.type === 'calorie' ? 'kcal' : 'steps';
 
     return (
       <View style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => this.props.navigation.goBack()}>
-            <Ionicons name="arrow-back" size={24} color="#f7e5c5" />
+            <Ionicons name="close" size={28} color="#FFFFFF" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Challenge Progress</Text>
-          <View style={{ width: 24 }} />
+
         </View>
 
-        <View style={styles.content}>
-          <Text style={styles.title}>{challengeData?.title}</Text>
-          <Text style={styles.description}>{challengeData?.description}</Text>
-
-          <View style={styles.progressContainer}>
-            <View style={styles.progressHeader}>
-              <Text style={styles.progressLabel}>Current Progress</Text>
-              <Text style={styles.progressValue}>{Math.round(currentProgress * 100)}%</Text>
+        <ScrollView contentContainerStyle={styles.content}>
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
+                <View style={{ width: 50, height: 50, borderRadius: 12, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' }}>
+                  <Ionicons name={challengeData?.type === 'water' ? 'water-outline' : 'flame-outline'} size={30} color="#2ECC71" />
+                </View>
+                <View>
+                  <Text style={styles.cardTitle}>{challengeData?.title}</Text>
+                  <Text style={styles.cardSubtitle}>
+                    {this.formatDateRange(challengeData.startDate, challengeData.endDate)} · {challengeData.durationDays} day
+                  </Text>
+                </View>
+              </View>
+              {todayCurrent >= goal ? (
+                <View style={styles.statusBadge}>
+                  <Ionicons name="checkmark-circle" size={14} color="#2ECC71" />
+                  <Text style={styles.statusBadgeText}>Today completed</Text>
+                </View>
+              ) : (
+                <View style={[styles.statusBadge, { backgroundColor: '#3b301a' }]}>
+                  <Ionicons name="time-outline" size={14} color="#F1C40F" />
+                  <Text style={[styles.statusBadgeText, { color: '#F1C40F' }]}>Ongoing</Text>
+                </View>
+              )}
             </View>
-            <View style={styles.progressBarBg}>
-              <View style={[styles.progressBarFill, { width: `${currentProgress * 100}%` }]} />
+
+            <Text style={styles.sectionLabel}>GENERAL PROGRESS · {successfulDays} / {challengeData.durationDays} days successful</Text>
+            <View style={styles.progressRow}>
+              <View style={{ flex: 1, marginRight: 15 }}>
+                <View style={styles.barContainer}>
+                  <View style={[styles.barFill, { width: `${currentProgress}%` }]} />
+                </View>
+              </View>
+              <Text style={styles.progressPercent}>{currentProgress}%</Text>
+            </View>
+
+            <View style={{ height: 1, backgroundColor: '#2C2C2C', marginVertical: 25 }} />
+
+            <Text style={styles.sectionLabel}>TODAY'S STATUS</Text>
+            <View style={styles.todayStatusCard}>
+              <View style={styles.todayValues}>
+                <Text style={styles.todayMainValue}>
+                  {todayCurrent.toLocaleString('tr-TR')} <Text style={styles.todayGoalValue}>/ {goal.toLocaleString('tr-TR')} {unit}</Text>
+                </Text>
+                <Text style={styles.todayRemaining}>Remaining: {remaining.toLocaleString('tr-TR')} {unit}</Text>
+              </View>
+              <View style={styles.circularContainer}>
+                <AnimatedCircularProgress
+                  size={80}
+                  width={8}
+                  fill={todayPercent}
+                  tintColor="#2ECC71"
+                  backgroundColor="#2C2C2C"
+                  lineCap="round"
+                  rotation={0}
+                >
+                  {() => (
+                    <View style={{ alignItems: 'center' }}>
+                      <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' }}>{todayPercent}%</Text>
+                    </View>
+                  )}
+                </AnimatedCircularProgress>
+              </View>
+            </View>
+
+            <Text style={styles.sectionLabel}>DAY HISTORY</Text>
+            <View style={styles.historyGrid}>
+              {dayHistory.map((item, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.historyDot,
+                    item.status === 'success' ? styles.dotSuccess :
+                      item.status === 'today' ? styles.dotToday :
+                        item.status === 'upcoming' ? styles.dotUpcoming :
+                          styles.dotFail
+                  ]}
+                />
+              ))}
+            </View>
+            <View style={styles.historyLegend}>
+              <View style={styles.legendItem}>
+                <View style={[styles.legendDot, { backgroundColor: '#2ECC71' }]} />
+                <Text style={styles.legendText}>Success</Text>
+              </View>
+              <View style={styles.legendItem}>
+                <View style={[styles.legendDot, { backgroundColor: '#3498DB' }]} />
+                <Text style={styles.legendText}>Today</Text>
+              </View>
+              <View style={styles.legendItem}>
+                <View style={[styles.legendDot, { borderWidth: 1, borderColor: '#444' }]} />
+                <Text style={styles.legendText}>Unsuccess</Text>
+              </View>
             </View>
           </View>
 
-          {isCompleted ? (
+          {isCompleted && !challengeData.rewardClaimed && (
             <TouchableOpacity style={styles.rewardButton} onPress={this.claimReward}>
               <Ionicons name="trophy" size={20} color="#000" />
-              <Text style={styles.rewardButtonText}>Claim Rewards & Badge</Text>
+              <Text style={styles.rewardButtonText}>Claim Reward & Get Badge</Text>
             </TouchableOpacity>
-          ) : (
-            <View style={styles.infoBox}>
-              <Ionicons name="information-circle-outline" size={20} color="#a0896e" />
-              <Text style={styles.infoText}>Keep going! You're doing great.</Text>
-            </View>
           )}
 
-          <View style={styles.detailsList}>
-            {challengeData?.description ? (
-              <View style={styles.detailItem}>
-                <Text style={styles.detailLabel}>Description</Text>
-                <Text style={styles.detailText}>{challengeData.description}</Text>
-              </View>
-            ) : null}
-            {challengeData?.goalValue ? (
-              <View style={styles.detailItem}>
-                <Text style={styles.detailLabel}>Goal</Text>
-                <Text style={styles.detailText}>{challengeData.goalValue} {challengeData?.type === 'water' ? 'ml' : challengeData?.type === 'calorie' ? 'kcal' : ''}</Text>
-              </View>
-            ) : null}
-            <View style={styles.detailItem}>
-              <Text style={styles.detailLabel}>Type</Text>
-              <Text style={styles.detailText}>{challengeData?.type.toUpperCase()}</Text>
-            </View>
-            <View style={styles.detailItem}>
-              <Text style={styles.detailLabel}>Duration</Text>
-              <Text style={styles.detailText}>{challengeData?.durationDays} Days</Text>
-            </View>
+          <View style={{ marginTop: 20 }}>
+            <Text style={[styles.sectionLabel, { marginBottom: 8 }]}>Description</Text>
+            <Text style={{ color: '#CCCCCC', fontSize: 14, lineHeight: 22 }}>
+              {challengeData.description || 'Bu meydan okuma için bir açıklama bulunmuyor.'}
+            </Text>
           </View>
-        </View>
+        </ScrollView>
       </View>
     );
   }

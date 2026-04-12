@@ -1,7 +1,7 @@
 import prisma from '../config/prisma';
 
 export const dailyProgressModel = {
-    upsertProgress: async (userId: number, date: Date, data: { currentWeight?: number, mood?: string, totalCaloriesConsumed?: number, calorieGoal?: number, goalAchieved?: boolean }) => {
+    upsertProgress: async (userId: number, date: Date, data: { currentWeight?: number, mood?: string, totalCaloriesConsumed?: number, calorieGoal?: number, goalAchieved?: boolean, movement?: number }) => {
         const cleanData = Object.fromEntries(Object.entries(data).filter(([_, v]) => v !== undefined));
 
         return await prisma.dailyProgress.upsert({

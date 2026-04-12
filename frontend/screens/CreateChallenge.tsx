@@ -16,9 +16,10 @@ interface State {
   description: string;
   type: string;
   goalValue: string;
-  targetUserID: string;
-  targetUsername: string;
   endDate: string;
+  duration: number;
+  currentUserId: string;
+  selectedUsers: Array<{ id: string; username: string }>;
   isSubmitting: boolean;
 }
 
@@ -30,19 +31,40 @@ class CreateChallenge extends React.Component<Props, State> {
       description: '',
       type: 'sugar',
       goalValue: '',
-      targetUserID: '',
-      targetUsername: '',
-      endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      duration: 7,
+      endDate: this.calculateEndDate(7),
+      currentUserId: '',
+      selectedUsers: [],
       isSubmitting: false
     };
   }
 
+  async componentDidMount() {
+    const userId = await SecureStore.getItemAsync('userId');
+    if (userId) {
+      this.setState({ currentUserId: userId });
+    }
+  }
+
+  private calculateEndDate = (days: number): string => {
+    return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  }
+
+  private setDuration = (days: number): void => {
+    this.setState({ 
+      duration: days,
+      endDate: this.calculateEndDate(days)
+    });
+  }
+
   private handleCreate = async (): Promise<void> => {
-    const { title, type, targetUserID, endDate } = this.state;
-    if (!title || !targetUserID) {
-      Alert.alert('Error', 'Please fill in all fields');
+    const { title, type, selectedUsers, endDate } = this.state;
+    if (!title) {
+      Alert.alert('Error', 'Please enter a title');
       return;
     }
+
+    const targetUserIds = selectedUsers.map(u => Number(u.id));
 
     this.setState({ isSubmitting: true });
     try {
@@ -53,7 +75,14 @@ class CreateChallenge extends React.Component<Props, State> {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ title, type, targetUserId: targetUserID, endDate, description: this.state.description, goalValue: this.state.goalValue ? Number(this.state.goalValue) : undefined })
+        body: JSON.stringify({ 
+          title, 
+          type, 
+          targetUserIds: targetUserIds, 
+          endDate, 
+          description: this.state.description, 
+          goalValue: this.state.goalValue ? Number(this.state.goalValue) : undefined 
+        })
       });
       const res = await response.json();
 
@@ -71,17 +100,42 @@ class CreateChallenge extends React.Component<Props, State> {
     }
   }
 
+  private handleSelfChallenge = (): void => {
+    // This button can now be a toggle or just a way to clarify they are already in.
+    // For now, I'll keep the button just as an indicator or if they want to add themselves specifically?
+    // Actually, backend automatically adds creator.
+    Alert.alert('Note', 'As the creator, you are automatically included in this challenge!');
+  }
+
   private selectTargetUser = (): void => {
     this.props.navigation.navigate('FindFriends', {
       selectMode: true,
       onSelectUser: (userId: string, username: string) => {
-        this.setState({ targetUserID: userId, targetUsername: username });
+        const alreadyIn = this.state.selectedUsers.some(u => u.id === userId);
+        if (alreadyIn) {
+          Alert.alert('Info', 'User already added');
+          return;
+        }
+        if (userId === this.state.currentUserId) {
+          Alert.alert('Info', 'You are already included as the creator');
+          return;
+        }
+
+        this.setState({ 
+          selectedUsers: [...this.state.selectedUsers, { id: userId, username }]
+        });
       }
     });
   }
 
+  private removeUser = (userId: string): void => {
+    this.setState({
+        selectedUsers: this.state.selectedUsers.filter(u => u.id !== userId)
+    });
+  }
+
   render() {
-    const { title, type, targetUserID, targetUsername, endDate, isSubmitting } = this.state;
+    const { title, type, selectedUsers, endDate, isSubmitting } = this.state;
 
     return (
       <View style={styles.container}>
@@ -137,17 +191,48 @@ class CreateChallenge extends React.Component<Props, State> {
             ))}
           </View>
 
-          <Text style={styles.label}>Invite Friend</Text>
+          <Text style={styles.label}>Participants</Text>
+          <View style={{ marginBottom: 12 }}>
+             <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#1d3528', padding: 12, borderRadius: 12, marginBottom: 8 }}>
+                <Ionicons name="person" size={20} color="#c8a96e" />
+                <Text style={{ color: '#f7e5c5', marginLeft: 12, fontWeight: 'bold' }}>You (Creator)</Text>
+             </View>
+             {selectedUsers.map(user => (
+                <View key={user.id} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#14281d', padding: 12, borderRadius: 12, marginBottom: 8, justifyContent: 'space-between' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <Ionicons name="person-outline" size={20} color="#a0896e" />
+                        <Text style={{ color: '#f7e5c5', marginLeft: 12 }}>{user.username}</Text>
+                    </View>
+                    <TouchableOpacity onPress={() => this.removeUser(user.id)}>
+                        <Ionicons name="close-circle" size={20} color="#ff4444" />
+                    </TouchableOpacity>
+                </View>
+             ))}
+          </View>
+
           <TouchableOpacity style={styles.inviteButton} onPress={this.selectTargetUser}>
              <Ionicons name="person-add" size={20} color="#c8a96e" />
-             <Text style={styles.inviteButtonText}>
-                {targetUsername ? `Selected: ${targetUsername}` : 'Select Friend'}
-             </Text>
+             <Text style={styles.inviteButtonText}>Add Friend to Challenge</Text>
           </TouchableOpacity>
+
+          <Text style={styles.label}>Duration (Days)</Text>
+          <View style={styles.typeRow}>
+            {[1, 3, 7, 14, 30].map((d) => (
+              <TouchableOpacity
+                key={d}
+                style={[styles.typeButton, this.state.duration === d && styles.typeButtonActive]}
+                onPress={() => this.setDuration(d)}
+              >
+                <Text style={[styles.typeButtonText, this.state.duration === d && styles.typeButtonTextActive]}>
+                  {d}d
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
 
           <Text style={styles.label}>End Date</Text>
           <View style={styles.inputDisabled}>
-             <Text style={{ color: '#f7e5c5' }}>{endDate} (7 Days Duration)</Text>
+             <Text style={{ color: '#f7e5c5' }}>{endDate} ({this.state.duration} Days Duration)</Text>
           </View>
 
           <TouchableOpacity

@@ -245,6 +245,7 @@ model DailyProgress {
   goalAchieved          Boolean  @default(false)
   currentWeight         Float?
   mood                  String?
+  movement              Int      @default(0) // Physical activity (steps/mins)
 
   user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 

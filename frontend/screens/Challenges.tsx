@@ -6,7 +6,6 @@ import { RootStackParamList } from '../App';
 import styles from '../styles/Challenges';
 import { IP_ADDRESS } from "@env";
 
-
 import * as SecureStore from 'expo-secure-store';
 
 const API_URL = `http://${IP_ADDRESS}:3000/api`;
@@ -21,7 +20,11 @@ const Challenges = ({ navigation }: Props) => {
 
   React.useEffect(() => {
     fetchData();
-  }, []);
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchData();
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   const fetchData = async () => {
     try {
@@ -41,27 +44,57 @@ const Challenges = ({ navigation }: Props) => {
     }
   };
 
-  const renderActiveChallenge = ({ item }: { item: any }) => (
-    <TouchableOpacity
-      style={styles.itemCard}
-      onPress={() => navigation.navigate('ChallengeProgress', { challengeId: item.id })}
-    >
-      <View style={styles.iconBox}>
-        <Ionicons
-          name={item.type === 'water' ? 'water' : 'walk'}
-          size={24}
-          color="#c8a96e"
-        />
-      </View>
-      <View style={{ flex: 1 }}>
-        <Text style={styles.itemTitle}>{item.title}</Text>
-        <View style={styles.progressBarBg}>
-          <View style={[styles.progressBarFill, { width: `${item.progress}%` }]} />
+  const renderActiveChallenge = ({ item }: { item: any }) => {
+    // Backend'den gelecek anlık günlük veriler (Backend henüz güncellenmediyse hata vermemesi için varsayılan değerler 0 ve 100 olarak ayarlandı)
+    const todayCurrent = item.todayCurrent || 0;
+    const dailyGoal = item.goalValue || 100; // API'den goalValue dönüyor, onu kullanıyoruz
+    const dailyProgressPercent = dailyGoal > 0 ? Math.min((todayCurrent / dailyGoal) * 100, 100) : 0;
+
+    return (
+      <TouchableOpacity
+        style={styles.itemCard}
+        onPress={() => navigation.navigate('ChallengeProgress', { challengeId: item.id })}
+      >
+        <View style={styles.iconBox}>
+          <Ionicons
+            name={item.type === 'water' ? 'water' : 'walk'}
+            size={24}
+            color="#c8a96e"
+          />
         </View>
-      </View>
-      <Text style={styles.progressValue}>{item.progress}%</Text>
-    </TouchableOpacity>
-  );
+        <View style={{ flex: 1 }}>
+          <Text style={styles.itemTitle}>{item.title}</Text>
+
+          {/* 1. ANA BAR: Genel İlerleme (Gün Bazlı) */}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
+            <Text style={{ color: '#999', fontSize: 12 }}>General Progress</Text>
+            <Text style={{ color: '#999', fontSize: 12 }}>{item.progress}%</Text>
+          </View>
+          <View style={styles.progressBarBg}>
+            <View style={[styles.progressBarFill, { width: `${item.progress}%` }]} />
+          </View>
+
+          {/* 2. GÜNLÜK BAR: Anlık İlerleme (Hacim/Adım Bazlı) */}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 12, marginBottom: 4 }}>
+            <Text style={{ color: '#f7e5c5', fontSize: 12, fontWeight: '600' }}>
+              Today's Progress ({todayCurrent} / {dailyGoal} {item.type === 'water' ? 'ml' : item.type === 'calorie' ? 'kcal' : item.type === 'step' || item.type === 'move' ? 'steps' : ''})
+            </Text>
+            <Text style={{ color: '#f7e5c5', fontSize: 12, fontWeight: 'bold' }}>
+              {dailyProgressPercent.toFixed(0)}%
+            </Text>
+          </View>
+          {/* İnce ve daha belirgin bir bar tasarımı */}
+          <View style={[styles.progressBarBg, { height: 6, backgroundColor: '#333' }]}>
+            <View style={[styles.progressBarFill, {
+              width: `${dailyProgressPercent}%`,
+              backgroundColor: '#4CAF50' // Günlük hedefin dolduğunu vurgulayan yeşil renk
+            }]} />
+          </View>
+
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   const respondToInvite = async (challengeId: string, accept: boolean) => {
     try {

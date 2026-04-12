@@ -83,7 +83,7 @@ export interface Challenge {
     id: string;
     title: string;
     description: string;
-    type: 'calorie' | 'water' | 'sugar' | 'step' | 'custom';
+    type: 'calorie' | 'water' | 'sugar' | 'step' | 'move' | 'custom';
     goalValue: number;
     currentProgress: number;
     unit: string;
@@ -124,4 +124,5 @@ export interface DailyProgress {
     goalAchieved: boolean;
     currentWeight?: number;
     mood?: string;
+    movement?: number;
 }

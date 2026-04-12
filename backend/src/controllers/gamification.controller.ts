@@ -109,24 +109,20 @@ export class GamificationController {
                 return;
             }
 
-            const { title, type, targetUserId, endDate, description, goalValue } = req.body;
+            const { title, type, targetUserIds, endDate, description, goalValue } = req.body;
 
-            if (!title || !type || !targetUserId || !endDate) {
-                res.status(400).json({ success: false, message: 'title, type, targetUserId and endDate are required' });
+            if (!title || !type || !endDate) {
+                res.status(400).json({ success: false, message: 'title, type and endDate are required' });
                 return;
             }
 
-            const validTypes = ['calorie', 'water', 'sugar', 'step'];
+            const validTypes = ['calorie', 'water', 'sugar', 'step', 'move'];
             if (!validTypes.includes(type)) {
                 res.status(400).json({ success: false, message: `type must be one of: ${validTypes.join(', ')}` });
                 return;
             }
 
-            const targetId = Number(targetUserId);
-            if (isNaN(targetId)) {
-                res.status(400).json({ success: false, message: 'Invalid targetUserId' });
-                return;
-            }
+            const userIds = Array.isArray(targetUserIds) ? targetUserIds.map(Number).filter(id => !isNaN(id)) : [];
 
             const end = new Date(endDate);
             if (isNaN(end.getTime())) {
@@ -134,7 +130,7 @@ export class GamificationController {
                 return;
             }
 
-            const challenge = await gamificationModel.createChallenge(creatorId, title, type, end, targetId, description, goalValue ? Number(goalValue) : undefined);
+            const challenge = await gamificationModel.createChallenge(creatorId, title, type, end, userIds, description, goalValue ? Number(goalValue) : undefined);
 
             res.status(201).json({ success: true, data: challenge, message: 'Challenge created successfully' });
         } catch (error) {
@@ -160,6 +156,7 @@ export class GamificationController {
             const activeWithProgress = await Promise.all(
                 activeChallenges.map(async (c: any) => {
                     const progress = await gamificationModel.calculateProgress(c.id, userId);
+                    const todayCurrent = await gamificationModel.calculateDailyCurrent(c.id, userId);
                     const myParticipant = c.participants.find((p: ChallengeParticipant) => p.userId === userId);
                     return {
                         id: String(c.id),
@@ -169,6 +166,8 @@ export class GamificationController {
                         startDate: c.startDate,
                         endDate: c.endDate,
                         progress,
+                        goalValue: c.goalValue,
+                        todayCurrent,
                         rewardClaimed: myParticipant?.rewardClaimed ?? false,
                     };
                 })
@@ -230,6 +229,8 @@ export class GamificationController {
             }
 
             const progress = await gamificationModel.calculateProgress(challengeId, userId);
+            const todayCurrent = await gamificationModel.calculateDailyCurrent(challengeId, userId);
+            const dayHistory = await gamificationModel.getChallengeDayHistory(challengeId, userId);
             const myParticipant = challenge.participants.find((p: ChallengeParticipant) => p.userId === userId);
 
             const durationDays = Math.ceil(
@@ -245,6 +246,8 @@ export class GamificationController {
                     type: challenge.type,
                     goalValue: challenge.goalValue,
                     progress,
+                    todayCurrent,
+                    dayHistory,
                     durationDays,
                     startDate: challenge.startDate,
                     endDate: challenge.endDate,
@@ -312,7 +315,7 @@ export class GamificationController {
             // Push Notification to the opponent
             const opponent = challenge.participants.find((p: ChallengeParticipant) => p.userId !== userId);
             if (opponent) {
-                const winnerInfo = await prisma.user.findUnique({ where: { id: userId }});
+                const winnerInfo = await prisma.user.findUnique({ where: { id: userId } });
                 if (winnerInfo) {
                     await notificationService.sendPushNotification(opponent.userId, "Meydan Okuma Bitti!", `${winnerInfo.username} senin de içinde olduğun "${challenge.title}" meydan okumasını kazandı!`);
                 }

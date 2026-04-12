@@ -5,7 +5,7 @@ export class DailyProgressController {
     async upsert_progress(req: Request, res: Response, next: NextFunction) {
         try {
             const user_id = req.user!.id;
-            const { date, currentWeight, mood, totalCaloriesConsumed, calorieGoal, goalAchieved } = req.body;
+            const { date, currentWeight, mood, totalCaloriesConsumed, calorieGoal, goalAchieved, movement } = req.body;
 
             if (!date) {
                 return res.status(400).json({ success: false, message: 'Please provide a date.' });
@@ -28,7 +28,8 @@ export class DailyProgressController {
                 mood,
                 totalCaloriesConsumed,
                 calorieGoal,
-                goalAchieved
+                goalAchieved,
+                movement: movement !== undefined ? parseInt(movement) : undefined
             });
 
             return res.status(200).json({ success: true, message: 'Daily progress updated.', data: updated });

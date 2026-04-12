@@ -26,6 +26,7 @@ const DailyWeight: React.FC<Props> = ({ navigation }) => {
     const [progressData, setProgressData] = useState<DailyProgress[]>([]);
     const [todayWeight, setTodayWeight] = useState<string>('');
     const [todayMood, setTodayMood] = useState<string>('');
+    const [todayMovement, setTodayMovement] = useState<string>('');
     const [isSubmittingWeight, setIsSubmittingWeight] = useState(false);
 
     const [targetWeight, setTargetWeight] = useState<number | null>(null);
@@ -86,7 +87,8 @@ const DailyWeight: React.FC<Props> = ({ navigation }) => {
                 body: JSON.stringify({
                     date: todayStr,
                     currentWeight: todayWeight ? parseFloat(todayWeight) : undefined,
-                    mood: todayMood || undefined
+                    mood: todayMood || undefined,
+                    movement: todayMovement ? parseInt(todayMovement) : undefined
                 })
             });
             const res = await response.json();
@@ -94,6 +96,7 @@ const DailyWeight: React.FC<Props> = ({ navigation }) => {
                 fetchProgressData();
                 setTodayWeight('');
                 setTodayMood('');
+                setTodayMovement('');
             } else {
                 console.error("Failed to add progress:", res.message);
             }
@@ -215,6 +218,17 @@ const DailyWeight: React.FC<Props> = ({ navigation }) => {
                         <Text style={{ color: '#c8a96e', fontSize: 12, marginTop: 8, textAlign: 'center' }}>{goalText}</Text>
                     </View>
                 ) : null}
+
+                <View style={[styles.chartCard, { width: '95%', marginTop: 10 }]}>
+                    <Text style={styles.chartTitle}>Movement / Steps</Text>
+                    <TextInput
+                        style={{ backgroundColor: '#f5f5f5', borderRadius: 8, padding: 10, width: '100%' }}
+                        placeholder="Enter movement (e.g. 5000 steps)"
+                        keyboardType="numeric"
+                        value={todayMovement}
+                        onChangeText={setTodayMovement}
+                    />
+                </View>
 
                 <View style={[styles.chartCard, { width: '95%' }]}>
                     <Text style={styles.chartTitle}>Weight Input & Trend (7 Days)</Text>
