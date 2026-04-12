@@ -65,6 +65,9 @@ export class GamificationController {
                 totalPoints: userStreak.totalPoints,
             });
 
+            // Yeni kural: Seri seviyelerini kontrol et ve rozet ver
+            await gamificationModel.checkAndAwardStreakBadge(userId, updatedStreak.currentStreak);
+
             res.status(200).json({ success: true, data: updatedStreak });
         } catch (error) {
             console.error('Error in updateStreak:', error);

@@ -10,6 +10,7 @@ export const BadgeImages: Record<string, any> = {
     // Sugar Badges
     'sugar_1': require('../assets/badges/sugar/sugar_1.png'),
     'sugar_2': require('../assets/badges/sugar/sugar_2.png'),
+    'sugar_3': require('../assets/badges/sugar/sugar_3.png'),
 
     // Move / Step Badges
     'step_1': require('../assets/badges/move/move_1.png'),
@@ -23,4 +24,6 @@ export const BadgeImages: Record<string, any> = {
 
     // Streak / General Badges
     'streak_1': require('../assets/badges/streak_score/streak_1.png'),
+    'streak_2': require('../assets/badges/streak_score/streak_2.png'),
+    'streak_3': require('../assets/badges/streak_score/streak_3.png')
 };

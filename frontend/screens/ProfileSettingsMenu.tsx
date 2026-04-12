@@ -115,7 +115,7 @@ export default function ProfileSettingsMenu() {
             {/* Stats */}
             <View style={styles.statsContainer}>
                 <View style={styles.statCard}>
-                    <Text style={styles.statValue}>{userData?.level || 0}</Text>
+                    <Text style={styles.statValue}>{userData?.badgeCount || 0}</Text>
                     <Text style={styles.statLabel}>Badges</Text>
                 </View>
                 <View style={styles.statCard}>

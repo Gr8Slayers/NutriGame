@@ -61,15 +61,17 @@ export const userModel = {
 
     if (!user) return null;
 
-    const [followerCount, followingCount] = await Promise.all([
+    const [followerCount, followingCount, badgeCount] = await Promise.all([
       prisma.userFollow.count({ where: { followingId: userId } }),
       prisma.userFollow.count({ where: { followerId: userId } }),
+      prisma.userBadge.count({ where: { userId: userId } }),
     ]);
 
     return {
       ...user,
       followerCount,
-      followingCount
+      followingCount,
+      badgeCount,
     };
   },
 

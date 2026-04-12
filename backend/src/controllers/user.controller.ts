@@ -56,7 +56,8 @@ export class UserController {
                     reason_to_diet: fetchedUser.profile?.reason_to_diet,
                     avatar_url: fetchedUser.profile?.avatar_url,
                     followerCount: (fetchedUser as any).followerCount,
-                    followingCount: (fetchedUser as any).followingCount
+                    followingCount: (fetchedUser as any).followingCount,
+                    badgeCount: (fetchedUser as any).badgeCount,
                 }
             });
         } catch (err) {

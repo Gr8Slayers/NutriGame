@@ -329,6 +329,19 @@ export default function UserProfile({ navigation, route }: Props) {
                         <Image source={getAvatarSource(profile.avatarUrl)} style={styles.avatarLarge} />
                     </View>
                     <Text style={styles.username}>{profile.username}</Text>
+                    {profile.badges.length > 0 && (
+                        <View style={styles.miniBadges}>
+                            {profile.badges.slice(0, 5).map(badge => (
+                                BadgeImages[badge.iconName] && (
+                                    <Image 
+                                        key={`mini-${badge.id}`} 
+                                        source={BadgeImages[badge.iconName]} 
+                                        style={styles.miniBadge} 
+                                    />
+                                )
+                            ))}
+                        </View>
+                    )}
                     {currentUserId !== String(userId) && (
                         <TouchableOpacity
                             style={[

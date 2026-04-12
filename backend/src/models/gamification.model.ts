@@ -395,14 +395,16 @@ export class GamificationModel {
             }
         });
 
-        // Level belirle (Mevcut resim sayısına göre sınırla)
-        const maxLevels: Record<string, number> = {
-            water: 3,
-            sugar: 2,
-            move: 3,
-        };
+        let calculatedLevel = 0;
+        if (completionCount >= 15) {
+            calculatedLevel = 3;
+        } else if (completionCount >= 5) {
+            calculatedLevel = 2;
+        } else if (completionCount >= 1) {
+            calculatedLevel = 1;
+        }
 
-        const level = Math.min(completionCount, maxLevels[folder] || 1);
+        const level = Math.min(calculatedLevel, 3);
         if (level > 0) {
             const badgeName = `${folder.charAt(0).toUpperCase() + folder.slice(1)} Level ${level}`;
             const iconName = `${folder}_${level}`;
@@ -468,6 +470,41 @@ export class GamificationModel {
                 where: { userId_badgeId: { userId, badgeId: victorBadge.id } },
                 update: {},
                 create: { userId, badgeId: victorBadge.id },
+            });
+        }
+    }
+
+    /**
+     * Günlük seri (streak) ulaşıldığında rozet ver
+     */
+    public async checkAndAwardStreakBadge(userId: number, currentStreak: number): Promise<void> {
+        let level = 0;
+        if (currentStreak >= 30) {
+            level = 3;
+        } else if (currentStreak >= 20) {
+            level = 2;
+        } else if (currentStreak >= 10) {
+            level = 1;
+        }
+
+        if (level > 0) {
+            const badgeName = `Streak Level ${level}`;
+            const iconName = `streak_${level}`; // streak_1, streak_2, streak_3
+
+            const badge = await prisma.badge.upsert({
+                where: { name: badgeName },
+                update: { iconName },
+                create: {
+                    name: badgeName,
+                    description: `Kesintisiz uygulamaya girme serisi Level ${level} başarısı!`,
+                    iconName: iconName,
+                },
+            });
+
+            await prisma.userBadge.upsert({
+                where: { userId_badgeId: { userId, badgeId: badge.id } },
+                update: {},
+                create: { userId, badgeId: badge.id },
             });
         }
     }

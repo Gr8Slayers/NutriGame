@@ -12,6 +12,7 @@ export interface UserProfile {
     streak?: number;
     followerCount?: number;
     followingCount?: number;
+    badgeCount?: number;
 }
 
 // Updated Meal Parameters
