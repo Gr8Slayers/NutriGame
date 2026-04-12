@@ -11,13 +11,21 @@ export class DailyProgressController {
                 return res.status(400).json({ success: false, message: 'Please provide a date.' });
             }
 
-            const parsedDate = new Date(date);
+            // FIX: date string'i direkt parse et, timezone kaymasını önle.
+            // Frontend'den "YYYY-MM-DD" formatında geliyor, bunu UTC noon olarak
+            // kaydet — böylece hiçbir timezone'da gün kayması olmaz.
+            const [year, month, day] = (date as string).split('-').map(Number);
+            if (!year || !month || !day) {
+                return res.status(400).json({ success: false, message: 'Invalid date format. Expected YYYY-MM-DD.' });
+            }
+
+            // UTC 12:00 — hem geri hem ileri timezone'larda güvenli
+            const parsedDate = new Date(Date.UTC(year, month - 1, day, 12, 0, 0, 0));
             if (isNaN(parsedDate.getTime())) {
                 return res.status(400).json({ success: false, message: 'Invalid calendar date.' });
             }
-            parsedDate.setHours(0,0,0,0);
 
-            let weightNum;
+            let weightNum: number | undefined;
             if (currentWeight !== undefined) {
                 weightNum = parseFloat(currentWeight);
                 if (isNaN(weightNum)) weightNum = undefined;
@@ -29,7 +37,7 @@ export class DailyProgressController {
                 totalCaloriesConsumed,
                 calorieGoal,
                 goalAchieved,
-                movement: movement !== undefined ? parseInt(movement) : undefined
+                movement: movement !== undefined ? parseInt(movement) : undefined,
             });
 
             return res.status(200).json({ success: true, message: 'Daily progress updated.', data: updated });
@@ -42,7 +50,14 @@ export class DailyProgressController {
         try {
             const user_id = req.user!.id;
             const progress = await dailyProgressModel.getWeeklyProgress(user_id);
-            return res.status(200).json({ success: true, data: progress });
+
+            const formattedProgress = progress.map(p => ({
+                ...p,
+                // FIX: UTC'den YYYY-MM-DD al — getUTC* ile timezone kayması olmaz
+                date: `${p.date.getUTCFullYear()}-${String(p.date.getUTCMonth() + 1).padStart(2, '0')}-${String(p.date.getUTCDate()).padStart(2, '0')}`,
+            }));
+
+            return res.status(200).json({ success: true, data: formattedProgress });
         } catch (err) {
             next(err);
         }
