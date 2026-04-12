@@ -192,29 +192,65 @@ export class GamificationModel {
     // ==========================================
 
     /**
-     * Challenge tipine göre badge ödüllendir
-     * Her challenge tipi için özel bir badge + genel "Challenge Victor" badge verilir
+     * Challenge tipine göre sequential (seviyeli) badge ödüllendir
      */
     public async awardBadge(userId: number, challengeType: string): Promise<void> {
-        const badgeNameMap: Record<string, string> = {
-            water: 'Water Warrior',
-            calorie: 'Calorie Champion',
-            sugar: 'Sugar Crusher',
-            step: 'Step Master',
+        const folderMap: Record<string, string> = {
+            water: 'water',
+            sugar: 'sugar',
+            calorie: 'move',
+            step: 'move',
         };
 
-        const specificBadgeName = badgeNameMap[challengeType];
-        const badgeNames = ['Challenge Victor'];
-        if (specificBadgeName) badgeNames.push(specificBadgeName);
+        const folder = folderMap[challengeType] || 'move';
 
-        for (const name of badgeNames) {
-            const badge = await prisma.badge.findUnique({ where: { name } });
-            if (!badge) continue;
+        // Bu kullanıcının bu tipteki tamamlanmış (rewardClaimed) meydan okuma sayısını say
+        const completionCount = await prisma.challengeParticipant.count({
+            where: {
+                userId,
+                rewardClaimed: true,
+                challenge: { type: challengeType }
+            }
+        });
 
+        // Level belirle (Mevcut resim sayısına göre sınırla)
+        const maxLevels: Record<string, number> = {
+            water: 3,
+            sugar: 2,
+            move: 3,
+        };
+
+        const level = Math.min(completionCount, maxLevels[folder] || 1);
+        if (level === 0) return; // Henüz hiç tamamlamadıysa (teorik olarak 1 olmalı)
+
+        const badgeName = `${folder.charAt(0).toUpperCase() + folder.slice(1)} Level ${level}`;
+        const iconName = `${folder}_${level}`;
+
+        // Badge'i veritabanında bul veya oluştur (upsert)
+        const badge = await prisma.badge.upsert({
+            where: { name: badgeName },
+            update: {},
+            create: {
+                name: badgeName,
+                description: `${challengeType} kategorisinde ${level}. seviye başarısı!`,
+                iconName: iconName,
+            },
+        });
+
+        // Kullanıcıya bu badge'i ata (eğer zaten yoksa)
+        await prisma.userBadge.upsert({
+            where: { userId_badgeId: { userId, badgeId: badge.id } },
+            update: {},
+            create: { userId, badgeId: badge.id },
+        });
+
+        // Genel "Challenge Victor" rozetini de opsiyonel olarak hala verebiliriz
+        const victorBadge = await prisma.badge.findUnique({ where: { name: 'Challenge Victor' } });
+        if (victorBadge) {
             await prisma.userBadge.upsert({
-                where: { userId_badgeId: { userId, badgeId: badge.id } },
+                where: { userId_badgeId: { userId, badgeId: victorBadge.id } },
                 update: {},
-                create: { userId, badgeId: badge.id },
+                create: { userId, badgeId: victorBadge.id },
             });
         }
     }

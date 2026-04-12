@@ -17,6 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import { IP_ADDRESS } from '@env';
 import styles from '../styles/UserProfile';
+import { BadgeImages } from '../constants/BadgeImages';
 
 const API_URL = `http://${IP_ADDRESS}:3000`;
 const DEFAULT_AVATAR = require('../assets/default_avatar.png');
@@ -394,7 +395,14 @@ export default function UserProfile({ navigation, route }: Props) {
                             {profile.badges.map(badge => (
                                 <View key={badge.id} style={styles.badgeItem}>
                                     <View style={styles.badgeIcon}>
-                                        <Ionicons name={badge.iconName as any} size={22} color="#c8a96e" />
+                                        {BadgeImages[badge.iconName] ? (
+                                            <Image 
+                                                source={BadgeImages[badge.iconName]} 
+                                                style={{ width: 30, height: 30, resizeMode: 'contain' }} 
+                                            />
+                                        ) : (
+                                            <Ionicons name={badge.iconName as any} size={22} color="#c8a96e" />
+                                        )}
                                     </View>
                                     <Text style={styles.badgeName} numberOfLines={2}>{badge.name}</Text>
                                 </View>
