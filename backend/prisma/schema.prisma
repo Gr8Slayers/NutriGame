@@ -16,11 +16,23 @@ model User {
   email     String    @unique
   password  String
   createdAt DateTime  @default(now())
+  expoPushToken String?
   profile   UserProfile?  // sadece Prisma için, DB kolonu değil
   streak    Streak?   // Her kullanıcının bir streak kaydı olacak
   mealPhotos MealPhoto[]
   chatSessions ChatSession[]
   dailyProgresses DailyProgress[]
+  notifications Notification[]
+}
+
+model Notification {
+  id        Int      @id @default(sequence())
+  userId    Int
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model UserProfile {

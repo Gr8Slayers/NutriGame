@@ -17,8 +17,12 @@ import foodRecognitionRoutes from './routes/food.recognition.routes';
 import dailyProgressRoutes from './routes/dailyprogress.routes';
 import imageRoutes from './routes/image.routes';
 import { authMiddleware } from './middleware/auth.middleware';
+import { startCronJobs } from './jobs/cron';
 
 dotenv.config();
+
+// Start background cron jobs
+startCronJobs();
 
 const app = express();
 const port = process.env.PORT || 3000;

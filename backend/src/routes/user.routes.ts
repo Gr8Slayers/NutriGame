@@ -11,5 +11,7 @@ router.get('/profile', authMiddleware, userController.getUserProfile.bind(userCo
 router.delete('/profile', authMiddleware, userController.deleteAccount.bind(userController));
 router.get('/daily_targets', authMiddleware, userController.getDailyTargets.bind(userController));
 router.get('/profile/:userId', authMiddleware, userController.getPublicProfile.bind(userController));
+router.put('/push-token', authMiddleware, userController.updatePushToken.bind(userController));
+router.get('/notifications', authMiddleware, userController.getNotifications.bind(userController));
 
 export default router;

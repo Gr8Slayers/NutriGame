@@ -2,6 +2,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { userModel, calculateDailyTargets } from '../models/user.model';
+import prisma from '../config/prisma';
 
 export class UserController {
 
@@ -136,6 +137,50 @@ export class UserController {
             return res.status(200).json({ success: true, data: profile });
         } catch (err) {
             next(err);
+        }
+    }
+
+    async updatePushToken(req: Request, res: Response): Promise<void> {
+        try {
+            const userId = req.user?.id;
+            const { expoPushToken } = req.body;
+
+            if (!userId) {
+                res.status(401).json({ success: false, message: 'Unauthorized access.' });
+                return;
+            }
+
+            if (!expoPushToken) {
+                res.status(400).json({ success: false, message: 'Push token is required.' });
+                return;
+            }
+
+            const updatedUser = await userModel.updateUser(userId, { expoPushToken });
+            res.status(200).json({ success: true, message: 'Push token updated successfully.' });
+        } catch (error) {
+            console.error('Error updating push token:', error);
+            res.status(500).json({ success: false, message: 'Internal server error.' });
+        }
+    }
+
+    async getNotifications(req: Request, res: Response): Promise<void> {
+        try {
+            const userId = req.user?.id;
+            if (!userId) {
+                res.status(401).json({ success: false, message: 'Unauthorized access.' });
+                return;
+            }
+
+            const notifications = await prisma.notification.findMany({
+                where: { userId },
+                orderBy: { createdAt: 'desc' },
+                take: 50
+            });
+
+            res.status(200).json({ success: true, data: notifications });
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+            res.status(500).json({ success: false, message: 'Internal server error.' });
         }
     }
 }

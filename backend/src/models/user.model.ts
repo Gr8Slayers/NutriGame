@@ -165,6 +165,13 @@ export const userModel = {
     };
   },
 
+  updateUser: async (userId: number, data: any) => {
+    return prisma.user.update({
+      where: { id: userId },
+      data,
+    });
+  },
+
 };
 
 // ──────────────────────────────────────────────────────────────────────────────

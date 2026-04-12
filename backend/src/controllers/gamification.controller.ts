@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { ChallengeParticipant } from '@prisma/client';
 import { gamificationModel } from '../models/gamification.model';
+import { notificationService } from '../services/notification.service';
 import prisma from '../config/prisma';
 
 export class GamificationController {
@@ -306,6 +307,15 @@ export class GamificationController {
                 await gamificationModel.updateStreakData(userId, {
                     totalPoints: streak.totalPoints + 50,
                 });
+            }
+
+            // Push Notification to the opponent
+            const opponent = challenge.participants.find((p: ChallengeParticipant) => p.userId !== userId);
+            if (opponent) {
+                const winnerInfo = await prisma.user.findUnique({ where: { id: userId }});
+                if (winnerInfo) {
+                    await notificationService.sendPushNotification(opponent.userId, "Meydan Okuma Bitti!", `${winnerInfo.username} senin de içinde olduğun "${challenge.title}" meydan okumasını kazandı!`);
+                }
             }
 
             res.status(200).json({ success: true, message: 'Reward claimed! Badge earned & +50 bonus points added.' });

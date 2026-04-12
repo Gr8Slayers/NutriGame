@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { socialModel } from '../models/social.model';
+import { notificationService } from '../services/notification.service';
+import prisma from '../config/prisma';
 
 export class SocialController {
 
@@ -144,6 +146,13 @@ export class SocialController {
             }
 
             await socialModel.followUser(followerId, followingId);
+            
+            // Push Notification
+            const followerInfo = await prisma.user.findUnique({ where: { id: followerId }});
+            if (followerInfo) {
+                await notificationService.sendPushNotification(followingId, "Yeni Takipçi!", `${followerInfo.username} seni takip etmeye başladı.`);
+            }
+
             return res.status(200).json({ success: true, message: 'Kullanıcı takip edildi.' });
 
         } catch (err) {

@@ -26,7 +26,20 @@
       "favicon": "./assets/logo.png"
     },
     "plugins": [
-      "expo-secure-store"
-    ]
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/logo.png",
+          "color": "#FBE577"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "6a01f1fa-c06f-4db3-93f0-738220760b60"
+      }
+    },
+    "owner": "duygutumer2"
   }
 }

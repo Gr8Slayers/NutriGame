@@ -4,6 +4,8 @@ import { Provider as PaperProvider, MD3DarkTheme as DefaultTheme } from 'react-n
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as SecureStore from 'expo-secure-store';
 import { View, ActivityIndicator } from 'react-native';
+import { usePushNotifications } from './hooks/usePushNotifications';
+import { IP_ADDRESS } from '@env';
 
 // Ekranlar
 import Login from './screens/Login';
@@ -27,6 +29,7 @@ import ChallengeProgress from './screens/ChallengeProgress';
 import WeeklySummary from './screens/WeeklySummary';
 import DailyWeight from './screens/DailyWeight';
 import UserProfile from './screens/UserProfile';
+import Notifications from './screens/Notifications';
 import { UserProfile as UserProfileType, UpdatedMealParams } from './types';
 
 // Navigation tipi
@@ -71,6 +74,7 @@ export type RootStackParamList = {
   ChallengeProgress: { challengeId: string };
   UserProfile: { userId: string };
   DailyWeight: undefined;
+  Notifications: undefined;
 
 };
 
@@ -94,6 +98,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { expoPushToken } = usePushNotifications();
 
   useEffect(() => {
     const checkAuthentication = async () => {
@@ -118,6 +123,30 @@ export default function App() {
     };
     checkAuthentication();
   }, []);
+
+  useEffect(() => {
+    const registerPushToken = async () => {
+      if (isAuthenticated && expoPushToken) {
+        try {
+          const userToken = await SecureStore.getItemAsync('userToken');
+          if (!userToken) return;
+          
+          await fetch(`http://${IP_ADDRESS}:3000/api/user/push-token`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${userToken}`,
+            },
+            body: JSON.stringify({ expoPushToken: expoPushToken.data }),
+          });
+        } catch (error) {
+          console.error('[App] Failed to register push token with backend:', error);
+        }
+      }
+    };
+
+    registerPushToken();
+  }, [isAuthenticated, expoPushToken]);
 
   if (isLoading) {
     return (
@@ -151,6 +180,7 @@ export default function App() {
               <Stack.Screen name="CreateChallenge" component={CreateChallenge} />
               <Stack.Screen name="ChallengeProgress" component={ChallengeProgress} />
               <Stack.Screen name="UserProfile" component={UserProfile} />
+              <Stack.Screen name="Notifications" component={Notifications} />
             </>
           ) : (
 
@@ -176,6 +206,7 @@ export default function App() {
               <Stack.Screen name="CreateChallenge" component={CreateChallenge} />
               <Stack.Screen name="ChallengeProgress" component={ChallengeProgress} />
               <Stack.Screen name="UserProfile" component={UserProfile} />
+              <Stack.Screen name="Notifications" component={Notifications} />
             </>
           )}
         </Stack.Navigator>
