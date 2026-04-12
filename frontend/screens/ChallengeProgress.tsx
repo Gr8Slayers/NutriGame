@@ -24,6 +24,7 @@ interface State {
   dayHistory: DayHistoryItem[];
   isCompleted: boolean;
   isLoading: boolean;
+  currentUserId: string | null;
 }
 
 class ChallengeProgress extends React.Component<Props, State> {
@@ -35,13 +36,16 @@ class ChallengeProgress extends React.Component<Props, State> {
       todayCurrent: 0,
       dayHistory: [],
       isCompleted: false,
-      isLoading: true
+      isLoading: true,
+      currentUserId: null
     };
   }
 
   private focusUnsubscribe: any;
 
-  componentDidMount() {
+  async componentDidMount() {
+    const userId = await SecureStore.getItemAsync('userId');
+    this.setState({ currentUserId: userId });
     this.fetchProgress();
     // Ekran her odağa geldiğinde verileri yenile (örn. geri gelindiğinde)
     this.focusUnsubscribe = this.props.navigation.addListener('focus', () => {
@@ -108,6 +112,44 @@ class ChallengeProgress extends React.Component<Props, State> {
     }
   }
 
+  private deleteChallenge = async (): Promise<void> => {
+    const { challengeId } = this.props.route.params;
+
+    Alert.alert(
+      'Remove Challenge',
+      'Are you sure you want to remove this challenge? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const token = await SecureStore.getItemAsync('userToken');
+              const response = await fetch(`${API_URL}/gamification/challenge/${challengeId}`, {
+                method: 'DELETE',
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                }
+              });
+              const res = await response.json();
+
+              if (res.success) {
+                Alert.alert('Başarılı', 'Meydan okuma silindi.');
+                this.props.navigation.goBack();
+              } else {
+                Alert.alert('Hata', res.message || 'Silme işlemi başarısız oldu.');
+              }
+            } catch (e) {
+              console.error(e);
+              Alert.alert('Hata', 'Sunucuya bağlanılamadı.');
+            }
+          }
+        }
+      ]
+    );
+  }
+
   private formatDateRange = (start: string, end: string) => {
     const months = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
     const s = new Date(start);
@@ -116,7 +158,7 @@ class ChallengeProgress extends React.Component<Props, State> {
   }
 
   render() {
-    const { challengeData, currentProgress, todayCurrent, dayHistory, isCompleted, isLoading } = this.state;
+    const { challengeData, currentProgress, todayCurrent, dayHistory, isCompleted, isLoading, currentUserId } = this.state;
 
     if (isLoading) {
       return (
@@ -139,7 +181,11 @@ class ChallengeProgress extends React.Component<Props, State> {
             <Ionicons name="close" size={28} color="#FFFFFF" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Challenge Progress</Text>
-
+          {challengeData && currentUserId === String(challengeData.creatorId) && (
+            <TouchableOpacity onPress={this.deleteChallenge}>
+              <Ionicons name="trash-outline" size={24} color="#FF6B6B" />
+            </TouchableOpacity>
+          )}
         </View>
 
         <ScrollView contentContainerStyle={styles.content}>
@@ -249,7 +295,7 @@ class ChallengeProgress extends React.Component<Props, State> {
           <View style={{ marginTop: 20 }}>
             <Text style={[styles.sectionLabel, { marginBottom: 8 }]}>Description</Text>
             <Text style={{ color: '#CCCCCC', fontSize: 14, lineHeight: 22 }}>
-              {challengeData.description || 'Bu meydan okuma için bir açıklama bulunmuyor.'}
+              {challengeData.description || 'There is no description for this challenge.'}
             </Text>
           </View>
         </ScrollView>

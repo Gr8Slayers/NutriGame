@@ -10,6 +10,7 @@ router.get('/streak', authMiddleware, (req, res) => gamificationController.getSt
 
 // Challenge CRUD
 router.post('/challenge/create', authMiddleware, (req, res) => gamificationController.createChallenge(req, res));
+router.delete('/challenge/:id', authMiddleware, (req, res) => gamificationController.deleteChallenge(req, res));
 router.get('/challenges', authMiddleware, (req, res) => gamificationController.getChallenges(req, res));
 router.get('/challenge/progress', authMiddleware, (req, res) => gamificationController.getChallengeProgress(req, res));
 router.post('/challenge/complete', authMiddleware, (req, res) => gamificationController.completeChallenge(req, res));

@@ -89,6 +89,29 @@ export class GamificationModel {
         });
     }
 
+    public async deleteChallenge(challengeId: number, userId: number): Promise<{ success: boolean; message: string }> {
+        const challenge = await this.getChallengeById(challengeId);
+        
+        if (!challenge) {
+            return { success: false, message: 'Challenge not found' };
+        }
+
+        if (challenge.creatorId !== userId) {
+            return { success: false, message: 'Only the creator can delete this challenge' };
+        }
+
+        // Delete associated records first (Prisma cascaded delete might handle this if configured in schema, but manual delete is safer here)
+        await prisma.challengeParticipant.deleteMany({
+            where: { challengeId }
+        });
+
+        await prisma.challenge.delete({
+            where: { id: challengeId }
+        });
+
+        return { success: true, message: 'Challenge deleted successfully' };
+    }
+
     public async getUserActiveChallenges(userId: number) {
         return await prisma.challenge.findMany({
             where: {
@@ -406,13 +429,27 @@ export class GamificationModel {
 
         const level = Math.min(calculatedLevel, 3);
         if (level > 0) {
-            const badgeName = `${folder.charAt(0).toUpperCase() + folder.slice(1)} Level ${level}`;
+            let badgeName = '';
+            if (folder === 'water') {
+                if (level === 1) badgeName = 'First Drop';
+                else if (level === 2) badgeName = 'Oasis Explorer';
+                else badgeName = 'Hydration Master';
+            } else if (folder === 'sugar') {
+                if (level === 1) badgeName = 'Bitter Truth';
+                else if (level === 2) badgeName = 'Sugar Detox';
+                else badgeName = 'Sweet-proof';
+            } else { // move, calorie, step
+                if (level === 1) badgeName = 'First Step';
+                else if (level === 2) badgeName = 'Fitness Addict';
+                else badgeName = 'Marathon Spirit';
+            }
+
             const iconName = `${folder}_${level}`;
 
             // Badge'i veritabanında bul veya oluştur (upsert)
             const badge = await prisma.badge.upsert({
                 where: { name: badgeName },
-                update: {},
+                update: { iconName },
                 create: {
                     name: badgeName,
                     description: `${challengeType} kategorisinde ${level}. seviye başarısı!`,
@@ -428,50 +465,6 @@ export class GamificationModel {
             });
         }
 
-        // Özel Rozet: 10 Günlük Kalori Serisi (Calorie Streak)
-        if (challengeType === 'calorie') {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const tenDaysAgo = new Date(today);
-            tenDaysAgo.setDate(today.getDate() - 10);
-
-            const logCount = await prisma.mealTotals.count({
-                where: {
-                    userId,
-                    meal_category: 'OVERALL',
-                    t_calorie: { gt: 0 },
-                    date: { gte: tenDaysAgo }
-                }
-            });
-
-            if (logCount >= 10) {
-                const streakBadge = await prisma.badge.upsert({
-                    where: { name: 'Calorie Streak Master' },
-                    update: {},
-                    create: {
-                        name: 'Calorie Streak Master',
-                        description: '10 gün boyunca kalori takibi yapma başarısı!',
-                        iconName: 'flame',
-                    },
-                });
-
-                await prisma.userBadge.upsert({
-                    where: { userId_badgeId: { userId, badgeId: streakBadge.id } },
-                    update: {},
-                    create: { userId, badgeId: streakBadge.id },
-                });
-            }
-        }
-
-        // Genel "Challenge Victor" rozetini de opsiyonel olarak hala verebiliriz
-        const victorBadge = await prisma.badge.findUnique({ where: { name: 'Challenge Victor' } });
-        if (victorBadge) {
-            await prisma.userBadge.upsert({
-                where: { userId_badgeId: { userId, badgeId: victorBadge.id } },
-                update: {},
-                create: { userId, badgeId: victorBadge.id },
-            });
-        }
     }
 
     /**
@@ -488,7 +481,11 @@ export class GamificationModel {
         }
 
         if (level > 0) {
-            const badgeName = `Streak Level ${level}`;
+            let badgeName = '';
+            if (level === 1) badgeName = "Iron Will";
+            else if (level === 2) badgeName = "Steel Dicipline";
+            else if (level === 3) badgeName = "Diamond Focus";
+
             const iconName = `streak_${level}`; // streak_1, streak_2, streak_3
 
             const badge = await prisma.badge.upsert({

@@ -8,7 +8,6 @@ const DEFAULT_BADGES = [
     { name: 'Calorie Champion', description: 'Won a calorie challenge', iconName: 'flame' },
     { name: 'Sugar Crusher', description: 'Won a sugar challenge', iconName: 'nutrition' },
     { name: 'Step Master', description: 'Won a step challenge', iconName: 'walk' },
-    { name: 'Challenge Victor', description: 'Won a challenge', iconName: 'trophy' },
 ];
 
 async function seedBadges() {

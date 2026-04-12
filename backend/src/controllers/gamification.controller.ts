@@ -142,6 +142,34 @@ export class GamificationController {
         }
     }
 
+    public async deleteChallenge(req: Request, res: Response): Promise<void> {
+        try {
+            const userId = (req as any).user?.id;
+            if (!userId) {
+                res.status(401).json({ success: false, message: 'Unauthorized' });
+                return;
+            }
+
+            const challengeId = Number(req.params.id);
+            if (!challengeId || isNaN(challengeId)) {
+                res.status(400).json({ success: false, message: 'Valid challengeId is required' });
+                return;
+            }
+
+            const result = await gamificationModel.deleteChallenge(challengeId, Number(userId));
+
+            if (!result.success) {
+                res.status(403).json(result);
+                return;
+            }
+
+            res.status(200).json(result);
+        } catch (error) {
+            console.error('Error in deleteChallenge:', error);
+            res.status(500).json({ success: false, message: 'Internal server error' });
+        }
+    }
+
     public async getChallenges(req: Request, res: Response): Promise<void> {
         try {
             const userId = Number((req as any).user?.id);
