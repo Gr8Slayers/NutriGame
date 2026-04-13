@@ -14,7 +14,7 @@ export const startCronJobs = () => {
             // Calculate the date 5 days and 1 day from now
             const inFiveDays = new Date(today);
             inFiveDays.setDate(inFiveDays.getDate() + 5);
-            
+
             const inOneDay = new Date(today);
             inOneDay.setDate(inOneDay.getDate() + 1);
 
@@ -35,8 +35,8 @@ export const startCronJobs = () => {
                     for (const participant of challenge.participants) {
                         await notificationService.sendPushNotification(
                             participant.userId,
-                            "Meydan Okuma Bitiyor!",
-                            `"${challenge.title}" adlı meydan okumanızın bitmesine sadece ${daysLeft} gün kaldı. Acele edin!`
+                            "Challenge is ending!",
+                            `"${challenge.title}" challenge will end in ${daysLeft} days. Hurry up!`
                         );
                     }
                 }

@@ -147,10 +147,10 @@ class ChallengeProgress extends React.Component<Props, State> {
               const res = await response.json();
 
               if (res.success) {
-                Alert.alert('Başarılı', 'Meydan okuma silindi.');
+                Alert.alert('Success!', 'Challenge removed successfully.');
                 this.props.navigation.goBack();
               } else {
-                Alert.alert('Hata', res.message || 'Silme işlemi başarısız oldu.');
+                Alert.alert('Error', res.message || 'Failed to remove challenge.');
               }
             } catch (e) {
               console.error(e);
