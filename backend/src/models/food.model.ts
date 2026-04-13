@@ -50,10 +50,11 @@ export const foodModel = {
     // meal sildikten sonra totaller 0 olursa bu rowu temizlemek ileride yapilabilir suan karistirmak istemedim zor degil aslinda
     deleteFoodFromMealLog: async (user_id: number, meal_log_id: number) => {
         return await prisma.$transaction(async (tx) => {
-            // bu meal_log_id ye sahip bir log var mi kontrol ediliyor
-            const fetched_meal_log = await tx.mealLog.findUnique({
+            // bu meal_log_id ye sahip bir log var mi ve bu kullaniciya ait mi kontrol ediliyor
+            const fetched_meal_log = await tx.mealLog.findFirst({
                 where: {
-                    meal_log_id: meal_log_id
+                    meal_log_id: meal_log_id,
+                    userId: user_id  // ← sahiplik kontrolü eklendi
                 }
             });
             if (!fetched_meal_log) {
@@ -107,6 +108,7 @@ export const foodModel = {
     getMealLogByDate: async (userId: number, date: Date, meal_category: string) => {
         return await prisma.mealLog.findMany({
             where: {
+                userId: userId, // ← kullanıcıya ait kayıtlar filtreleniyor
                 date: date,
                 meal_category: {
                     equals: meal_category,

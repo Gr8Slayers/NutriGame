@@ -91,7 +91,7 @@ export class GamificationModel {
 
     public async deleteChallenge(challengeId: number, userId: number): Promise<{ success: boolean; message: string }> {
         const challenge = await this.getChallengeById(challengeId);
-        
+
         if (!challenge) {
             return { success: false, message: 'Challenge not found' };
         }
@@ -452,7 +452,7 @@ export class GamificationModel {
                 update: { iconName },
                 create: {
                     name: badgeName,
-                    description: `${challengeType} kategorisinde ${level}. seviye başarısı!`,
+                    description: `${challengeType} category ${level}. level success!`,
                     iconName: iconName,
                 },
             });
