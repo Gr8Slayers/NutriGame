@@ -1,10 +1,12 @@
 import { Request, Response } from 'express';
 import prisma from '../config/prisma';
+import { foodModel } from '../models/food.model';
 import { foodRecognitionModel } from '../models/foodrecognition.model';
+import { foodService } from '../services/food.service';
+import { FOOD_MAPPING } from '../data/food-mapping';
 
 // Constants for constraints
 const AI_TIMEOUT_MS = 120000;
-const DETECTION_API_URL = 'https://nutrigame.onrender.com/predict';
 
 // ─── Yardımcı Sınıflar (Güvenlik ve Performans) ──────────────────────────────
 
@@ -186,9 +188,22 @@ export class FoodRecognitionController {
                 imageUrl: imageUrl
             });
 
+            // 4. Veritabanında Eşleşme Ara (Dili ve Mapping'i kontrol et)
+            const detectionsWithMatches = await Promise.all((result.detections || []).map(async (det: any) => {
+                const foodName = det.class_name || det.class || 'Unknown';
+                // Servis üzerinden arama yap (Yerel DB -> OFF API -> Fallback)
+                const searchResult = await foodService.searchAcrossAllSources(foodName);
+
+                return {
+                    ...det,
+                    class: foodName,
+                    dbMatches: searchResult.data
+                };
+            }));
+
             return res.status(200).json({
                 success: true,
-                detections: result.detections,
+                detections: detectionsWithMatches,
                 photoRecord: savedPhoto,
                 totalCalories: result.totalCalories,
                 annotated_image: result.annotated_image?.url || null,
@@ -277,10 +292,22 @@ export class FoodRecognitionController {
                         }
                     });
 
+                    // Eşleşen gıdaları bul (Servis üzerinden)
+                    const detectionsWithMatches = await Promise.all((result.detections || []).map(async (det: any) => {
+                        const foodName = det.class_name || det.class || 'Unknown Item';
+                        const searchResult = await foodService.searchAcrossAllSources(foodName);
+
+                        return {
+                            class: foodName,
+                            confidence: det.confidence,
+                            dbMatches: searchResult.data
+                        };
+                    }));
+
                     return {
                         filename: file.originalname,
                         success: true,
-                        detections: result.detections
+                        detections: detectionsWithMatches
                     };
                 } catch (error: any) {
                     return {

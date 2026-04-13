@@ -42,6 +42,19 @@ export const startCronJobs = () => {
                 }
             }
 
+            // Süresi dolmuş (deadline'ı geçmiş) tüm meydan okumaları tamamen sil
+            const deletionResult = await prisma.challenge.deleteMany({
+                where: {
+                    endDate: {
+                        lt: today
+                    }
+                }
+            });
+
+            if (deletionResult.count > 0) {
+                console.log(`[Cron] ${deletionResult.count} expired challenges were deleted.`);
+            }
+
             console.log('[Cron] Expiring challenges check completed.');
         } catch (error) {
             console.error('[Cron] Error running expiring challenges job:', error);

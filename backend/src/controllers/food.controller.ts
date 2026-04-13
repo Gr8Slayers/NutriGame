@@ -2,9 +2,8 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { foodModel } from '../models/food.model';
-import axios from 'axios';
+import { foodService } from '../services/food.service';
 import prisma from '../config/prisma';
-import { FALLBACK_FOODS } from '../data/fallback-foods';
 
 // ─── Sabitler ──────────────────────────────────────────────
 const OFF_TIMEOUT_MS = 3000;   // Open Food Facts API timeout: 3 saniye
@@ -13,10 +12,6 @@ const CACHE_TTL_DAYS = 7;      // Önbellek ömrü: 7 gün
 
 export class FoodController {
 
-    // ════════════════════════════════════════════════════════
-    //  search_food  ─  Diyagramdaki ana akış
-    //  Uygulama → Önbellek → OFF API (retry) → Yedek Liste
-    // ════════════════════════════════════════════════════════
     search_food = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { food_name } = req.query as { food_name: string };
@@ -25,26 +20,9 @@ export class FoodController {
                 return res.status(400).json({ success: false, message: 'Food name is not provided.' });
             }
 
-            // 1. Local DB search (paralel çalışacak)
-            const localFoodsPromise = foodModel.searchFoodByName(food_name).catch((err) => {
-                console.error('[Search] Local DB error:', err.message);
-                return [];
-            });
+            const searchResult = await foodService.searchAcrossAllSources(food_name);
 
-            // 2. Önbellek + OFF API + Yedek zinciri (paralel çalışacak)
-            const offFoodsPromise = this.getOffFoodsWithCache(food_name);
-
-            const [localFoods, offResult] = await Promise.all([localFoodsPromise, offFoodsPromise]);
-
-            console.log(`[Search] Local DB: ${localFoods?.length || 0} | OFF (${offResult.source}): ${offResult.data.length}`);
-
-            // Local sonuçlara source ekle
-            const localResults = (localFoods || []).map((f: any) => ({ ...f, source: 'local' }));
-
-            // Birleştir: önce local, sonra OFF
-            const combined = [...localResults, ...offResult.data];
-
-            if (combined.length === 0) {
+            if (searchResult.data.length === 0) {
                 return res.status(404).json({
                     success: false, message: 'No food items found matching that name.'
                 });
@@ -52,8 +30,8 @@ export class FoodController {
 
             return res.status(200).json({
                 success: true,
-                message: `${combined.length} items found (${localResults.length} local, ${offResult.data.length} from ${offResult.source}).`,
-                data: combined
+                message: `${searchResult.data.length} items found from ${searchResult.source}.`,
+                data: searchResult.data
             });
 
         } catch (err) {
@@ -61,186 +39,6 @@ export class FoodController {
         }
     }
 
-    // ════════════════════════════════════════════════════════
-    //  KATMAN 1: Önbellek Kontrolü (DB tablosu, TTL 7 gün)
-    // ════════════════════════════════════════════════════════
-    private async getOffFoodsWithCache(query: string): Promise<{ data: any[], source: string }> {
-        const cacheKey = query.toLowerCase().trim();
-
-        try {
-            // Cache HIT kontrolü
-            const cached = await prisma.foodSearchCache.findUnique({
-                where: { query: cacheKey }
-            });
-
-            if (cached) {
-                const ageMs = Date.now() - cached.createdAt.getTime();
-                const ttlMs = CACHE_TTL_DAYS * 24 * 60 * 60 * 1000;
-
-                if (ageMs < ttlMs) {
-                    // Cache HIT → direkt dön
-                    console.log(`[Cache] HIT for "${cacheKey}" (age: ${Math.round(ageMs / 3600000)}h)`);
-                    return { data: JSON.parse(cached.results), source: 'cache' };
-                } else {
-                    // Cache süresi dolmuş → sil
-                    console.log(`[Cache] EXPIRED for "${cacheKey}", fetching fresh...`);
-                    await prisma.foodSearchCache.delete({ where: { query: cacheKey } }).catch(() => {});
-                }
-            }
-        } catch (err: any) {
-            console.error('[Cache] DB read error:', err.message);
-        }
-
-        // Cache MISS → OFF API'den çek
-        const offResult = await this.searchOpenFoodFactsWithRetry(query);
-
-        // Başarılı sonuç geldiyse cache'e kaydet
-        if (offResult.source === 'api' && offResult.data.length > 0) {
-            try {
-                await prisma.foodSearchCache.upsert({
-                    where: { query: cacheKey },
-                    update: { results: JSON.stringify(offResult.data), createdAt: new Date() },
-                    create: { query: cacheKey, results: JSON.stringify(offResult.data) }
-                });
-                console.log(`[Cache] SAVED "${cacheKey}" (${offResult.data.length} items)`);
-            } catch (err: any) {
-                console.error('[Cache] DB write error:', err.message);
-            }
-        }
-
-        return offResult;
-    }
-
-    // ════════════════════════════════════════════════════════
-    //  KATMAN 2: OFF API  (Retry: 3 deneme, Timeout: 3sn)
-    // ════════════════════════════════════════════════════════
-    private async searchOpenFoodFactsWithRetry(query: string): Promise<{ data: any[], source: string }> {
-        for (let attempt = 1; attempt <= OFF_MAX_RETRIES; attempt++) {
-            try {
-                console.log(`[OFF API] Attempt ${attempt}/${OFF_MAX_RETRIES} for "${query}"...`);
-
-                const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=10&fields=product_name,nutriments,serving_size`;
-                const response = await axios.get(url, {
-                    timeout: OFF_TIMEOUT_MS,
-                    headers: { 'User-Agent': 'NutriGame/1.0 (https://github.com/Gr8Slayers/NutriGame)' }
-                });
-
-                const products = response.data.products || [];
-
-                const mapped = products
-                    .filter((p: any) => p.product_name && p.nutriments && p.nutriments['energy-kcal_100g'] !== undefined)
-                    .map((p: any) => ({
-                        food_id: null,
-                        food_name: this.cleanFoodName(p.product_name),
-                        p_unit: 'g',
-                        p_amount: 100,
-                        p_calorie: Math.round(p.nutriments['energy-kcal_100g'] || 0),
-                        p_protein: Math.round((p.nutriments['proteins_100g'] || 0) * 10) / 10,
-                        p_fat: Math.round((p.nutriments['fat_100g'] || 0) * 10) / 10,
-                        p_carb: Math.round((p.nutriments['carbohydrates_100g'] || 0) * 10) / 10,
-                        source: 'off'
-                    }))
-                    .filter((item: any) =>
-                        item.food_name.length >= 2 &&          // çok kısa isimler
-                        item.food_name.length <= 80 &&         // çok uzun isimler
-                        item.p_calorie > 0 &&                  // 0 kalori
-                        item.p_calorie <= 900                  // gerçek dışı kalori (100g başına)
-                    );
-
-                console.log(`[OFF API] Success! ${mapped.length} items found.`);
-                return { data: mapped, source: 'api' };
-
-            } catch (err: any) {
-                const status = err.response?.status;
-                console.error(`[OFF API] Attempt ${attempt} failed: ${status || err.message}`);
-
-                // 503 hatası → yedek listeye düş (tekrar deneme)
-                if (status === 503) {
-                    console.log(`[OFF API] 503 detected → falling back to static list.`);
-                    return this.searchFallbackFoods(query);
-                }
-
-                // Son deneme değilse biraz bekle ve tekrar dene
-                if (attempt < OFF_MAX_RETRIES) {
-                    await new Promise(r => setTimeout(r, 500 * attempt));
-                }
-            }
-        }
-
-        // Tüm denemeler başarısız → yedek listeye düş
-        console.log(`[OFF API] All ${OFF_MAX_RETRIES} attempts failed → fallback.`);
-        return this.searchFallbackFoods(query);
-    }
-
-    // ════════════════════════════════════════════════════════
-    //  KATMAN 3: Yedek Liste (503 durumu, ~140 popüler yiyecek)
-    // ════════════════════════════════════════════════════════
-    private searchFallbackFoods(query: string): { data: any[], source: string } {
-        const q = query.toLowerCase().trim();
-
-        const matched = FALLBACK_FOODS
-            .filter(f => f.food_name.toLowerCase().includes(q))
-            .map(f => ({ ...f, food_id: null, source: 'fallback' }));
-
-        console.log(`[Fallback] "${query}" → ${matched.length} items from static list.`);
-        return { data: matched, source: 'fallback' };
-    }
-
-    // ════════════════════════════════════════════════════════
-    //  Yemek ismi temizleme (OFF API verileri genelde kirli gelir)
-    // ════════════════════════════════════════════════════════
-    private cleanFoodName(rawName: string): string {
-        let name = rawName.trim();
-
-        // Emoji ve özel sembolleri kaldır (★, ®, ™, ©, vb.)
-        name = name.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '');
-        name = name.replace(/[®™©★☆♥♡●•◆▪▲►]/g, '');
-
-        // HTML entities temizle
-        name = name.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#\d+;/g, '');
-
-        // Parantez/köşeli parantez içindeki marka/kod bilgilerini kaldır
-        // Örn: "Yumurta (Migros Brand)" → "Yumurta"
-        name = name.replace(/\s*\([^)]*\)\s*/g, ' ');
-        name = name.replace(/\s*\[[^\]]*\]\s*/g, ' ');
-
-        // Tire ile ayrılmış marka prefix'ini kaldır (ilk kısım 3 kelimeden kısaysa)
-        // Örn: "Migros - Haşlanmış Yumurta" → "Haşlanmış Yumurta"
-        const dashParts = name.split(/\s*[-–—]\s*/);
-        if (dashParts.length >= 2) {
-            const prefix = dashParts[0].trim();
-            // Prefix 3 kelimeden az ve tamamen büyük harfle başlıyorsa marka olabilir
-            if (prefix.split(/\s+/).length <= 2 && prefix.length <= 20) {
-                name = dashParts.slice(1).join(' - ');
-            }
-        }
-
-        // Sondaki gramaj/oran bilgilerini kaldır: "Yumurta 1/2", "Peynir 200g"
-        name = name.replace(/\s+\d+\/\d+\s*$/, '');
-        name = name.replace(/\s+\d+\s*(g|kg|ml|l|oz|cl)\s*$/i, '');
-
-        // Sondaki virgül/nokta/tire temizle
-        name = name.replace(/[,.\-–—:;]+\s*$/, '');
-
-        // Çoklu boşlukları teke indir
-        name = name.replace(/\s{2,}/g, ' ').trim();
-
-        // Title Case: her kelimenin ilk harfi büyük (2 harften kısa kelimeleri atla)
-        name = name
-            .split(' ')
-            .map(word => {
-                if (word.length <= 2) return word.toLowerCase();
-                return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-            })
-            .join(' ');
-
-        // İlk harf her zaman büyük
-        if (name.length > 0) {
-            name = name.charAt(0).toUpperCase() + name.slice(1);
-        }
-
-        return name;
-    }
 
     async add_to_meal(req: Request, res: Response, next: NextFunction) {
         try {

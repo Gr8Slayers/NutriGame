@@ -332,7 +332,7 @@ export class GamificationController {
 
             await gamificationModel.claimReward(id, userId);
 
-            // Badge ödüllendir (challenge tipine göre)
+            // Badge ödül (challenge tipine göre)
             const earnedBadge = await gamificationModel.awardBadge(userId, challenge.type);
 
             // Streak'e bonus puan ekle
@@ -342,6 +342,11 @@ export class GamificationController {
                     totalPoints: streak.totalPoints + 50,
                 });
             }
+
+            // MEYDAN OKUMA TAMAMLANDI - VERİTABANINDAN SİL
+            await prisma.challenge.delete({
+                where: { id }
+            });
 
             // Push Notification to the opponent
             const opponent = challenge.participants.find((p: ChallengeParticipant) => p.userId !== userId);
@@ -354,7 +359,7 @@ export class GamificationController {
 
             res.status(200).json({
                 success: true,
-                message: 'Reward claimed! Badge earned & +50 bonus points added.',
+                message: 'Reward claimed! Badge earned & +50 bonus points added. Challenge deleted.',
                 earnedBadge
             });
         } catch (error) {
