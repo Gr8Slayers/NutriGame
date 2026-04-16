@@ -37,9 +37,6 @@ export default function AddMeal({ route, navigation }: Props) {
     if (!baseAmount || baseAmount === 0) return 0;
     return Math.round((baseCalories * selectedAmount) / baseAmount);
   };
-  const slideAnim = useRef(new Animated.Value(-300)).current;
-
-
   const { selectedDate, type } = route.params;
   const [searchText, setSearchText] = useState('');
   const [portionModalVisibility, setportionModalVisible] = useState(false);
@@ -402,12 +399,7 @@ export default function AddMeal({ route, navigation }: Props) {
               <Text style={styles.title}>{type}</Text>
               <Text style={styles.calenderSubtitle}>Today's Date: {selectedDate}</Text>
             </View>
-            <Animated.View
-              style={[
-                { transform: [{ translateY: slideAnim }], marginTop: 180 }
-              ]}
-            >
-
+            <View style={{ marginVertical: 20 }}>
               <CalorieCircle
                 key={selectedDate + type}
                 calories={savedCalories}
@@ -416,7 +408,7 @@ export default function AddMeal({ route, navigation }: Props) {
                 carb={savedCarb}
                 fat={savedFat}
               />
-            </Animated.View>
+            </View>
             <TouchableOpacity
               style={styles.showDetailButton}
               onPress={() => setModalVisible(true)}

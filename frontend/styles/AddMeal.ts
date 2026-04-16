@@ -4,7 +4,6 @@ const { height, width } = Dimensions.get('window');
 
 export default StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: '#473C33',
     paddingTop: 0,
   },
@@ -43,25 +42,18 @@ export default StyleSheet.create({
     zIndex: 20,
   },
   mainChart: {
-    height: height * 0.55,
     width: '100%',
     backgroundColor: "#ABC270",
-
     borderBottomLeftRadius: width * 0.15,
     borderBottomRightRadius: width * 0.15,
-
     alignItems: "center",
-    justifyContent: 'center',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : height * 0.4,
-
-    zIndex: 5,
+    paddingTop: 20,
+    paddingBottom: 24,
     elevation: 10,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.3,
     shadowRadius: 5,
-
-    position: 'relative',
   },
   scrollContent: {
     flexGrow: 1,
@@ -69,13 +61,9 @@ export default StyleSheet.create({
     paddingBottom: 100,
   },
   headerContainer: {
-    position: 'absolute',
-    top: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 20 : 50,
     width: '100%',
     alignItems: 'center',
-    zIndex: 100,
-    elevation: 100,
-
+    marginBottom: 8,
   },
   title: {
     fontSize: 30,
@@ -213,17 +201,16 @@ export default StyleSheet.create({
 
 
   showDetailButton: {
-    position: 'absolute',
-    bottom: 20,
-    marginTop: 10,
+    marginTop: 16,
+    marginBottom: 8,
     flexDirection: 'row',
     alignItems: 'center',
+    alignSelf: 'center',
     backgroundColor: '#fc8500',
     paddingVertical: 8,
     paddingHorizontal: 15,
     borderRadius: 20,
     gap: 5,
-    zIndex: 10,
     elevation: 5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
