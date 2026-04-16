@@ -5,10 +5,8 @@
 import { Request, Response } from 'express';
 import {
   chat,
-  getChatHistory,
-  createNewSession,
   deleteSession,
-} from '../../ai_service/ai_service/src/chatbot/chatbotService';
+} from '../services/chatbot.service';
 import { chatbotModel } from '../models/chatbot.model';
 
 /**

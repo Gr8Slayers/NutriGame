@@ -16,6 +16,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.betulaydeger.nutrigame",
       "adaptiveIcon": {
         "foregroundImage": "./assets/logo.png",
         "backgroundColor": "#FBE577"
@@ -36,7 +37,10 @@
       ]
     ],
     "extra": {
-      "eas": {}
-    }
+      "eas": {
+        "projectId": "5f38ec40-fcf8-4c2d-bba6-1157950c1b8a"
+      }
+    },
+    "owner": "betulaydeger"
   }
 }

@@ -66,7 +66,17 @@ export class GamificationController {
             });
 
             // Yeni kural: Seri seviyelerini kontrol et ve rozet ver
-            await gamificationModel.checkAndAwardStreakBadge(userId, updatedStreak.currentStreak);
+            const streakMilestones = [10, 20, 30];
+            if (streakMilestones.includes(updatedStreak.currentStreak)) {
+                await gamificationModel.checkAndAwardStreakBadge(userId, updatedStreak.currentStreak);
+                await notificationService.sendPushNotification(
+                    userId,
+                    "Streak Badge Earned! 🔥",
+                    `Amazing! You've reached a ${updatedStreak.currentStreak}-day streak and earned a new badge!`
+                );
+            } else {
+                await gamificationModel.checkAndAwardStreakBadge(userId, updatedStreak.currentStreak);
+            }
 
             res.status(200).json({ success: true, data: updatedStreak });
         } catch (error) {
@@ -134,6 +144,18 @@ export class GamificationController {
             }
 
             const challenge = await gamificationModel.createChallenge(creatorId, title, type, end, userIds, description, goalValue ? Number(goalValue) : undefined);
+
+            // Notify invited users
+            if (userIds.length > 0) {
+                const creator = await prisma.user.findUnique({ where: { id: creatorId }, select: { username: true } });
+                for (const invitedUserId of userIds) {
+                    await notificationService.sendPushNotification(
+                        invitedUserId,
+                        "You've been invited to a challenge!",
+                        `${creator?.username ?? 'Someone'} invited you to join "${title}". Accept or reject in the Challenges section.`
+                    );
+                }
+            }
 
             res.status(201).json({ success: true, data: challenge, message: 'Challenge created successfully' });
         } catch (error) {
@@ -334,6 +356,15 @@ export class GamificationController {
 
             // Badge ödül (challenge tipine göre)
             const earnedBadge = await gamificationModel.awardBadge(userId, challenge.type);
+
+            // Notify user about earned badge
+            if (earnedBadge) {
+                await notificationService.sendPushNotification(
+                    userId,
+                    "New Badge Earned! 🏅",
+                    `You earned the "${earnedBadge.name}" badge for completing the "${challenge.title}" challenge!`
+                );
+            }
 
             // Streak'e bonus puan ekle
             const streak = await gamificationModel.getStreakByUserId(userId);

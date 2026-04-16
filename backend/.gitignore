@@ -5,6 +5,9 @@ dist/
 build/
 *.js
 *.js.map
+!ai_service/ai_service/src/chatbot/chatbotService.js
+!ai_service/ai_service/src/chatbot/privacyUtils.js
+!ai_service/ai_service/src/object_detection/huggingface/hf-gradio-api.js
 .log
 npm-debug.log
 target/

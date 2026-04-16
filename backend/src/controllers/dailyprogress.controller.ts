@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { dailyProgressModel } from '../models/dailyprogress.model';
+import { notificationService } from '../services/notification.service';
 
 export class DailyProgressController {
     async upsert_progress(req: Request, res: Response, next: NextFunction) {
@@ -39,6 +40,15 @@ export class DailyProgressController {
                 goalAchieved,
                 movement: movement !== undefined ? parseInt(movement) : undefined,
             });
+
+            // Notify user when daily goal is achieved
+            if (goalAchieved === true) {
+                await notificationService.sendPushNotification(
+                    user_id,
+                    "Daily Goal Achieved! 🎉",
+                    "You've hit your calorie goal for today. Keep up the great work!"
+                );
+            }
 
             return res.status(200).json({ success: true, message: 'Daily progress updated.', data: updated });
         } catch (err) {
