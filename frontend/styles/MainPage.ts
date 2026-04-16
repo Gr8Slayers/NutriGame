@@ -13,7 +13,7 @@ export default StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: 50,
+    paddingTop: Platform.OS === 'ios' ? 50 : 20,
     paddingBottom: 20,
     backgroundColor: '#ABC270',
     shadowColor: "#000",
@@ -28,11 +28,9 @@ export default StyleSheet.create({
   },
   menuButton: {
     position: 'absolute',
-    right: 10,
-    top: Platform.OS === 'ios' ? 30 : 20,
-    marginLeft: 'auto',
+    right: 20,
+    top: Platform.OS === 'ios' ? 50 : 20,
     zIndex: 20,
-
   },
   headerTitle: {
     fontSize: 20,
@@ -51,7 +49,7 @@ export default StyleSheet.create({
 
     alignItems: "center",
     justifyContent: 'flex-end',
-    paddingTop: height * 0.05,
+    paddingTop: Platform.OS === 'android' ? height * 0.07 : height * 0.05,
     paddingBottom: 30,
 
     zIndex: 5,

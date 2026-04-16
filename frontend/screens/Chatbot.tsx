@@ -546,9 +546,9 @@ export default function Chatbot() {
                     </View>
 
                     <KeyboardAvoidingView
-                        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-                        style={{ flex: 1, }}
-                        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+                        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                        style={{ flex: 1 }}
+                        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
                     >
                         <GiftedChat
                             messages={messages}

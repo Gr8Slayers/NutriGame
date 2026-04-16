@@ -44,7 +44,7 @@ function CreateAvatar({ navigation, route }: Props) {
     { src: require('../assets/avatars/av10.png'), path: '../assets/avatars/av10.png' },
     { src: require('../assets/avatars/av11.png'), path: '../assets/avatars/av11.png' },
     { src: require('../assets/avatars/avatar12.png'), path: '../assets/avatars/avatar12.png' },
-    { src: require('../assets/avatars/avatar13.png'), path: '../assets/avatars/avatar12.png' },
+    { src: require('../assets/avatars/avatar13.png'), path: '../assets/avatars/avatar13.png' },
     { src: require('../assets/avatars/avatar14.png'), path: '../assets/avatars/avatar14.png' },
     { src: require('../assets/avatars/avatar15.png'), path: '../assets/avatars/avatar15.png' },
     { src: require('../assets/avatars/avatar16.png'), path: '../assets/avatars/avatar16.png' },
