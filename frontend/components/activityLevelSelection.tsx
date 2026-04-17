@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Modal, StyleSheet } from 'react-native';
 import styles from '../styles/SignUpEnterData';
 import { Ionicons } from '@expo/vector-icons';
+import { useLanguage } from '../i18n/LanguageContext';
 
-const ACTIVITY_LEVELS = [
-    { label: 'Sedentary', description: 'Little or no exercise', icon: 'bed-outline' },
-    { label: 'Lightly Active', description: '1–3 days/week', icon: 'walk-outline' },
-    { label: 'Moderately Active', description: '3–5 days/week', icon: 'bicycle-outline' },
-    { label: 'Very Active', description: '6–7 days/week', icon: 'barbell-outline' },
-    { label: 'Extra Active', description: 'Intense daily exercise or physical job', icon: 'flash-outline' },
+const getActivityLevels = (t: any) => [
+    { label: t('activity_sedentary') || 'Sedentary', description: t('activity_sedentary_desc') || 'Little or no exercise', icon: 'bed-outline', value: 'Sedentary' },
+    { label: t('activity_light') || 'Lightly Active', description: t('activity_light_desc') || '1–3 days/week', icon: 'walk-outline', value: 'Lightly Active' },
+    { label: t('activity_moderate') || 'Moderately Active', description: t('activity_moderate_desc') || '3–5 days/week', icon: 'bicycle-outline', value: 'Moderately Active' },
+    { label: t('activity_very') || 'Very Active', description: t('activity_very_desc') || '6–7 days/week', icon: 'barbell-outline', value: 'Very Active' },
+    { label: t('activity_extra') || 'Extra Active', description: t('activity_extra_desc') || 'Intense daily exercise or physical job', icon: 'flash-outline', value: 'Extra Active' },
 ];
 
 interface ActivityDropdownProps {
@@ -28,17 +29,21 @@ const ActivityLevelDropdown = ({
     labelStyle,
     containerStyle,
 }: ActivityDropdownProps) => {
+    const { t } = useLanguage();
     const [visible, setVisible] = useState(false);
+    const ACTIVITY_LEVELS = getActivityLevels(t);
 
     return (
         <View style={[styles.inputContainer, containerStyle]}>
-            <Text style={[styles.label, labelStyle]}>Activity Level *</Text>
+            <Text style={[styles.label, labelStyle]}>{t('activity_level') || 'Activity Level *'}</Text>
             <TouchableOpacity
                 style={[styles.goalButton, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, buttonStyle]}
                 onPress={() => setVisible(true)}
                 activeOpacity={0.7}
             >
-                <Text style={[styles.goalButtonText, buttonTextStyle]}>{value || 'Choose Your Activity Level'}</Text>
+                <Text style={[styles.goalButtonText, buttonTextStyle]}>{
+                    ACTIVITY_LEVELS.find(a => a.value === value)?.label || t('choose_activity') || 'Choose Your Activity Level'
+                }</Text>
             </TouchableOpacity>
 
             <Modal
@@ -53,16 +58,16 @@ const ActivityLevelDropdown = ({
                     onPress={() => setVisible(false)}
                 >
                     <TouchableOpacity activeOpacity={1} style={modal.sheet}>
-                        <Text style={modal.title}>How Active Are You?</Text>
+                        <Text style={modal.title}>{t('how_active') || 'How Active Are You?'}</Text>
 
                         {ACTIVITY_LEVELS.map((item, index) => {
-                            const isSelected = value === item.label;
+                            const isSelected = value === item.value;
                             const isLast = index === ACTIVITY_LEVELS.length - 1;
                             return (
                                 <TouchableOpacity
-                                    key={item.label}
+                                    key={item.value}
                                     activeOpacity={0.75}
-                                    onPress={() => { onChange(item.label); setVisible(false); }}
+                                    onPress={() => { onChange(item.value); setVisible(false); }}
                                     style={[
                                         modal.item,
                                         isSelected && modal.itemSelected,
@@ -94,7 +99,7 @@ const ActivityLevelDropdown = ({
                         })}
 
                         <TouchableOpacity style={modal.cancelButton} onPress={() => setVisible(false)}>
-                            <Text style={modal.cancelText}>Cancel</Text>
+                            <Text style={modal.cancelText}>{t('cancel') || 'Cancel'}</Text>
                         </TouchableOpacity>
                     </TouchableOpacity>
                 </TouchableOpacity>

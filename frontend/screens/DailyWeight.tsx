@@ -17,14 +17,6 @@ const API_URL = `http://${IP_ADDRESS}:3000`;
 
 type Props = NativeStackScreenProps<RootStackParamList, 'DailyWeight'>;
 
-const MOOD_OPTIONS = [
-    { label: 'Terrible', emoji: '😫', value: 'terrible' },
-    { label: 'Bad', emoji: '😕', value: 'bad' },
-    { label: 'Okay', emoji: '😐', value: 'okay' },
-    { label: 'Good', emoji: '🙂', value: 'good' },
-    { label: 'Excellent', emoji: '🤩', value: 'excellent' },
-];
-
 const getLocalDateString = (date: Date) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -51,10 +43,19 @@ const C = {
     white30: 'rgba(255,255,255,0.3)',
 };
 
-const DAYS_TR = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
 
 const DailyWeight: React.FC<Props> = ({ navigation }) => {
     const { t } = useLanguage();
+
+    const MOOD_OPTIONS = [
+        { label: t('terrible') || 'Terrible', emoji: '😫', value: 'terrible' },
+        { label: t('bad') || 'Bad', emoji: '😕', value: 'bad' },
+        { label: t('okay') || 'Okay', emoji: '😐', value: 'okay' },
+        { label: t('good') || 'Good', emoji: '🙂', value: 'good' },
+        { label: t('excellent') || 'Excellent', emoji: '🤩', value: 'excellent' },
+    ];
+    const DAYS_TR = [t('sun') || 'Sun', t('mon') || 'Mon', t('tue') || 'Tue', t('wed') || 'Wed', t('thu') || 'Thu', t('fri') || 'Fri', t('sat') || 'Sat'];
     const [progressData, setProgressData] = useState<DailyProgress[]>([]);
     const [todayWeight, setTodayWeight] = useState('');
     const [todayMood, setTodayMood] = useState('');
