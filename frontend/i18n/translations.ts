@@ -328,7 +328,7 @@ export const translations = {
     login_password: 'Şifre',
     login_password_placeholder: 'Şifre',
     login_button: 'Giriş Yap',
-    login_button_loading: 'Girilior...',
+    login_button_loading: 'Giriliyor...',
     login_remember_me: 'Beni Hatırla',
     login_no_account: 'Hesabın yok mu?',
     login_sign_up: 'Kayıt Ol',
