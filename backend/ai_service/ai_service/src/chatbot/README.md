@@ -6,7 +6,7 @@ NutriGame uygulamasının AI destekli beslenme koçu servisi. Google Gemini API 
 
 ## Özellikler
 
-- **Gemini 2.0 Flash** modeli ile bağlamsal sohbet
+- **Gemini 2.5 Flash** modeli ile bağlamsal sohbet
 - **Streaming** desteği (Server-Sent Events)
 - **Konuşma geçmişi** önbelleğe alma (session bazlı, 1 saat TTL)
 - **Rate limiting** – kullanıcı başına dakikada maksimum 10 mesaj
