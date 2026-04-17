@@ -28,19 +28,22 @@
     },
     "plugins": [
       "expo-secure-store",
+      "expo-camera",
+      "expo-image-picker",
       [
         "expo-notifications",
         {
           "icon": "./assets/logo.png",
           "color": "#FBE577"
         }
-      ]
+      ],
+      "expo-asset"
     ],
+    "owner": "betulaydeger1",
     "extra": {
       "eas": {
-        "projectId": "5f38ec40-fcf8-4c2d-bba6-1157950c1b8a"
+        "projectId": "d6976a09-6583-478a-bb2f-7a3f47db9a76"
       }
-    },
-    "owner": "betulaydeger"
+    }
   }
 }

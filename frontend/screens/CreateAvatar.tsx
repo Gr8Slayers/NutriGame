@@ -102,13 +102,14 @@ function CreateAvatar({ navigation, route }: Props) {
       const avatarObj = avatars.find(a => a.path === selected);
       if (!avatarObj) throw new Error('Avatar bulunamadı.');
 
-      // Yerel aseti URI'ye çevir ve indir
       const asset = Asset.fromModule(avatarObj.src);
       await asset.downloadAsync();
+      const uri = asset.localUri ?? asset.uri;
+      if (!uri) throw new Error('Avatar URI alınamadı.');
 
       const formData = new FormData();
       formData.append('image', {
-        uri: asset.localUri || asset.uri,
+        uri,
         name: `avatar_${Date.now()}.png`,
         type: 'image/png',
       } as any);
