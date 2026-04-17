@@ -2,6 +2,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 import { userModel } from '../models/user.model';
 
 // .env dosyasından JWT secret al
@@ -21,8 +22,8 @@ export class AuthController {
                 return res.status(409).json({ success: false, message: 'Bu email ya da username zaten kayıtlı.' });
             }
 
-            //const hashedPassword = await bcrypt.hash(password, 10);
-            await userModel.createUser(username, email, password, age, gender, height, weight, target_weight, reason_to_diet, avatar_url);
+            const hashedPassword = await bcrypt.hash(password, 10);
+            await userModel.createUser(username, email, hashedPassword, age, gender, height, weight, target_weight, reason_to_diet, avatar_url);
             return res.status(201).json({ success: true, message: 'Kayıt başarılı.' });
         } catch (error) {
             next(error);
@@ -41,7 +42,7 @@ export class AuthController {
             if (!user) {
                 return res.status(401).json({ success: false, message: 'Geçersiz email/username veya şifre.' });
             }
-            const passwordMatch = user.password == password;/*await bcrypt.compare(password, user.password);*/
+            const passwordMatch = await bcrypt.compare(password, user.password);
             if (!passwordMatch) {
                 return res.status(401).json({ success: false, message: 'Geçersiz email/username veya şifre.' });
             }

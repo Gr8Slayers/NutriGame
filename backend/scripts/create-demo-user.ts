@@ -12,12 +12,14 @@ async function createDemoUser() {
         // 1. Clean up existing demo user
         await prisma.user.deleteMany({ where: { username } });
 
+        const hashedPassword = await bcrypt.hash(password, 10);
+
         // 2. Create User
         const user = await prisma.user.create({
             data: {
                 username,
                 email,
-                password,
+                password: hashedPassword,
                 profile: {
                     create: {
                         age: 25,
