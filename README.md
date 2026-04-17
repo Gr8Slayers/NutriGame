@@ -1,3 +1,5 @@
+🌐 **[Visit the NutriGame Website](https://gr8slayers.github.io/nutrigame-website)**
+
 # 🎮 NutriGame
 
 NutriGame is a next-generation mobile lifestyle application that combines healthy living and nutrition with **gamification** elements, social connections, and AI-powered features.
