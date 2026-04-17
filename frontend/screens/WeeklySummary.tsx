@@ -7,6 +7,7 @@ import styles from '../styles/WeeklySummary';
 import { IP_ADDRESS } from "@env";
 import * as SecureStore from 'expo-secure-store';
 import { WeeklySummary as WeeklySummaryData, DailyProgress } from '../types';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const API_URL = `http://${IP_ADDRESS}:3000`;
 
@@ -15,6 +16,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'WeeklySummary'>;
 
 
 const WeeklySummary: React.FC<Props> = ({ navigation }) => {
+    const { t } = useLanguage();
     const [isLoading, setIsLoading] = useState(true);
     const [weeklyData, setWeeklyData] = useState<WeeklySummaryData[]>([]);
     const [averages, setAverages] = useState({ calorie: 0, protein: 0, fat: 0, carb: 0 });
@@ -119,7 +121,7 @@ const WeeklySummary: React.FC<Props> = ({ navigation }) => {
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color="#333" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Weekly Summary</Text>
+                <Text style={styles.headerTitle}>{t('weekly_summary_title')}</Text>
                 <View style={{ width: 40 }} />
             </View>
 
@@ -128,7 +130,7 @@ const WeeklySummary: React.FC<Props> = ({ navigation }) => {
                     <Text style={styles.chartTitle}>Calorie Intake (7 Days)</Text>
                     {weeklyData.length > 0 ? renderBarChart() : (
                         <View style={{ height: 200, justifyContent: 'center', alignItems: 'center' }}>
-                            <Text style={{ color: '#a0896e' }}>No data logged yet for this week.</Text>
+                            <Text style={{ color: '#a0896e' }}>{t('weekly_summary_no_data')}</Text>
                         </View>
                     )}
                 </View>
@@ -136,15 +138,15 @@ const WeeklySummary: React.FC<Props> = ({ navigation }) => {
 
                 <View style={styles.statsRow}>
                     <View style={styles.statCard}>
-                        <Text style={styles.statLabel}>Avg Protein</Text>
+                        <Text style={styles.statLabel}>Avg {t('weekly_summary_protein')}</Text>
                         <Text style={styles.statValue}>{averages.protein}<Text style={styles.statUnit}>g</Text></Text>
                     </View>
                     <View style={styles.statCard}>
-                        <Text style={styles.statLabel}>Avg Carbs</Text>
+                        <Text style={styles.statLabel}>Avg {t('weekly_summary_carb')}</Text>
                         <Text style={styles.statValue}>{averages.carb}<Text style={styles.statUnit}>g</Text></Text>
                     </View>
                     <View style={styles.statCard}>
-                        <Text style={styles.statLabel}>Avg Fat</Text>
+                        <Text style={styles.statLabel}>Avg {t('weekly_summary_fat')}</Text>
                         <Text style={styles.statValue}>{averages.fat}<Text style={styles.statUnit}>g</Text></Text>
                     </View>
                     <View style={styles.statCard}>

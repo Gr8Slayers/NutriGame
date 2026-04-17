@@ -7,8 +7,8 @@ import CalorieCircle from '../components/calorieCircle';
 import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList } from '../App';
 import * as SecureStore from 'expo-secure-store';
-
 import { IP_ADDRESS } from "@env";
+import { useLanguage } from '../i18n/LanguageContext';
 
 const API_URL = `http://${IP_ADDRESS}:3000`;
 
@@ -31,6 +31,7 @@ interface FoodItem {
 
 
 export default function AddMeal({ route, navigation }: Props) {
+  const { t } = useLanguage();
 
   //yemek kalorisi hesaplama fonksiyonu
   const calculateCalories = (baseCalories: number, baseAmount: number, selectedAmount: number): number => {
@@ -209,7 +210,7 @@ export default function AddMeal({ route, navigation }: Props) {
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
     if (selectedDate > todayStr) {
-      Alert.alert("Uyarı", "Gelecek tarihlere kayıt ekleyemezsiniz.");
+      Alert.alert(t('warning'), t('future_date_warning'));
       return;
     }
 
@@ -270,16 +271,14 @@ export default function AddMeal({ route, navigation }: Props) {
       const allSuccess = results.every(res => res.ok);
 
       if (allSuccess) {
-        fetchMealTotal(); // refresh the circle immediately
-
+        fetchMealTotal();
         await handleStreakUpdate();
-
       } else {
-        Alert.alert("Hata", "Bazı yemekler eklenemedi.");
+        Alert.alert(t('error'), 'Some foods could not be added.');
       }
     } catch (error) {
       console.error("Error adding meals:", error);
-      Alert.alert("Hata", "Yemek ekleme hatası");
+      Alert.alert(t('error'), 'Error adding meal.');
     }
   }
 
@@ -379,7 +378,7 @@ export default function AddMeal({ route, navigation }: Props) {
         >
           <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Add {type}</Text>
+        <Text style={styles.headerTitle}>{t('addmeal_header')} {type}</Text>
         <TouchableOpacity style={styles.menuButton} onPress={() => navigation.navigate('Menu')}>
           <Ionicons name="menu" size={24} color="#333" style={styles.menuButton} />
         </TouchableOpacity>
@@ -397,7 +396,7 @@ export default function AddMeal({ route, navigation }: Props) {
           <View style={styles.mainChart}>
             <View style={styles.headerContainer}>
               <Text style={styles.title}>{type}</Text>
-              <Text style={styles.calenderSubtitle}>Today's Date: {selectedDate}</Text>
+              <Text style={styles.calenderSubtitle}>{t('today')}: {selectedDate}</Text>
             </View>
             <View style={{ marginVertical: 20 }}>
               <CalorieCircle
@@ -417,7 +416,7 @@ export default function AddMeal({ route, navigation }: Props) {
 
               <Ionicons name="bulb" size={16} color="#473C33" shake />
               <Text style={styles.showDetailText}>
-                {selectedItems.length === 0 ? "Select food below" : `Show Detail (${selectedItems.length})`}
+                {selectedItems.length === 0 ? t('addmeal_select_below') : `${t('addmeal_show_detail')} (${selectedItems.length})`}
               </Text>
               {selectedItems.length > 0 && (
                 <Ionicons name="chevron-up" size={16} color="#473C33" />
@@ -430,7 +429,7 @@ export default function AddMeal({ route, navigation }: Props) {
               <Ionicons name="search" size={20} color="#5c544d" style={styles.searchIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="Search food"
+                placeholder={t('addmeal_search_placeholder')}
                 placeholderTextColor="#5c544d"
                 value={searchText}
                 onChangeText={handleSearch}
@@ -443,7 +442,7 @@ export default function AddMeal({ route, navigation }: Props) {
             </View>
             <TouchableOpacity style={styles.scanButton} onPress={() => navigation.navigate("ScanFood")}>
               <Ionicons name="scan" size={20} style={styles.scanButtonIcon} />
-              <Text style={styles.scanButtonText}>Scan</Text>
+              <Text style={styles.scanButtonText}>{t('scan')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -455,7 +454,7 @@ export default function AddMeal({ route, navigation }: Props) {
                 </View>
               ))
             ) : (
-              <Text style={styles.emptyText}>{searchText.length > 0 ? `No food found matching "${searchText}"` : 'No food found'}</Text>
+              <Text style={styles.emptyText}>{searchText.length > 0 ? `${t('addmeal_no_food_matching')} "${searchText}"` : t('addmeal_no_food')}</Text>
             )}
           </View>
 
@@ -470,7 +469,7 @@ export default function AddMeal({ route, navigation }: Props) {
             <View style={styles.modalOverlay}>
               <View style={styles.modalContent}>
                 <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>Selected Foods</Text>
+                  <Text style={styles.modalTitle}>{t('addmeal_selected_foods')}</Text>
                   <TouchableOpacity onPress={() => setModalVisible(false)}>
                     <Ionicons name="close" size={24} color="#473C33" />
                   </TouchableOpacity>
@@ -491,7 +490,7 @@ export default function AddMeal({ route, navigation }: Props) {
                 </ScrollView>
 
                 <View style={styles.modalFooter}>
-                  <Text style={styles.modalTotalText}>Total: {totalCalories} kcal</Text>
+                  <Text style={styles.modalTotalText}>{t('total')}: {totalCalories} kcal</Text>
                   <TouchableOpacity
                     style={styles.modalSaveButton}
                     onPress={() => setModalVisible(false)} // Sadece kapatır, kaydetme işini ana ekrandaki Save yapar
@@ -513,7 +512,7 @@ export default function AddMeal({ route, navigation }: Props) {
             <View style={styles.modalOverlay}>
               <View style={styles.modalContent}>
                 <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>Choose Portion</Text>
+                  <Text style={styles.modalTitle}>{t('addmeal_choose_portion')}</Text>
                   <TouchableOpacity onPress={() => setportionModalVisible(false)}>
                     <Ionicons name="close" size={24} color="#473C33" />
                   </TouchableOpacity>
@@ -521,7 +520,7 @@ export default function AddMeal({ route, navigation }: Props) {
 
                 <View style={styles.stepperContainer}>
                   <Text style={styles.portionInfoText}>
-                    Base: {selectedMeal?.p_amount} {selectedMeal?.p_unit}
+                    {t('base')}: {selectedMeal?.p_amount} {selectedMeal?.p_unit}
                   </Text>
 
                   <View style={styles.stepperControls}>
@@ -543,7 +542,7 @@ export default function AddMeal({ route, navigation }: Props) {
                   </View>
 
                   <Text style={styles.summaryText}>
-                    Total: {(stepperValue * (selectedMeal?.p_amount || 0))} {selectedMeal?.p_unit} | {calculateCalories(selectedMeal?.p_calorie || 0, selectedMeal?.p_amount || 1, stepperValue * (selectedMeal?.p_amount || 0))} kcal
+                    {t('total')}: {(stepperValue * (selectedMeal?.p_amount || 0))} {selectedMeal?.p_unit} | {calculateCalories(selectedMeal?.p_calorie || 0, selectedMeal?.p_amount || 1, stepperValue * (selectedMeal?.p_amount || 0))} kcal
                   </Text>
                 </View>
 

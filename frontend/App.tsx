@@ -6,6 +6,7 @@ import * as SecureStore from 'expo-secure-store';
 import { View, ActivityIndicator } from 'react-native';
 import { usePushNotifications } from './hooks/usePushNotifications';
 import { IP_ADDRESS } from '@env';
+import { LanguageProvider } from './i18n/LanguageContext';
 
 // Ekranlar
 import Login from './screens/Login';
@@ -156,63 +157,62 @@ export default function App() {
     );
   }
   return (
-    <PaperProvider theme={theme}>
-      <NavigationContainer>
-        <Stack.Navigator
-          screenOptions={{ headerShown: false }}
-        >
-          {isAuthenticated ? (
-            <>
-              <Stack.Screen name="MainPage" component={MainPage} initialParams={undefined} />
-              <Stack.Screen name="Chatbot" component={Chatbot} />
-              <Stack.Screen name="ScanFood" component={ScanFood} />
-              <Stack.Screen name="AddMeal" component={AddMeal} />
-              <Stack.Screen name="AddWater" component={AddWater} />
-              <Stack.Screen name="Menu" component={Menu} />
-              <Stack.Screen name="ProfileSettingsMenu" component={ProfileSettingsMenu} />
-              <Stack.Screen name="EditProfile" component={EditProfile} />
-              <Stack.Screen name="WeeklySummary" component={WeeklySummary} />
-              <Stack.Screen name="DailyWeight" component={DailyWeight} />
-              <Stack.Screen name="SocialFeed" component={SocialFeed} />
-              <Stack.Screen name="NewPost" component={NewPost} />
-              <Stack.Screen name="FindFriends" component={FindFriends} />
-              <Stack.Screen name="Challenges" component={Challenges} />
-              <Stack.Screen name="CreateChallenge" component={CreateChallenge} />
-              <Stack.Screen name="ChallengeProgress" component={ChallengeProgress} />
-              <Stack.Screen name="UserProfile" component={UserProfile} />
-              <Stack.Screen name="Notifications" component={Notifications} />
-            </>
-          ) : (
-
-            <>
-              <Stack.Screen name="Login" component={Login} />
-              <Stack.Screen name="SignUp" component={SignUp} />
-              <Stack.Screen name="SignUpEnterData" component={SignUpEnterData} />
-              <Stack.Screen name="CreateAvatar" component={CreateAvatar} />
-              <Stack.Screen name="MainPage" component={MainPage} initialParams={undefined} />
-              <Stack.Screen name="Chatbot" component={Chatbot} />
-              <Stack.Screen name="ScanFood" component={ScanFood} />
-              <Stack.Screen name="AddMeal" component={AddMeal} />
-              <Stack.Screen name="AddWater" component={AddWater} />
-              <Stack.Screen name="Menu" component={Menu} />
-              <Stack.Screen name="ProfileSettingsMenu" component={ProfileSettingsMenu} />
-              <Stack.Screen name="EditProfile" component={EditProfile} />
-              <Stack.Screen name="WeeklySummary" component={WeeklySummary} />
-              <Stack.Screen name="DailyWeight" component={DailyWeight} />
-              <Stack.Screen name="SocialFeed" component={SocialFeed} />
-              <Stack.Screen name="NewPost" component={NewPost} />
-              <Stack.Screen name="FindFriends" component={FindFriends} />
-              <Stack.Screen name="Challenges" component={Challenges} />
-              <Stack.Screen name="CreateChallenge" component={CreateChallenge} />
-              <Stack.Screen name="ChallengeProgress" component={ChallengeProgress} />
-              <Stack.Screen name="UserProfile" component={UserProfile} />
-              <Stack.Screen name="Notifications" component={Notifications} />
-            </>
-          )}
-        </Stack.Navigator>
-      </NavigationContainer>
-    </PaperProvider>
+    <LanguageProvider>
+      <PaperProvider theme={theme}>
+        <NavigationContainer>
+          <Stack.Navigator
+            screenOptions={{ headerShown: false }}
+          >
+            {isAuthenticated ? (
+              <>
+                <Stack.Screen name="MainPage" component={MainPage} initialParams={undefined} />
+                <Stack.Screen name="Chatbot" component={Chatbot} />
+                <Stack.Screen name="ScanFood" component={ScanFood} />
+                <Stack.Screen name="AddMeal" component={AddMeal} />
+                <Stack.Screen name="AddWater" component={AddWater} />
+                <Stack.Screen name="Menu" component={Menu} />
+                <Stack.Screen name="ProfileSettingsMenu" component={ProfileSettingsMenu} />
+                <Stack.Screen name="EditProfile" component={EditProfile} />
+                <Stack.Screen name="WeeklySummary" component={WeeklySummary} />
+                <Stack.Screen name="DailyWeight" component={DailyWeight} />
+                <Stack.Screen name="SocialFeed" component={SocialFeed} />
+                <Stack.Screen name="NewPost" component={NewPost} />
+                <Stack.Screen name="FindFriends" component={FindFriends} />
+                <Stack.Screen name="Challenges" component={Challenges} />
+                <Stack.Screen name="CreateChallenge" component={CreateChallenge} />
+                <Stack.Screen name="ChallengeProgress" component={ChallengeProgress} />
+                <Stack.Screen name="UserProfile" component={UserProfile} />
+                <Stack.Screen name="Notifications" component={Notifications} />
+              </>
+            ) : (
+              <>
+                <Stack.Screen name="Login" component={Login} />
+                <Stack.Screen name="SignUp" component={SignUp} />
+                <Stack.Screen name="SignUpEnterData" component={SignUpEnterData} />
+                <Stack.Screen name="CreateAvatar" component={CreateAvatar} />
+                <Stack.Screen name="MainPage" component={MainPage} initialParams={undefined} />
+                <Stack.Screen name="Chatbot" component={Chatbot} />
+                <Stack.Screen name="ScanFood" component={ScanFood} />
+                <Stack.Screen name="AddMeal" component={AddMeal} />
+                <Stack.Screen name="AddWater" component={AddWater} />
+                <Stack.Screen name="Menu" component={Menu} />
+                <Stack.Screen name="ProfileSettingsMenu" component={ProfileSettingsMenu} />
+                <Stack.Screen name="EditProfile" component={EditProfile} />
+                <Stack.Screen name="WeeklySummary" component={WeeklySummary} />
+                <Stack.Screen name="DailyWeight" component={DailyWeight} />
+                <Stack.Screen name="SocialFeed" component={SocialFeed} />
+                <Stack.Screen name="NewPost" component={NewPost} />
+                <Stack.Screen name="FindFriends" component={FindFriends} />
+                <Stack.Screen name="Challenges" component={Challenges} />
+                <Stack.Screen name="CreateChallenge" component={CreateChallenge} />
+                <Stack.Screen name="ChallengeProgress" component={ChallengeProgress} />
+                <Stack.Screen name="UserProfile" component={UserProfile} />
+                <Stack.Screen name="Notifications" component={Notifications} />
+              </>
+            )}
+          </Stack.Navigator>
+        </NavigationContainer>
+      </PaperProvider>
+    </LanguageProvider>
   );
 }
-
-

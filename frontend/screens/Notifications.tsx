@@ -5,9 +5,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store';
 import { IP_ADDRESS } from '@env';
+import { useLanguage } from '../i18n/LanguageContext';
 
 export default function Notifications() {
     const navigation = useNavigation();
+    const { t } = useLanguage();
     const [notifications, setNotifications] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -45,7 +47,7 @@ export default function Notifications() {
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color="#f7e5c5" />
                 </TouchableOpacity>
-                <Text style={styles.title}>Notifications</Text>
+                <Text style={styles.title}>{t('notifications_title')}</Text>
             </View>
 
             {loading ? (
@@ -55,7 +57,7 @@ export default function Notifications() {
             ) : notifications.length === 0 ? (
                 <View style={styles.center}>
                     <Ionicons name="notifications-off-outline" size={64} color="#f7e5c5aa" />
-                    <Text style={styles.emptyText}>You don't have any notifications yet.</Text>
+                    <Text style={styles.emptyText}>{t('notifications_empty')}</Text>
                 </View>
             ) : (
                 <FlatList

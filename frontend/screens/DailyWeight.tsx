@@ -11,6 +11,7 @@ import { IP_ADDRESS } from '@env';
 import * as SecureStore from 'expo-secure-store';
 import { DailyProgress } from '../types';
 import styles from '../styles/DailyWeight';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const API_URL = `http://${IP_ADDRESS}:3000`;
 
@@ -53,6 +54,7 @@ const C = {
 const DAYS_TR = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const DailyWeight: React.FC<Props> = ({ navigation }) => {
+    const { t } = useLanguage();
     const [progressData, setProgressData] = useState<DailyProgress[]>([]);
     const [todayWeight, setTodayWeight] = useState('');
     const [todayMood, setTodayMood] = useState('');
@@ -159,12 +161,12 @@ const DailyWeight: React.FC<Props> = ({ navigation }) => {
                     }
                     return [...prev, updated];
                 });
-                showToast('Saved');
+                showToast(t('success'));
             } else {
-                showToast('Error occurred, please try again.');
+                showToast(t('error'));
             }
         } catch {
-            showToast('Connection error.');
+            showToast(t('error'));
         } finally {
             setIsSubmitting(false);
         }
@@ -242,7 +244,7 @@ const DailyWeight: React.FC<Props> = ({ navigation }) => {
                 <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
                     <Ionicons name="arrow-back" size={20} color={C.textDark} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Daily Check-in</Text>
+                <Text style={styles.headerTitle}>{t('daily_weight_title')}</Text>
                 <View style={{ width: 36 }} />
             </View>
 
@@ -269,12 +271,12 @@ const DailyWeight: React.FC<Props> = ({ navigation }) => {
                 ) : !hasToday ? (
                     <View style={styles.hintCard}>
                         <Ionicons name="time-outline" size={14} color={C.accent} />
-                        <Text style={styles.hintText}>Not entered today</Text>
+                        <Text style={styles.hintText}>{t('daily_weight_not_entered')}</Text>
                     </View>
                 ) : (
                     <View style={[styles.hintCard, { backgroundColor: 'rgba(171,194,112,0.05)', borderColor: 'rgba(171,194,112,0.1)' }]}>
                         <Ionicons name="checkmark-circle-outline" size={14} color={C.accent} />
-                        <Text style={styles.hintText}>Today's entry completed</Text>
+                        <Text style={styles.hintText}>{t('daily_weight_already_entered')}</Text>
                     </View>
                 )}
 
@@ -282,7 +284,7 @@ const DailyWeight: React.FC<Props> = ({ navigation }) => {
                 {latestWeight && targetWeight && startWeight ? (
                     <View style={styles.card}>
                         <View style={styles.goalRow}>
-                            <Text style={styles.cardLabel}>Goal</Text>
+                            <Text style={styles.cardLabel}>{t('weekly_summary_goal')}</Text>
                             <View style={{ flexDirection: 'row', gap: 12 }}>
                                 <Text style={styles.goalVal}>Current <Text style={styles.goalValBold}>{latestWeight}kg</Text></Text>
                                 <Text style={styles.goalVal}>Target <Text style={styles.goalValBold}>{targetWeight}kg</Text></Text>
@@ -297,7 +299,7 @@ const DailyWeight: React.FC<Props> = ({ navigation }) => {
 
                 {/* Ağırlık + chart */}
                 <View style={styles.card}>
-                    <Text style={styles.cardLabel}>Today's weight</Text>
+                    <Text style={styles.cardLabel}>{t('daily_weight_input')}</Text>
                     <View style={styles.inputRow}>
                         <TextInput
                             style={styles.input}
@@ -346,7 +348,7 @@ const DailyWeight: React.FC<Props> = ({ navigation }) => {
 
                 {/* Adım */}
                 <View style={styles.card}>
-                    <Text style={styles.cardLabel}>Steps / movement</Text>
+                    <Text style={styles.cardLabel}>{t('daily_weight_movement')}</Text>
                     <View style={styles.inputRow}>
                         <TextInput
                             style={[styles.input, { flex: 1 }]}
@@ -365,7 +367,7 @@ const DailyWeight: React.FC<Props> = ({ navigation }) => {
 
                 {/* Mood */}
                 <View style={styles.card}>
-                    <Text style={styles.chartTitle}>How are you feeling today?</Text>
+                    <Text style={styles.chartTitle}>{t('daily_weight_mood')}</Text>
                     <View style={styles.moodRow}>
                         {MOOD_OPTIONS.map(m => (
                             <TouchableOpacity
@@ -392,7 +394,7 @@ const DailyWeight: React.FC<Props> = ({ navigation }) => {
                 >
                     {isSubmitting
                         ? <ActivityIndicator color={C.textDark} />
-                        : <Text style={styles.saveBtnText}>Save Daily Progress</Text>
+                        : <Text style={styles.saveBtnText}>{t('daily_weight_save')} Daily Progress</Text>
                     }
                 </TouchableOpacity>
             </ScrollView>

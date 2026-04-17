@@ -9,6 +9,7 @@ import styles from '../styles/Menu';
 import { RootStackParamList } from '../App';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { UserProfile } from '../types';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const API_URL = `http://${IP_ADDRESS}:3000`;
 
@@ -60,6 +61,7 @@ const getAvatarSource = (path: string | undefined) => {
 
 export default function Menu() {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    const { t, language, setLanguage } = useLanguage();
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [streakValue, setStreakValue] = useState<number>(0);
@@ -160,7 +162,7 @@ export default function Menu() {
                 {/* Streak */}
                 <View style={styles.streakContainer}>
                     <View>
-                        <Text style={styles.streakLabel}>Streak</Text>
+                        <Text style={styles.streakLabel}>{t('menu_streak')}</Text>
                         <Text style={styles.streakValue}>{streakValue || 0}</Text>
                     </View>
                     <View style={styles.streakIconContainer}>
@@ -177,8 +179,8 @@ export default function Menu() {
             {/* Stats / Goal */}
             <View style={styles.goalContainer}>
                 <View>
-                    <Text style={styles.goalLabel}>Target Weight</Text>
-                    <Text style={styles.goalValue}>{profile?.target_weight ? `${profile.target_weight} kg` : "Not Set"}</Text>
+                    <Text style={styles.goalLabel}>{t('menu_target_weight')}</Text>
+                    <Text style={styles.goalValue}>{profile?.target_weight ? `${profile.target_weight} kg` : t('menu_not_set')}</Text>
                 </View>
                 <View style={styles.goalIconContainer}>
                     <Ionicons name="trophy-outline" size={24} color="#f7e5c5" />
@@ -193,7 +195,7 @@ export default function Menu() {
                     <View style={styles.menuIconBox}>
                         <Ionicons name="person-outline" size={20} color="#47dd7caf" />
                     </View>
-                    <Text style={styles.menuText}>Profile Settings</Text>
+                    <Text style={styles.menuText}>{t('menu_profile_settings')}</Text>
                     <Ionicons name="chevron-forward" size={20} color="#5c544d" />
                 </TouchableOpacity>
 
@@ -201,7 +203,7 @@ export default function Menu() {
                     <View style={styles.menuIconBox}>
                         <Ionicons name="trophy-outline" size={20} color="#47dd7caf" />
                     </View>
-                    <Text style={styles.menuText}>Challenges</Text>
+                    <Text style={styles.menuText}>{t('menu_challenges')}</Text>
                     <Ionicons name="chevron-forward" size={20} color="#5c544d" />
                 </TouchableOpacity>
 
@@ -209,7 +211,7 @@ export default function Menu() {
                     <View style={styles.menuIconBox}>
                         <Ionicons name="nutrition-outline" size={20} color="#47dd7caf" />
                     </View>
-                    <Text style={styles.menuText}>Daily Weight and Mood Entry</Text>
+                    <Text style={styles.menuText}>{t('menu_daily_weight')}</Text>
                     <Ionicons name="chevron-forward" size={20} color="#5c544d" />
                 </TouchableOpacity>
 
@@ -217,7 +219,7 @@ export default function Menu() {
                     <View style={styles.menuIconBox}>
                         <Ionicons name="pie-chart-outline" size={20} color="#47dd7caf" />
                     </View>
-                    <Text style={styles.menuText}>Weekly Summary</Text>
+                    <Text style={styles.menuText}>{t('menu_weekly_summary')}</Text>
                     <Ionicons name="chevron-forward" size={20} color="#5c544d" />
                 </TouchableOpacity>
 
@@ -225,15 +227,31 @@ export default function Menu() {
                     <View style={styles.menuIconBox}>
                         <Ionicons name="notifications-outline" size={20} color="#47dd7caf" />
                     </View>
-                    <Text style={styles.menuText}>Notifications</Text>
+                    <Text style={styles.menuText}>{t('menu_notifications')}</Text>
                     <Ionicons name="chevron-forward" size={20} color="#5c544d" />
+                </TouchableOpacity>
+
+                {/* Language Toggle */}
+                <TouchableOpacity
+                    style={styles.menuItem}
+                    onPress={() => setLanguage(language === 'en' ? 'tr' : 'en')}
+                >
+                    <View style={styles.menuIconBox}>
+                        <Ionicons name="globe-outline" size={20} color="#47dd7caf" />
+                    </View>
+                    <Text style={styles.menuText}>{t('menu_language')}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                        <Text style={[{ fontSize: 13, fontWeight: '700' }, language === 'en' ? { color: '#47dd7caf' } : { color: '#5c544d' }]}>EN</Text>
+                        <Text style={{ color: '#5c544d', fontSize: 13 }}>/</Text>
+                        <Text style={[{ fontSize: 13, fontWeight: '700' }, language === 'tr' ? { color: '#47dd7caf' } : { color: '#5c544d' }]}>TR</Text>
+                    </View>
                 </TouchableOpacity>
             </View>
 
             {/* Logout */}
             <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
                 <Ionicons name="log-out-outline" size={24} color="#e57373" />
-                <Text style={styles.logoutText}>Log Out</Text>
+                <Text style={styles.logoutText}>{t('menu_logout')}</Text>
             </TouchableOpacity>
         </View>
     );

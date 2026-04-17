@@ -5,14 +5,15 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import styles from '../styles/Challenges';
 import { IP_ADDRESS } from "@env";
-
 import * as SecureStore from 'expo-secure-store';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const API_URL = `http://${IP_ADDRESS}:3000/api`;
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Challenges'>;
 
 const Challenges = ({ navigation }: Props) => {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'active' | 'invites'>('active');
   const [challenges, setChallenges] = useState<any[]>([]);
   const [invites, setInvites] = useState<any[]>([]);
@@ -140,7 +141,7 @@ const Challenges = ({ navigation }: Props) => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="#f7e5c5" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Challenges</Text>
+        <Text style={styles.headerTitle}>{t('challenges_title')}</Text>
         <TouchableOpacity onPress={() => navigation.navigate('CreateChallenge')}>
           <Ionicons name="add-circle" size={28} color="#c8a96e" />
         </TouchableOpacity>
@@ -151,13 +152,13 @@ const Challenges = ({ navigation }: Props) => {
           style={[styles.tab, activeTab === 'active' && styles.tabActive]}
           onPress={() => setActiveTab('active')}
         >
-          <Text style={[styles.tabText, activeTab === 'active' && styles.tabTextActive]}>Active</Text>
+          <Text style={[styles.tabText, activeTab === 'active' && styles.tabTextActive]}>{t('challenges_active')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'invites' && styles.tabActive]}
           onPress={() => setActiveTab('invites')}
         >
-          <Text style={[styles.tabText, activeTab === 'invites' && styles.tabTextActive]}>Invites</Text>
+          <Text style={[styles.tabText, activeTab === 'invites' && styles.tabTextActive]}>{t('challenges_pending')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -166,7 +167,7 @@ const Challenges = ({ navigation }: Props) => {
         keyExtractor={item => item.id}
         renderItem={activeTab === 'active' ? renderActiveChallenge : renderInvite}
         contentContainerStyle={{ padding: 20 }}
-        ListEmptyComponent={<Text style={styles.emptyText}>Nothing here yet!</Text>}
+        ListEmptyComponent={<Text style={styles.emptyText}>{activeTab === 'active' ? t('challenges_no_active') : t('challenges_no_pending')}</Text>}
       />
     </View>
   );

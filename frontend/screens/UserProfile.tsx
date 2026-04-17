@@ -18,6 +18,7 @@ import * as SecureStore from 'expo-secure-store';
 import { IP_ADDRESS } from '@env';
 import styles from '../styles/UserProfile';
 import { BadgeImages } from '../constants/BadgeImages';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const API_URL = `http://${IP_ADDRESS}:3000`;
 const DEFAULT_AVATAR = require('../assets/default_avatar.png');
@@ -134,6 +135,7 @@ interface UserListItem {
 }
 
 export default function UserProfile({ navigation, route }: Props) {
+    const { t } = useLanguage();
     const { userId } = route.params;
     const [profile, setProfile] = useState<ProfileData | null>(null);
     const [posts, setPosts] = useState<RecipePost[]>([]);
@@ -305,7 +307,7 @@ export default function UserProfile({ navigation, route }: Props) {
                     <View style={styles.placeholder} />
                 </View>
                 <View style={styles.centered}>
-                    <Text style={{ color: '#a0896e', fontSize: 16 }}>User not found</Text>
+                    <Text style={{ color: '#a0896e', fontSize: 16 }}>{t('find_friends_no_results')}</Text>
                 </View>
             </View>
         );
@@ -356,7 +358,7 @@ export default function UserProfile({ navigation, route }: Props) {
                                 styles.followButtonText,
                                 profile.isFollowing && styles.unfollowButtonText,
                             ]}>
-                                {profile.isFollowing ? 'Unfollow' : 'Follow'}
+                                {profile.isFollowing ? t('profile_unfollow') : t('profile_follow')}
                             </Text>
                         </TouchableOpacity>
                     )}
@@ -366,15 +368,15 @@ export default function UserProfile({ navigation, route }: Props) {
                 <View style={styles.statsRow}>
                     <TouchableOpacity style={styles.statItem} onPress={() => fetchUserList('followers')}>
                         <Text style={styles.statValue}>{profile.followerCount}</Text>
-                        <Text style={styles.statLabel}>Followers</Text>
+                        <Text style={styles.statLabel}>{t('profile_followers')}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.statItem} onPress={() => fetchUserList('following')}>
                         <Text style={styles.statValue}>{profile.followingCount}</Text>
-                        <Text style={styles.statLabel}>Following</Text>
+                        <Text style={styles.statLabel}>{t('profile_following')}</Text>
                     </TouchableOpacity>
                     <View style={styles.statItem}>
                         <Text style={styles.statValue}>{profile.postCount}</Text>
-                        <Text style={styles.statLabel}>Recipes</Text>
+                        <Text style={styles.statLabel}>{t('profile_posts')}</Text>
                     </View>
                 </View>
 
@@ -382,7 +384,7 @@ export default function UserProfile({ navigation, route }: Props) {
                 <View style={styles.streakCard}>
                     <View style={styles.streakHeader}>
                         <Ionicons name="flame" size={22} color="#e87c3e" />
-                        <Text style={styles.streakTitle}>Streak</Text>
+                        <Text style={styles.streakTitle}>{t('profile_streak')}</Text>
                     </View>
                     <View style={styles.streakStatsRow}>
                         <View style={styles.streakStatItem}>
@@ -402,7 +404,7 @@ export default function UserProfile({ navigation, route }: Props) {
 
                 {/* Badges */}
                 <View style={styles.badgesSection}>
-                    <Text style={styles.sectionTitle}>Badges</Text>
+                    <Text style={styles.sectionTitle}>{t('profile_badges')}</Text>
                     {profile.badges.length > 0 ? (
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.badgesScroll}>
                             {profile.badges.map(badge => (
@@ -422,13 +424,13 @@ export default function UserProfile({ navigation, route }: Props) {
                             ))}
                         </ScrollView>
                     ) : (
-                        <Text style={styles.noBadgesText}>No badges earned yet</Text>
+                        <Text style={styles.noBadgesText}>{t('profile_no_badges')}</Text>
                     )}
                 </View>
 
                 {/* Recipe Posts */}
                 <View style={styles.postsSection}>
-                    <Text style={styles.sectionTitle}>Recipes</Text>
+                    <Text style={styles.sectionTitle}>{t('profile_posts')}</Text>
                     {posts.length > 0 ? (
                         posts.map(post => {
                             const isExpanded = expandedPosts.has(post.id);
@@ -538,7 +540,7 @@ export default function UserProfile({ navigation, route }: Props) {
                     ) : (
                         <View style={styles.noPostsContainer}>
                             <Ionicons name="restaurant-outline" size={40} color="#5a4a3a" />
-                            <Text style={styles.noPostsText}>No recipes yet</Text>
+                            <Text style={styles.noPostsText}>{t('profile_no_posts')}</Text>
                         </View>
                     )}
                 </View>

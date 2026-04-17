@@ -8,6 +8,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import styles from '../styles/ScanFood';
 import * as SecureStore from 'expo-secure-store';
 import { IP_ADDRESS } from "@env";
+import { useLanguage } from '../i18n/LanguageContext';
 
 const API_URL = `http://${IP_ADDRESS}:3000`;
 
@@ -33,6 +34,7 @@ const getLocalDateString = (date: Date): string => {
 
 export default function ScanFood() {
     const navigation = useNavigation<any>();
+    const { t } = useLanguage();
     const [permission, requestPermission] = useCameraPermissions();
     const [permissionModalVisible, setPermissionModalVisible] = useState(false);
     const [photos, setPhotos] = useState<string[]>([]);
@@ -72,7 +74,7 @@ export default function ScanFood() {
     const takePicture = async () => {
         if (!cameraRef.current) return;
         if (photos.length >= 10) {
-            Alert.alert("Limit", "You can take at most 10 photos.");
+            Alert.alert(t('warning'), t('scan_limit'));
             return;
         }
         try {
@@ -310,13 +312,13 @@ export default function ScanFood() {
             <Modal visible={permissionModalVisible} animationType="fade" transparent>
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Need Camera Permission</Text>
+                        <Text style={styles.modalTitle}>{t('scan_camera_permission')}</Text>
                         <View style={styles.modalFooter}>
                             <TouchableOpacity style={styles.modalButton} onPress={() => setPermissionModalVisible(false)}>
-                                <Text style={styles.modalButtonText}>Close</Text>
+                                <Text style={styles.modalButtonText}>{t('close')}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.modalButton} onPress={handlePermissionButton}>
-                                <Text style={styles.modalButtonText}>Allow</Text>
+                                <Text style={styles.modalButtonText}>{t('scan_allow')}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -327,15 +329,15 @@ export default function ScanFood() {
             <Modal visible={galleryVisible} animationType="slide">
                 <View style={{ flex: 1, backgroundColor: '#121212', paddingTop: 60 }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginBottom: 20 }}>
-                        <Text style={{ color: 'white', fontSize: 22, fontWeight: 'bold' }}>Scanned Photos</Text>
+                        <Text style={{ color: 'white', fontSize: 22, fontWeight: 'bold' }}>{t('scan_scanned_photos')}</Text>
                         <TouchableOpacity onPress={() => setGalleryVisible(false)}>
-                            <Text style={{ color: '#47dd7caf', fontSize: 18, fontWeight: '600' }}>Close</Text>
+                            <Text style={{ color: '#47dd7caf', fontSize: 18, fontWeight: '600' }}>{t('close')}</Text>
                         </TouchableOpacity>
                     </View>
                     <ScrollView contentContainerStyle={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 5 }}>
                         {allPhotos.length === 0 && (
                             <Text style={{ color: '#888', textAlign: 'center', width: '100%', marginTop: 50 }}>
-                                You haven't saved any food photos yet.
+                                {t('scan_no_photos_yet')}
                             </Text>
                         )}
                         {allPhotos.map((item, index) => (
@@ -378,7 +380,7 @@ export default function ScanFood() {
                                             {selected ? selected.food_name : item.class} ({portion} portion)
                                         </Text>
                                         <Text style={{ color: '#fc8500', fontSize: 15, fontWeight: '600' }}>
-                                            {calculatedKcal !== null ? `${calculatedKcal} kcal` : 'Not selected'}
+                                            {calculatedKcal !== null ? `${calculatedKcal} kcal` : t('scan_not_selected')}
                                         </Text>
                                     </View>
                                 );
@@ -387,14 +389,14 @@ export default function ScanFood() {
 
                         {detections && detections.length > 0 && (
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 12, borderTopWidth: 2, borderTopColor: '#47dd7caf', marginBottom: 20 }}>
-                                <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 17 }}>Total</Text>
+                                <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 17 }}>{t('total')}</Text>
                                 <Text style={{ color: '#47dd7caf', fontWeight: 'bold', fontSize: 17 }}>
                                     {Math.round(selectedTotal)} kcal
                                 </Text>
                             </View>
                         )}
 
-                        <Text style={{ color: '#888', fontSize: 11, textAlign: 'center', marginBottom: 15 }}>Meal: {mealCategory}</Text>
+                        <Text style={{ color: '#888', fontSize: 11, textAlign: 'center', marginBottom: 15 }}>{t('scan_meal')}: {mealCategory}</Text>
 
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10 }}>
                             <TouchableOpacity
@@ -402,7 +404,7 @@ export default function ScanFood() {
                                 onPress={() => setAddToLogModalVisible(false)}
                                 disabled={isSavingLog}
                             >
-                                <Text style={{ color: '#ccc', fontWeight: '600', fontSize: 15 }}>Cancel</Text>
+                                <Text style={{ color: '#ccc', fontWeight: '600', fontSize: 15 }}>{t('cancel')}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={{ flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: '#47dd7caf', alignItems: 'center', opacity: isSavingLog ? 0.6 : 1 }}
@@ -411,7 +413,7 @@ export default function ScanFood() {
                             >
                                 {isSavingLog
                                     ? <ActivityIndicator color="white" size="small" />
-                                    : <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 15 }}>Yes, Add </Text>
+                                    : <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 15 }}>{t('scan_yes_add')}</Text>
                                 }
                             </TouchableOpacity>
                         </View>
@@ -431,16 +433,16 @@ export default function ScanFood() {
                     {isLoading && (
                         <View style={{ padding: 40, alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.1)' }}>
                             <ActivityIndicator size="large" color="#47dd7caf" />
-                            <Text style={{ color: 'white', marginTop: 15, fontWeight: 'bold', fontSize: 16 }}>Analyzing Food...</Text>
+                            <Text style={{ color: 'white', marginTop: 15, fontWeight: 'bold', fontSize: 16 }}>{t('scan_analyzing')}</Text>
                         </View>
                     )}
 
                     {detections && !isLoading && (
                         <View style={{ backgroundColor: '#1e1e1e', margin: 15, padding: 20, borderRadius: 20, borderWidth: 1, borderColor: '#333' }}>
-                            <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 20, marginBottom: 20, textAlign: 'center' }}>Analysis Result</Text>
+                            <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 20, marginBottom: 20, textAlign: 'center' }}>{t('scan_result')}</Text>
 
                             {detections.length === 0 ? (
-                                <Text style={{ color: '#ddd', textAlign: 'center', marginVertical: 10 }}>No recognizable food items found.</Text>
+                                <Text style={{ color: '#ddd', textAlign: 'center', marginVertical: 10 }}>{t('scan_no_items')}</Text>
                             ) : (
                                 detections.map((item, index) => (
                                     <View key={item.tempId || index} style={{ marginBottom: 20, borderBottomWidth: 1, borderBottomColor: '#444', paddingBottom: 15 }}>
@@ -520,7 +522,7 @@ export default function ScanFood() {
                                                 </View>
                                             </View>
                                         ) : (
-                                            <Text style={{ color: '#888', fontSize: 12, marginTop: 5 }}>No items found in database for this food.</Text>
+                                            <Text style={{ color: '#888', fontSize: 12, marginTop: 5 }}>{t('scan_no_db_match')}</Text>
                                         )}
                                     </View>
                                 ))
@@ -528,7 +530,7 @@ export default function ScanFood() {
 
                             {detections.length > 0 && (
                                 <View style={{ marginTop: 20, paddingTop: 20, borderTopWidth: 1, borderTopColor: '#444', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 20 }}>Total:</Text>
+                                    <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 20 }}>{t('total')}:</Text>
                                     <Text style={{ color: '#47dd7caf', fontWeight: 'bold', fontSize: 24 }}>
                                         {Math.round(selectedTotal)} kcal
                                     </Text>
@@ -544,7 +546,7 @@ export default function ScanFood() {
                         onPress={resetAll}
                         disabled={isLoading}
                     >
-                        <Text style={styles.text}>Retake All</Text>
+                        <Text style={styles.text}>{t('scan_retake')}</Text>
                     </TouchableOpacity>
 
                     {detections && detections.length > 0 && (
@@ -552,7 +554,7 @@ export default function ScanFood() {
                             style={[styles.button, { backgroundColor: '#fc8500' }]}
                             onPress={() => setAddToLogModalVisible(true)}
                         >
-                            <Text style={styles.text}>Save Log</Text>
+                            <Text style={styles.text}>{t('scan_save_log')}</Text>
                         </TouchableOpacity>
                     )}
                 </View>
@@ -600,7 +602,7 @@ export default function ScanFood() {
                     >
                         {isLoadingGallery
                             ? <ActivityIndicator color="#47dd7caf" size="small" />
-                            : <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold', textAlign: 'center' }}>All Photos</Text>
+                            : <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold', textAlign: 'center' }}>{t('scan_all_photos')}</Text>
                         }
                     </TouchableOpacity>
                 </View>
@@ -623,7 +625,7 @@ export default function ScanFood() {
                         ))}
                     </View>
                     <TouchableOpacity style={[styles.button, { backgroundColor: '#47dd7caf', width: '90%' }]} onPress={handleScanFood}>
-                        <Text style={styles.text}>Analyze ({photos.length})</Text>
+                        <Text style={styles.text}>{t('scan_analyze')} ({photos.length})</Text>
                     </TouchableOpacity>
                 </View>
             )}

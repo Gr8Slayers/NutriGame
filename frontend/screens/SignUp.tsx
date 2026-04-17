@@ -6,6 +6,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../App';
 import styles from '../styles/SignUpStyle';
 import { IP_ADDRESS } from "@env";
+import { useLanguage } from '../i18n/LanguageContext';
 
 const API_URL = `http://${IP_ADDRESS}:3000`; 
 
@@ -25,7 +26,8 @@ function SignUp({ navigation }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [loading, setLoading] = useState<boolean>(false); 
+  const [loading, setLoading] = useState<boolean>(false);
+  const { t } = useLanguage();
 
  
 
@@ -36,7 +38,7 @@ const handleBackButton = () => {
   const handleSignUp = async () => {
     if (loading) return;
     if(!name || !name || !password){
-      Alert.alert("Error","please fill all areas.");
+      Alert.alert(t('error'), 'Please fill all fields.');
       setLoading(false);
       return;
     }
@@ -66,22 +68,22 @@ const handleBackButton = () => {
       <View style={styles.dataContainer}>
       <ScrollView contentContainerStyle={styles.scrollContent}keyboardShouldPersistTaps="handled">
 
-        <Text style={styles.title}>Create Account</Text>
+        <Text style={styles.title}>{t('signup_title')}</Text>
 
       <View style={styles.inputContainer}>
-              <Text style = {styles.label}>Username *</Text>
+              <Text style = {styles.label}>{t('signup_username')} *</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Username"
+                placeholder={t('signup_username')}
                 value={name}
                 onChangeText={setName}
               />
             </View>
             <View style={styles.inputContainer}>
-                      <Text style = {styles.label}>Email *</Text>
+                      <Text style = {styles.label}>{t('signup_email')} *</Text>
                     <TextInput
                       style={styles.input}
-                      placeholder="Email *"
+                      placeholder={t('signup_email')}
                       value={email}
                       onChangeText={setEmail}
                       keyboardType="email-address"
@@ -89,10 +91,10 @@ const handleBackButton = () => {
                     />
               </View>
             <View style={styles.inputContainer}>
-                  <Text style = {styles.label}>Password *</Text>
+                  <Text style = {styles.label}>{t('signup_password')} *</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="Password"
+                  placeholder={t('signup_password')}
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry={true}
@@ -100,12 +102,12 @@ const handleBackButton = () => {
                 </View>
         <TouchableOpacity style={styles.button} onPress={handleSignUp}>
           <Text style={styles.buttonText}>
-            {loading ? 'Continuing...' : 'Continue'}
+            {loading ? t('loading') : t('signup_next')}
           </Text>
         </TouchableOpacity>
         <View style={styles.divider} /> 
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.linkText}>Already have an account? <Text style={styles.signUpLinkText}>Log in</Text></Text>
+          <Text style={styles.linkText}>{t('signup_have_account')} <Text style={styles.signUpLinkText}>{t('signup_login')}</Text></Text>
         </TouchableOpacity>
       </ScrollView>
     </View>

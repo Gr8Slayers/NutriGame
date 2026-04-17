@@ -4,13 +4,12 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
-
 import { RootStackParamList } from '../App';
 import WaterWave from "../components/waterContainer";
 import styles from '../styles/AddWater';
 import { WaterPortion, AddedEntry, SavedLog } from '../types';
-
 import { IP_ADDRESS } from "@env";
+import { useLanguage } from '../i18n/LanguageContext';
 
 const API_URL = `http://${IP_ADDRESS}:3000`;
 
@@ -27,6 +26,7 @@ const waterPortions: WaterPortion[] = [
 
 export default function AddWater({ route, navigation }: Props) {
      const { selectedDate, type } = route.params;
+     const { t } = useLanguage();
      const [currentWater, setCurrentWater] = useState<number>(0);
      const [savedLogs, setSavedLogs] = useState<SavedLog[]>([]);
      const [addedEntries, setAddedEntries] = useState<AddedEntry[]>([]);
@@ -99,7 +99,7 @@ export default function AddWater({ route, navigation }: Props) {
           const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
           if (selectedDate > todayStr) {
-               Alert.alert("Uyarı", "Gelecek tarihlere kayıt ekleyemezsiniz.");
+               Alert.alert(t('warning'), t('future_date_warning'));
                return;
           }
 
@@ -117,30 +117,27 @@ export default function AddWater({ route, navigation }: Props) {
 
      const handleDeleteSaved = async (logId: number, amount: number) => {
           Alert.alert(
-               'Sil',
-               `Kayıtlı ${amount} ml silinsin mi?`,
+               t('delete'),
+               `${amount} ml will be deleted. Are you sure?`,
                [
-                    { text: 'İptal', style: 'cancel' },
+                    { text: t('cancel'), style: 'cancel' },
                     {
-                         text: 'Sil', style: 'destructive', onPress: async () => {
+                         text: t('delete'), style: 'destructive', onPress: async () => {
                               try {
                                    const token = await SecureStore.getItemAsync('userToken');
                                    const res = await fetch(`${API_URL}/api/food/delete_from_water`, {
                                         method: 'POST',
-                                        headers: {
-                                             'Content-Type': 'application/json',
-                                             'Authorization': `Bearer ${token}`
-                                        },
+                                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                                         body: JSON.stringify({ water_log_id: logId })
                                    });
                                    if (res.ok) {
                                         fetchWaterData();
                                    } else {
                                         const d = await res.json();
-                                        Alert.alert('Hata', d.message || 'Silme başarısız.');
+                                        Alert.alert(t('error'), d.message || 'Delete failed.');
                                    }
                               } catch (e) {
-                                   Alert.alert('Hata', 'Bağlantı hatası.');
+                                   Alert.alert(t('error'), 'Connection error.');
                               }
                          }
                     }
@@ -150,7 +147,7 @@ export default function AddWater({ route, navigation }: Props) {
 
      const handleSave = async () => {
           if (addedAmount === 0) {
-               Alert.alert('Uyarı', 'Lütfen su miktarı ekleyin.');
+               Alert.alert(t('warning'), t('addwater_please_add'));
                return;
           }
 
@@ -172,9 +169,9 @@ export default function AddWater({ route, navigation }: Props) {
 
                const data = await res.json();
                if (res.ok) {
-                    Alert.alert('Başarılı', `${addedAmount} ml su eklendi!`, [
+                    Alert.alert(t('success'), `${addedAmount} ${t('addwater_added_success')}`, [
                          {
-                              text: 'Tamam',
+                              text: t('ok'),
                               onPress: () => {
                                    setAddedEntries([]);
                                    fetchWaterData();
@@ -183,11 +180,11 @@ export default function AddWater({ route, navigation }: Props) {
                          }
                     ]);
                } else {
-                    Alert.alert('Hata', data.message || 'Su eklenirken bir hata oluştu.');
+                    Alert.alert(t('error'), data.message || 'Error adding water.');
                }
           } catch (error) {
                console.log("Error adding water:", error);
-               Alert.alert('Hata', 'Bağlantı hatası oluştu.');
+               Alert.alert(t('error'), 'Connection error.');
           }
      };
 
@@ -204,7 +201,7 @@ export default function AddWater({ route, navigation }: Props) {
                     >
                          <Ionicons name="arrow-back" size={24} color="#333" />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Add Water</Text>
+                    <Text style={styles.headerTitle}>{t('addwater_header')}</Text>
                     <TouchableOpacity style={styles.menuButton} onPress={() => navigation.navigate('Menu')}>
                          <Ionicons name="menu" size={24} color="#333" style={styles.menuButton} />
                     </TouchableOpacity>
@@ -214,7 +211,7 @@ export default function AddWater({ route, navigation }: Props) {
 
                <ScrollView showsVerticalScrollIndicator={false}>
                     {/* Date Display */}
-                    <Text style={styles.dateText}>Today's Date: {selectedDate}</Text>
+                    <Text style={styles.dateText}>{t('today')}: {selectedDate}</Text>
                     {/* Water Container */}
                     <View style={styles.waterContainer}>
                          <WaterWave progress={progress} maxCapacity={maxCapacity} />
@@ -222,13 +219,13 @@ export default function AddWater({ route, navigation }: Props) {
 
                     {/* Current Amount Display */}
                     <View style={styles.currentAmount}>
-                         <Text style={styles.currentAmountText}>Total Consumed Water</Text>
+                         <Text style={styles.currentAmountText}>{t('addwater_total_consumed')}</Text>
                          <Text style={styles.currentAmountValue}>
                               {totalWater} / {maxCapacity} ml
                          </Text>
                          {addedAmount > 0 && (
                               <Text style={{ color: '#4CAF50', fontSize: 14, marginTop: 5 }}>
-                                   +{addedAmount} ml eklenecek
+                                   +{addedAmount} {t('addwater_will_be_added')}
                               </Text>
                          )}
 
@@ -242,7 +239,7 @@ export default function AddWater({ route, navigation }: Props) {
                          >
                               <Ionicons name="bulb" size={16} color="#473C33" shake />
                               <Text style={styles.showDetailText}>
-                                   {totalWater === 0 ? "Select below" : `Show Detail (${totalWater})`}
+                                   {totalWater === 0 ? t('addwater_select_below') : `${t('addwater_show_detail')} (${totalWater})`}
                               </Text>
                               {totalWater > 0 && (
                                    <Ionicons name="chevron-up" size={16} color="#473C33" />
@@ -252,7 +249,7 @@ export default function AddWater({ route, navigation }: Props) {
 
                     {/* Portion Selection */}
                     <View style={styles.portionContainer}>
-                         <Text style={styles.sectionTitle}>Select Quantity</Text>
+                         <Text style={styles.sectionTitle}>{t('addwater_select_quantity')}</Text>
                          <View style={styles.portionGrid}>
                               {waterPortions.map((portion) => (
                                    <TouchableOpacity
@@ -278,7 +275,7 @@ export default function AddWater({ route, navigation }: Props) {
                          onPress={handleSave}
                          disabled={addedAmount === 0}
                     >
-                         <Text style={styles.saveButtonText}>Save</Text>
+                         <Text style={styles.saveButtonText}>{t('save')}</Text>
                     </TouchableOpacity>
 
                     <Modal
@@ -291,7 +288,7 @@ export default function AddWater({ route, navigation }: Props) {
                          <View style={styles.modalOverlay}>
                               <View style={styles.modalContent}>
                                    <View style={styles.modalHeader}>
-                                        <Text style={styles.modalTitle}>Selected Amounts</Text>
+                                        <Text style={styles.modalTitle}>{t('addwater_selected_amounts')}</Text>
                                         <TouchableOpacity onPress={() => setModalVisible(false)}>
                                              <Ionicons name="close" size={24} color="#473C33" />
                                         </TouchableOpacity>
@@ -327,12 +324,12 @@ export default function AddWater({ route, navigation }: Props) {
                                         ))}
 
                                         {currentWater === 0 && addedEntries.length === 0 && (
-                                             <Text style={{ textAlign: 'center', color: '#888', paddingVertical: 20 }}>Kayıt yok</Text>
+                                             <Text style={{ textAlign: 'center', color: '#888', paddingVertical: 20 }}>{t('addwater_no_record')}</Text>
                                         )}
                                    </ScrollView>
 
                                    <View style={styles.modalFooter}>
-                                        <Text style={styles.modalTotalText}>Total: {totalWater} ml</Text>
+                                        <Text style={styles.modalTotalText}>{t('total')}: {totalWater} ml</Text>
                                         <TouchableOpacity
                                              style={styles.modalSaveButton}
                                              onPress={() => setModalVisible(false)} // Sadece kapatır, kaydetme işini ana ekrandaki Save yapar

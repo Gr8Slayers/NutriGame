@@ -6,10 +6,9 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as SecureStore from 'expo-secure-store';
 import { Image } from 'react-native';
 import { RootStackParamList } from '../App';
-
 import styles from '../styles/LoginStyle';
-
 import { IP_ADDRESS } from "@env";
+import { useLanguage } from '../i18n/LanguageContext';
 
 const API_URL = `http://${IP_ADDRESS}:3000`;
 
@@ -33,6 +32,7 @@ function Login({ navigation }: Props) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState<boolean>(false);
   const [remember, setRemember] = useState(false);
+  const { t } = useLanguage();
 
 
 
@@ -78,9 +78,9 @@ function Login({ navigation }: Props) {
     } catch (error: any) {
       clearTimeout(timeoutId);
       if (error.name === 'AbortError') {
-        Alert.alert('Bağlantı Hatası', 'Sunucu yanıt vermedi (Zaman aşımı). Lütfen IP adresinizi ve internetinizi kontrol edin.');
+        Alert.alert(t('error'), t('login_timeout_error'));
       } else {
-        Alert.alert('Hata', 'Sunucuya bağlanılamadı. Backend kapalı veya ağ hatası var.');
+        Alert.alert(t('error'), t('login_connection_error'));
       }
       console.error("Login Hatası:", error);
     } finally {
@@ -100,13 +100,13 @@ function Login({ navigation }: Props) {
         <View style={styles.dataContainer}>
           <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
 
-            <Text style={styles.logInTitle}>LOG IN</Text>
+            <Text style={styles.logInTitle}>{t('login_title')}</Text>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Email or Username *</Text>
+              <Text style={styles.label}>{t('login_email_or_username')} *</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Email or Username"
+                placeholder={t('login_email_placeholder')}
                 value={email || username}
                 onChangeText={(text) => {
                   if (text.includes("@")) {
@@ -122,10 +122,10 @@ function Login({ navigation }: Props) {
               />
             </View>
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Password *</Text>
+              <Text style={styles.label}>{t('login_password')} *</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Password"
+                placeholder={t('login_password_placeholder')}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={true}
@@ -137,7 +137,7 @@ function Login({ navigation }: Props) {
               disabled={loading}
             >
               <Text style={styles.buttonText}>
-                {loading ? 'Entering...' : 'Log In'}
+                {loading ? t('login_button_loading') : t('login_button')}
               </Text>
             </TouchableOpacity>
             <View style={styles.rememberContainer}>
@@ -147,12 +147,12 @@ function Login({ navigation }: Props) {
               >
                 {remember && <Text style={styles.checkMark}>✓</Text>}
               </TouchableOpacity>
-              <Text style={styles.rememberText}>Remember Me</Text>
+              <Text style={styles.rememberText}>{t('login_remember_me')}</Text>
             </View>
 
             <View style={styles.divider} />
             <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-              <Text style={styles.linkText}>Don't have an account? <Text style={styles.signUpLinkText}>Sign Up</Text></Text>
+              <Text style={styles.linkText}>{t('login_no_account')} <Text style={styles.signUpLinkText}>{t('login_sign_up')}</Text></Text>
             </TouchableOpacity>
           </ScrollView>
         </View>

@@ -16,6 +16,7 @@ import * as SecureStore from 'expo-secure-store';
 import { IP_ADDRESS } from '@env';
 import { PublicUser } from '../types';
 import styles from '../styles/FindFriends';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const API_URL = `http://${IP_ADDRESS}:3000`;
 
@@ -24,6 +25,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'FindFriends'>;
 export default function FindFriends({ navigation, route }: Props) {
     const selectMode = route.params?.selectMode ?? false;
     const onSelectUser = route.params?.onSelectUser;
+    const { t } = useLanguage();
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<PublicUser[]>([]);
     const [loading, setLoading] = useState(false);
@@ -162,7 +164,7 @@ export default function FindFriends({ navigation, route }: Props) {
                                 item.isFollowing && styles.followingButtonText,
                             ]}
                         >
-                            {item.isFollowing ? 'Unfollow' : 'Follow'}
+                            {item.isFollowing ? t('find_friends_unfollow') : t('find_friends_follow')}
                         </Text>
                     </TouchableOpacity>
                 )}
@@ -177,7 +179,7 @@ export default function FindFriends({ navigation, route }: Props) {
             return (
                 <View style={styles.emptyContainer}>
                     <Ionicons name="people-outline" size={56} color="#5a4a3a" />
-                    <Text style={styles.emptyText}>Find Friends</Text>
+                    <Text style={styles.emptyText}>{t('find_friends_title')}</Text>
                     <Text style={styles.emptySubText}>
                         Search by username to discover people
                     </Text>
@@ -186,7 +188,7 @@ export default function FindFriends({ navigation, route }: Props) {
         return (
             <View style={styles.emptyContainer}>
                 <Ionicons name="search-outline" size={48} color="#5a4a3a" />
-                <Text style={styles.emptySubText}>No users found for "{query}"</Text>
+                <Text style={styles.emptySubText}>{t('find_friends_no_results')} "{query}"</Text>
             </View>
         );
     };
@@ -201,7 +203,7 @@ export default function FindFriends({ navigation, route }: Props) {
                 >
                     <Ionicons name="arrow-back" size={24} color="#333" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Find Friends</Text>
+                <Text style={styles.headerTitle}>{t('find_friends_title')}</Text>
                 <View style={styles.placeholder} />
             </View>
 
@@ -215,7 +217,7 @@ export default function FindFriends({ navigation, route }: Props) {
                 />
                 <TextInput
                     style={styles.searchInput}
-                    placeholder="Search by username..."
+                    placeholder={t('find_friends_placeholder')}
                     placeholderTextColor="#6b5440"
                     value={query}
                     onChangeText={handleChangeText}

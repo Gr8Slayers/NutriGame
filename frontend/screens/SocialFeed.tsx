@@ -20,6 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { IP_ADDRESS } from "@env";
 import * as SecureStore from 'expo-secure-store';
 import { Post, Comment } from '../types';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const API_URL = `http://${IP_ADDRESS}:3000`;
 const DEFAULT_AVATAR = require('../assets/default_avatar.png');
@@ -87,6 +88,7 @@ const getImageUrl = (url: string | null | undefined) => {
 type Props = NativeStackScreenProps<RootStackParamList, 'SocialFeed'>;
 
 function SocialFeed({ navigation }: Props) {
+    const { t } = useLanguage();
     const [feedData, setFeedData] = useState<Post[]>([]);
     const [refreshing, setRefreshing] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
@@ -252,7 +254,7 @@ function SocialFeed({ navigation }: Props) {
                     </TouchableOpacity>
                     <View style={styles.recipeBadge}>
                         <Ionicons name="restaurant-outline" size={12} color="#fff" />
-                        <Text style={styles.recipeBadgeText}>Recipe</Text>
+                        <Text style={styles.recipeBadgeText}>{t('recipe') || 'Recipe'}</Text>
                     </View>
                 </View>
 
@@ -282,7 +284,7 @@ function SocialFeed({ navigation }: Props) {
                         onPress={() => toggleExpand(post.id)}
                         activeOpacity={0.7}
                     >
-                        <Text style={styles.expandButtonText}>{isExpanded ? 'Hide Recipe' : 'Show Recipe'}</Text>
+                        <Text style={styles.expandButtonText}>{isExpanded ? t('hide_recipe') || 'Hide Recipe' : t('show_recipe') || 'Show Recipe'}</Text>
                         <Ionicons name={isExpanded ? 'chevron-up' : 'chevron-down'} size={16} color="#c8a96e" />
                     </TouchableOpacity>
                 )}
@@ -292,12 +294,12 @@ function SocialFeed({ navigation }: Props) {
                         {recipe.preparationTime != null && (
                             <View style={styles.prepTimeRow}>
                                 <Ionicons name="time-outline" size={14} color="#a0896e" />
-                                <Text style={styles.prepTimeText}>Prep Time: {recipe.preparationTime} min</Text>
+                                <Text style={styles.prepTimeText}>{t('prep_time') || 'Prep Time'}: {recipe.preparationTime} min</Text>
                             </View>
                         )}
-                        <Text style={styles.sectionLabel}>Ingredients</Text>
+                        <Text style={styles.sectionLabel}>{t('ingredients') || 'Ingredients'}</Text>
                         <Text style={styles.sectionContent}>{recipe.ingredients}</Text>
-                        <Text style={styles.sectionLabel}>Instructions</Text>
+                        <Text style={styles.sectionLabel}>{t('instructions') || 'Instructions'}</Text>
                         <Text style={styles.sectionContent}>{recipe.instructions}</Text>
                     </View>
                 )}
@@ -328,7 +330,7 @@ function SocialFeed({ navigation }: Props) {
                 {commentsOpen && (
                     <View style={styles.commentSection}>
                         {comments.length === 0 ? (
-                            <Text style={styles.noCommentText}>No comments yet. Be the first!</Text>
+                            <Text style={styles.noCommentText}>{t('no_comments_yet') || 'No comments yet. Be the first!'}</Text>
                         ) : (
                             comments.map(c => (
                                 <View key={c.id} style={styles.commentRow}>
@@ -344,7 +346,7 @@ function SocialFeed({ navigation }: Props) {
                         <View style={styles.commentInputRow}>
                             <TextInput
                                 style={styles.commentInput}
-                                placeholder="Add a comment..."
+                                placeholder={t('add_comment') || 'Add a comment...'}
                                 placeholderTextColor="#6b5440"
                                 value={inputText}
                                 onChangeText={t => setCommentInputs(prev => ({ ...prev, [post.id]: t }))}
@@ -376,7 +378,7 @@ function SocialFeed({ navigation }: Props) {
                 <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                     <Ionicons name="arrow-back" size={24} color="#333" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Feed</Text>
+                <Text style={styles.headerTitle}>{t('feed_title')}</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                     <TouchableOpacity style={styles.menuButton} onPress={() => navigation.navigate('FindFriends')}>
                         <Ionicons name="people-outline" size={24} color="#333" />
@@ -394,8 +396,8 @@ function SocialFeed({ navigation }: Props) {
             ) : feedData.length === 0 ? (
                 <View style={styles.centered}>
                     <Ionicons name="restaurant-outline" size={56} color="#5a4a3a" />
-                    <Text style={styles.emptyText}>No Feed</Text>
-                    <Text style={styles.emptySubText}>Share your first recipe!</Text>
+                    <Text style={styles.emptyText}>{t('no_feed') || 'No Feed'}</Text>
+                    <Text style={styles.emptySubText}>{t('share_first_recipe') || 'Share your first recipe!'}</Text>
                 </View>
             ) : (
                 <FlatList
