@@ -191,10 +191,8 @@ results.forEach(result => {
 
 ## ⚠️ Önemli Notlar
 
-- Space **public** olmalı (private ise token gerekir)
 - Rate limiting var, çok fazla istek göndermeyin
 - Annotated image URL geçici (birkaç saat sonra silinir)
-- Batch işlemlerinde her resim arasında 2 saniye bekleme var
 
 ## 📝 Dosya Yapısı
 
@@ -212,8 +210,8 @@ huggingface/
 ## 🔗 Hugging Face Space
 
 - **URL**: https://huggingface.co/spaces/nceyda/yolo-food-det
-- **Model**: YOLOv8n (nano)
-- **Dataset**: COCO (80 classes)
+- **Model**: YOLOv8l (large)
+- **Dataset**: COCO (115 classes)
 - **Framework**: Gradio 4.44.0
 
 ## 🐛 Hata Ayıklama
