@@ -224,8 +224,8 @@ export class GamificationModel {
                     meal_category: 'OVERALL',
                 },
             });
-            // Sugar (Carbs) success if BELOW goal
-            successfulDays = logs.filter(l => l.t_carb > 0 && l.t_carb <= goal).length;
+            // Sugar (Carbs) success if BELOW or EQUAL to goal. We check t_calorie > 0 to ensure they actually logged meals.
+            successfulDays = logs.filter(l => l.t_calorie > 0 && l.t_carb <= goal).length;
         } else if (challenge.type === 'step' || challenge.type === 'move') {
             const logs = await prisma.dailyProgress.findMany({
                 where: {
@@ -367,7 +367,8 @@ export class GamificationModel {
 
                 let isGoalMet = false;
                 if (challenge.type === 'sugar') {
-                    isGoalMet = amount > 0 && amount <= goal;
+                    const hasLoggedMeals = dayLog && dayLog.t_calorie && dayLog.t_calorie > 0;
+                    isGoalMet = hasLoggedMeals && amount <= goal;
                 } else {
                     isGoalMet = amount >= goal;
                 }

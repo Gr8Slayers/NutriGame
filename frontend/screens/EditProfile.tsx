@@ -1,4 +1,5 @@
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Modal, Image, Alert } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Asset } from 'expo-asset';
 import { useState } from 'react';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -203,7 +204,18 @@ export default function EditProfile() {
                 <Text style={styles.headerTitle}>{t('edit_profile_title') || 'Edit Profile'}</Text>
             </View>
 
-            <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+            <KeyboardAwareScrollView 
+                style={{ flex: 1 }}
+                contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 }]}
+                showsVerticalScrollIndicator={false}
+                extraHeight={150}
+                extraScrollHeight={150}
+                enableOnAndroid={true}
+                keyboardShouldPersistTaps="handled"
+                enableAutomaticScroll={true}
+                keyboardOpeningTime={0}
+                viewIsInsideTabBar={true}
+            >
                 {/* Avatar Section */}
                 <View style={styles.avatarSection}>
                     <View style={styles.avatarContainer}>
@@ -319,7 +331,7 @@ export default function EditProfile() {
                         {saving ? (t('loading') || 'Saving...') : (t('edit_profile_save') || 'Save Changes')}
                     </Text>
                 </TouchableOpacity>
-            </ScrollView>
+            </KeyboardAwareScrollView>
 
             {/* Avatar Selection Modal */}
             <Modal

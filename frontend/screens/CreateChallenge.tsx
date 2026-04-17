@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, ActivityIndicator, Platform } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
@@ -118,7 +119,12 @@ const CreateChallenge: React.FC<Props> = ({ navigation }) => {
         <View style={{ width: 24 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <KeyboardAwareScrollView 
+        contentContainerStyle={styles.content}
+        extraScrollHeight={100}
+        enableOnAndroid={true}
+        keyboardShouldPersistTaps="handled"
+      >
         <Text style={styles.label}>{t('create_challenge_name')}</Text>
         <TextInput
           style={styles.input}
@@ -137,10 +143,12 @@ const CreateChallenge: React.FC<Props> = ({ navigation }) => {
           onChangeText={setDescription}
         />
 
-        <Text style={styles.label}>{t('create_challenge_goal')}</Text>
+        <Text style={styles.label}>
+          {type === 'sugar' ? 'Sugar Limit (optional, 0 = No Sugar)' : t('create_challenge_goal')}
+        </Text>
         <TextInput
           style={styles.input}
-          placeholder="e.g. 2000 (ml for water, kcal for calorie)"
+          placeholder={type === 'sugar' ? "e.g. 0" : "e.g. 2000 (ml for water, kcal for calorie)"}
           placeholderTextColor="#6b5440"
           value={goalValue}
           onChangeText={setGoalValue}
@@ -217,7 +225,7 @@ const CreateChallenge: React.FC<Props> = ({ navigation }) => {
             <Text style={styles.createButtonText}>{t('create_challenge_button')}</Text>
           )}
         </TouchableOpacity>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </View>
   );
 };

@@ -160,7 +160,7 @@ const ChallengeProgress: React.FC<Props> = ({ navigation, route }) => {
   const todayPercent = Math.min(100, Math.round((todayCurrent / goal) * 100));
   const successfulDays = dayHistory.filter(h => h.status === 'success').length;
   const remaining = Math.max(0, goal - todayCurrent);
-  const unit = challengeData?.type === 'water' ? 'ml' : challengeData?.type === 'calorie' ? 'kcal' : 'steps';
+  const unit = challengeData?.type === 'water' ? 'ml' : challengeData?.type === 'calorie' ? 'kcal' : challengeData?.type === 'sugar' ? 'g' : 'steps';
 
   return (
     <View style={styles.container}>
@@ -217,29 +217,42 @@ const ChallengeProgress: React.FC<Props> = ({ navigation, route }) => {
 
           <Text style={styles.sectionLabel}>{t('challenge_progress_today_status')}</Text>
           <View style={styles.todayStatusCard}>
-            <View style={styles.todayValues}>
-              <Text style={styles.todayMainValue}>
-                {todayCurrent.toLocaleString('tr-TR')} <Text style={styles.todayGoalValue}>/ {goal.toLocaleString('tr-TR')} {unit}</Text>
-              </Text>
-              <Text style={styles.todayRemaining}>{t('challenge_progress_remaining')}: {remaining.toLocaleString('tr-TR')} {unit}</Text>
-            </View>
-            <View style={styles.circularContainer}>
-              <AnimatedCircularProgress
-                size={80}
-                width={8}
-                fill={todayPercent}
-                tintColor="#2ECC71"
-                backgroundColor="#2C2C2C"
-                lineCap="round"
-                rotation={0}
-              >
-                {() => (
-                  <View style={{ alignItems: 'center' }}>
-                    <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' }}>{todayPercent}%</Text>
-                  </View>
-                )}
-              </AnimatedCircularProgress>
-            </View>
+            {challengeData?.type === 'sugar' ? (
+              <View style={[styles.todayValues, { flex: 1, paddingVertical: 10 }]}>
+                <Text style={styles.todayMainValue}>
+                  {todayCurrent.toLocaleString('tr-TR')} {unit}
+                </Text>
+                <Text style={[styles.todayRemaining, { color: todayCurrent <= goal ? '#2ECC71' : '#FF6B6B', marginTop: 8 }]}>
+                  {todayCurrent <= goal ? `Success! Under or equal to ${goal}${unit} limit` : `Failed! Over ${goal}${unit} limit`}
+                </Text>
+              </View>
+            ) : (
+              <>
+                <View style={styles.todayValues}>
+                  <Text style={styles.todayMainValue}>
+                    {todayCurrent.toLocaleString('tr-TR')} <Text style={styles.todayGoalValue}>/ {goal.toLocaleString('tr-TR')} {unit}</Text>
+                  </Text>
+                  <Text style={styles.todayRemaining}>{t('challenge_progress_remaining')}: {remaining.toLocaleString('tr-TR')} {unit}</Text>
+                </View>
+                <View style={styles.circularContainer}>
+                  <AnimatedCircularProgress
+                    size={80}
+                    width={8}
+                    fill={todayPercent}
+                    tintColor="#2ECC71"
+                    backgroundColor="#2C2C2C"
+                    lineCap="round"
+                    rotation={0}
+                  >
+                    {() => (
+                      <View style={{ alignItems: 'center' }}>
+                        <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' }}>{todayPercent}%</Text>
+                      </View>
+                    )}
+                  </AnimatedCircularProgress>
+                </View>
+              </>
+            )}
           </View>
 
           <Text style={styles.sectionLabel}>{t('challenge_progress_history')}</Text>
