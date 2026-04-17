@@ -1,4 +1,4 @@
-path: D:/Desktop/Bitirme/NutriGame/object_detection/processed_datasets/final_data_yolo_v2/merged
+path: .
 train: images/train
 val:   images/val
 test:  images/test
