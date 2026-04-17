@@ -9,6 +9,7 @@ import { RootStackParamList } from '../App';
 
 import styles from '../styles/CreateAvatar';
 import { IP_ADDRESS } from "@env";
+import { useLanguage } from '../i18n/LanguageContext';
 
 const API_URL = `http://${IP_ADDRESS}:3000`;
 
@@ -27,6 +28,7 @@ const Leaf = () => {
 };
 
 function CreateAvatar({ navigation, route }: Props) {
+  const { t } = useLanguage();
   const { finalData } = route.params;
   const [name, setUserName] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -178,8 +180,8 @@ function CreateAvatar({ navigation, route }: Props) {
       <Leaf />
       <View style={styles.dataContainer}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          <Text style={styles.label}>Hello, {name}! </Text>
-          <Text style={styles.label}>Choose Your Avatar</Text>
+          <Text style={styles.label}>{t('welcome')}, {name}! </Text>
+          <Text style={styles.label}>{t('choose_avatar')}</Text>
           <View style={styles.grid}>
             {avatars.map((img, i) => (
               <TouchableOpacity
@@ -196,7 +198,7 @@ function CreateAvatar({ navigation, route }: Props) {
           </View>
           <TouchableOpacity style={styles.button} onPress={handleContinue}>
             <Text style={styles.buttonText}>
-              {loading ? 'Saving...' : 'Save'}
+              {loading ? t('continuing') : t('save')}
             </Text>
           </TouchableOpacity>
         </ScrollView>

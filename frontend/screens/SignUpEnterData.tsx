@@ -5,13 +5,13 @@ import {
 import { Menu } from 'react-native-paper';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useRoute } from '@react-navigation/native';
-
 import styles from '../styles/SignUpEnterData';
 import GenderSelector from '../components/genderSelection'
 import GoalDropdown from '../components/goalSelection'
 import ActivityLevelDropdown from '../components/activityLevelSelection'
 import { RootStackParamList } from '../App';
 import { IP_ADDRESS } from "@env";
+import { useLanguage } from '../i18n/LanguageContext';
 
 const API_URL = `http://${IP_ADDRESS}:3000`;
 
@@ -27,7 +27,7 @@ const Leaf = () => {
   );
 };
 function SignUpEnterData({ navigation, route }: Props) {
-
+  const { t } = useLanguage();
   const { initialData } = route.params;
   const [age, setAge] = useState('');
   const [gender, setGender] = useState<'male' | 'female' | null>(null);
@@ -51,7 +51,7 @@ function SignUpEnterData({ navigation, route }: Props) {
     setLoading(true);
 
     if (!age || !gender || !weight || !height || !goal || !activity_level) {
-      Alert.alert("Missing Info", "Please fill in all required fields.");
+      Alert.alert(t('error') || "Missing Info", t('missing_info') || "Please fill in all required fields.");
       setLoading(false);
       return;
     }
@@ -61,8 +61,8 @@ function SignUpEnterData({ navigation, route }: Props) {
       const months = parseInt(goal_duration_months);
       if (isNaN(months) || months < 1 || months > 24) {
         Alert.alert(
-          "Invalid Duration",
-          "Please enter a realistic goal duration between 1 and 24 months."
+          t('error') || "Invalid Duration",
+          t('invalid_duration') || "Please enter a realistic goal duration between 1 and 24 months."
         );
         setLoading(false);
         return;
@@ -101,10 +101,10 @@ function SignUpEnterData({ navigation, route }: Props) {
         <View style={styles.dataContainer}>
           <ScrollView contentContainerStyle={styles.scrollContent}>
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Age *</Text>
+              <Text style={styles.label}>{t('edit_profile_age') || 'Age'} *</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Age"
+                placeholder={t('edit_profile_age') || 'Age'}
                 value={age}
                 keyboardType="numeric"
                 onChangeText={setAge}
@@ -113,20 +113,20 @@ function SignUpEnterData({ navigation, route }: Props) {
             <GenderSelector value={gender} onChange={setGender} />
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Weight *</Text>
+              <Text style={styles.label}>{t('edit_profile_weight') || 'Weight'} *</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Weight (kg)"
+                placeholder={t('edit_profile_weight') || 'Weight (kg)'}
                 value={weight}
                 keyboardType="numeric"
                 onChangeText={setWeight}
               />
             </View>
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Height *</Text>
+              <Text style={styles.label}>{t('edit_profile_height') || 'Height'} *</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Height (cm)"
+                placeholder={t('edit_profile_height') || 'Height (cm)'}
                 value={height}
                 keyboardType="numeric"
                 onChangeText={setHeight}
@@ -134,10 +134,10 @@ function SignUpEnterData({ navigation, route }: Props) {
             </View>
             <GoalDropdown value={goal} onChange={setGoal} />
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Target Weight (optional)</Text>
+              <Text style={styles.label}>{t('target_weight_opt') || 'Target Weight (optional)'}</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Target weight (kg) - leave blank to skip"
+                placeholder={t('target_weight_placeholder') || 'Target weight (kg) - leave blank to skip'}
                 value={target_weight}
                 keyboardType="numeric"
                 onChangeText={setTargetWeight}
@@ -145,10 +145,10 @@ function SignUpEnterData({ navigation, route }: Props) {
             </View>
             <ActivityLevelDropdown value={activity_level} onChange={setActivityLevel} />
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Goal Duration (optional)</Text>
+              <Text style={styles.label}>{t('goal_duration_opt') || 'Goal Duration (optional)'}</Text>
               <TextInput
                 style={styles.input}
-                placeholder="How many months to reach your goal? (1–24)"
+                placeholder={t('goal_duration_placeholder') || 'How many months to reach your goal? (1–24)'}
                 value={goal_duration_months}
                 keyboardType="numeric"
                 maxLength={2}
@@ -161,7 +161,7 @@ function SignUpEnterData({ navigation, route }: Props) {
             </View>
             <TouchableOpacity style={styles.button} onPress={handleSignUpData}>
               <Text style={styles.buttonText}>
-                {loading ? 'Continuing...' : 'Continue'}
+                {loading ? (t('continuing') || 'Continuing...') : (t('continue') || 'Continue')}
               </Text>
             </TouchableOpacity>
           </ScrollView>

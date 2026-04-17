@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Modal, StyleSheet } from 'react-native';
 import styles from '../styles/SignUpEnterData';
 import { Ionicons } from '@expo/vector-icons';
+import { useLanguage } from '../i18n/LanguageContext';
 
-const GOALS = [
-  { label: 'Weight Loss', icon: 'flame-outline' },
-  { label: 'Increasing Muscle Mass', icon: 'barbell-outline' },
-  { label: 'Maintain Weight', icon: 'scale-outline' },
-  { label: 'Be Fit', icon: 'body-outline' },
-  { label: 'Healthy Life', icon: 'leaf-outline' },
+const getGoals = (t: any) => [
+  { label: t('goal_weight_loss') || 'Weight Loss', icon: 'flame-outline', value: 'Weight Loss' },
+  { label: t('goal_muscle_mass') || 'Increasing Muscle Mass', icon: 'barbell-outline', value: 'Increasing Muscle Mass' },
+  { label: t('goal_maintain') || 'Maintain Weight', icon: 'scale-outline', value: 'Maintain Weight' },
+  { label: t('goal_fit') || 'Be Fit', icon: 'body-outline', value: 'Be Fit' },
+  { label: t('goal_healthy') || 'Healthy Life', icon: 'leaf-outline', value: 'Healthy Life' },
 ];
 
 interface GoalDropdownProps {
@@ -21,17 +22,21 @@ interface GoalDropdownProps {
 }
 
 const GoalDropdown = ({ value, onChange, buttonStyle, buttonTextStyle, labelStyle, containerStyle }: GoalDropdownProps) => {
+  const { t } = useLanguage();
   const [visible, setVisible] = useState(false);
+  const GOALS = getGoals(t);
 
   return (
     <View style={[styles.inputContainer, containerStyle]}>
-      <Text style={[styles.label, labelStyle]}>Goal *</Text>
+      <Text style={[styles.label, labelStyle]}>{t('edit_profile_goal') || 'Goal *'}</Text>
       <TouchableOpacity
         style={[styles.goalButton, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, buttonStyle]}
         onPress={() => setVisible(true)}
         activeOpacity={0.7}
       >
-        <Text style={[styles.goalButtonText, buttonTextStyle]}>{value || 'Choose Your Goal'}</Text>
+        <Text style={[styles.goalButtonText, buttonTextStyle]}>{
+          GOALS.find(g => g.value === value)?.label || t('choose_goal') || 'Choose Your Goal'
+        }</Text>
       </TouchableOpacity>
 
       <Modal
@@ -47,16 +52,16 @@ const GoalDropdown = ({ value, onChange, buttonStyle, buttonTextStyle, labelStyl
         >
           <TouchableOpacity activeOpacity={1} style={modal.sheet}>
 
-            <Text style={modal.title}>Choose Your Goal</Text>
+            <Text style={modal.title}>{t('choose_goal') || 'Choose Your Goal'}</Text>
 
             {GOALS.map((goal, index) => {
-              const isSelected = value === goal.label;
+              const isSelected = value === goal.value;
               const isLast = index === GOALS.length - 1;
               return (
                 <TouchableOpacity
-                  key={goal.label}
+                  key={goal.value}
                   activeOpacity={0.75}
-                  onPress={() => { onChange(goal.label); setVisible(false); }}
+                  onPress={() => { onChange(goal.value); setVisible(false); }}
                   style={[
                     modal.item,
                     isSelected && modal.itemSelected,
@@ -86,7 +91,7 @@ const GoalDropdown = ({ value, onChange, buttonStyle, buttonTextStyle, labelStyl
             })}
 
             <TouchableOpacity style={modal.cancelButton} onPress={() => setVisible(false)}>
-              <Text style={modal.cancelText}>Cancel</Text>
+              <Text style={modal.cancelText}>{t('cancel') || 'Cancel'}</Text>
             </TouchableOpacity>
           </TouchableOpacity>
         </TouchableOpacity>
