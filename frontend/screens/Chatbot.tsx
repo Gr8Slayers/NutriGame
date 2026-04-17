@@ -5,6 +5,7 @@ import { GiftedChat, Avatar, IMessage, Bubble, MessageText, InputToolbar, Compos
 import { Ionicons } from '@expo/vector-icons';
 import { TypingAnimation } from 'react-native-typing-animation';
 import * as SecureStore from 'expo-secure-store';
+import { useLanguage } from '../i18n/LanguageContext';
 
 import styles from '../styles/Chatbot';
 import { useNavigation } from '@react-navigation/native';
@@ -16,6 +17,7 @@ const { width } = Dimensions.get('window');
 const MENU_WIDTH = width * 0.7;
 
 export default function Chatbot() {
+    const { t } = useLanguage();
     const [messages, setMessages] = useState<IMessage[]>([]);
     const navigation = useNavigation();
     const [showMenu, setShowMenu] = useState(false);
@@ -510,7 +512,7 @@ export default function Chatbot() {
                     </TouchableOpacity>
                     <View style={styles.menuItem}>
                         <Ionicons name="chatbubble-ellipses-outline" size={24} color="#ffffff" style={styles.menuIcon} />
-                        <Text style={styles.menuSubTitle}>History</Text>
+                        <Text style={styles.menuSubTitle}>{t('history')}</Text>
                     </View>
                     <FlatList
                         data={history}
@@ -521,7 +523,7 @@ export default function Chatbot() {
                         keyboardShouldPersistTaps="always"
                         ListEmptyComponent={() => (
                             <View style={{ padding: 20, alignItems: 'center' }}>
-                                <Text style={{ color: '#666' }}>No history.</Text>
+                                <Text style={{ color: '#666' }}>{t('no_history')}</Text>
                             </View>
                         )}
                     />

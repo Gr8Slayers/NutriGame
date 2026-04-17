@@ -11,6 +11,7 @@ import { UserProfile } from '../types';
 import styles from '../styles/EditProfile';
 import GoalDropdown from '../components/goalSelection';
 import ActivityLevelDropdown from '../components/activityLevelSelection';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const API_URL = `http://${IP_ADDRESS}:3000`;
 
@@ -99,6 +100,7 @@ const AVATARS = [
 ];
 
 export default function EditProfile() {
+    const { t } = useLanguage();
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const route = useRoute<RouteProp<RootStackParamList, 'EditProfile'>>();
     const userData = route.params;
@@ -119,7 +121,7 @@ export default function EditProfile() {
             setSaving(true);
             const token = await SecureStore.getItemAsync('userToken');
             if (!token) {
-                Alert.alert('Error', 'Please login again');
+                Alert.alert(t('error') || 'Error', 'Please login again');
                 return;
             }
 
@@ -178,14 +180,14 @@ export default function EditProfile() {
             const data = await response.json();
 
             if (response.ok && data.success) {
-                Alert.alert('Success', 'Profile updated successfully!');
+                Alert.alert(t('success') || 'Success', t('edit_profile_success') || 'Profile updated successfully!');
                 navigation.goBack();
             } else {
-                Alert.alert('Error', data.message || 'Failed to update profile');
+                Alert.alert(t('error') || 'Error', data.message || 'Failed to update profile');
             }
         } catch (error) {
             console.error('Update error:', error);
-            Alert.alert('Error', 'Failed to update profile');
+            Alert.alert(t('error') || 'Error', 'Failed to update profile');
         } finally {
             setSaving(false);
         }
@@ -198,7 +200,7 @@ export default function EditProfile() {
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color="#f7e5c5" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Edit Profile</Text>
+                <Text style={styles.headerTitle}>{t('edit_profile_title') || 'Edit Profile'}</Text>
             </View>
 
             <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -220,7 +222,7 @@ export default function EditProfile() {
 
                 {/* Username */}
                 <View style={styles.inputSection}>
-                    <Text style={styles.label}>Username</Text>
+                    <Text style={styles.label}>{t('signup_username') || 'Username'}</Text>
                     <TextInput
                         style={styles.input}
                         value={username}
@@ -232,7 +234,7 @@ export default function EditProfile() {
 
                 {/* Email */}
                 <View style={styles.inputSection}>
-                    <Text style={styles.label}>Email</Text>
+                    <Text style={styles.label}>{t('signup_email') || 'Email'}</Text>
                     <TextInput
                         style={styles.input}
                         value={email}
@@ -246,7 +248,7 @@ export default function EditProfile() {
 
                 {/* Password */}
                 <View style={styles.inputSection}>
-                    <Text style={styles.label}>Password</Text>
+                    <Text style={styles.label}>{t('signup_password') || 'Password'}</Text>
                     <TextInput
                         style={styles.input}
                         value={password}
@@ -260,7 +262,7 @@ export default function EditProfile() {
                 {/* Current Weight and Height */}
                 <View style={styles.rowInputs}>
                     <View style={[styles.inputSection, styles.halfInput]}>
-                        <Text style={styles.label}>Current Weight (kg)</Text>
+                        <Text style={styles.label}>{t('edit_profile_weight') || 'Current Weight (kg)'}</Text>
                         <TextInput
                             style={styles.input}
                             value={currentWeight}
@@ -272,7 +274,7 @@ export default function EditProfile() {
                     </View>
 
                     <View style={[styles.inputSection, styles.halfInput]}>
-                        <Text style={styles.label}>Height (cm)</Text>
+                        <Text style={styles.label}>{t('edit_profile_height') || 'Height (cm)'}</Text>
                         <TextInput
                             style={styles.input}
                             value={height}
@@ -314,7 +316,7 @@ export default function EditProfile() {
                     disabled={saving}
                 >
                     <Text style={styles.saveButtonText}>
-                        {saving ? 'Saving...' : 'Save Changes'}
+                        {saving ? (t('loading') || 'Saving...') : (t('edit_profile_save') || 'Save Changes')}
                     </Text>
                 </TouchableOpacity>
             </ScrollView>
@@ -329,7 +331,7 @@ export default function EditProfile() {
                 <View style={styles.modalContainer}>
                     <View style={styles.modalContent}>
                         <View style={styles.modalHeader}>
-                            <Text style={styles.modalTitle}>Choose Avatar</Text>
+                            <Text style={styles.modalTitle}>{t('select_below') || 'Choose Avatar'}</Text>
                             <TouchableOpacity
                                 style={styles.closeButton}
                                 onPress={() => setShowAvatarModal(false)}

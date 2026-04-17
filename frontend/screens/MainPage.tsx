@@ -126,7 +126,7 @@ function MainPage({ navigation }: Props) {
             <View style={styles.header}>
                 <Text style={styles.headerTitle}>{t('main_title')}</Text>
                 <TouchableOpacity style={styles.menuButton} onPress={() => navigation.navigate('Menu')}>
-                    <Ionicons name="menu" size={24} color="#333" style={styles.menuButton} />
+                    <Ionicons name="menu" size={24} color="#333" />
                 </TouchableOpacity>
                 <View style={styles.placeholder} />
             </View>

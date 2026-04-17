@@ -184,6 +184,8 @@ export const translations = {
     chatbot_placeholder: 'Ask NutriCoach...',
     chatbot_send: 'Send',
     chatbot_new_chat: 'New Chat',
+    history: 'History',
+    no_history: 'No history.',
 
     // ── SocialFeed ──────────────────────────────────────────
     feed_title: 'Social Feed',
@@ -235,6 +237,9 @@ export const translations = {
     edit_profile_goal: 'Diet Goal',
     edit_profile_save: 'Save Changes',
     edit_profile_success: 'Profile updated successfully.',
+    delete_account: 'Delete Account',
+    delete_account_msg: 'Are you sure you want to delete your account? This action cannot be undone.',
+    select_below: 'Select below',
 
     // ── FindFriends ─────────────────────────────────────────
     find_friends_title: 'Find Friends',
@@ -427,6 +432,8 @@ export const translations = {
     chatbot_placeholder: 'NutriCoach\'a sor...',
     chatbot_send: 'Gönder',
     chatbot_new_chat: 'Yeni Sohbet',
+    history: 'Geçmiş',
+    no_history: 'Henüz sohbet geçmişi yok',
 
     // ── SocialFeed ──────────────────────────────────────────
     feed_title: 'Sosyal Akış',
@@ -478,6 +485,9 @@ export const translations = {
     edit_profile_goal: 'Diyet Hedefi',
     edit_profile_save: 'Değişiklikleri Kaydet',
     edit_profile_success: 'Profil başarıyla güncellendi.',
+    delete_account: 'Hesabı Sil',
+    delete_account_msg: 'Hesabınızı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
+    select_below: 'Aşağıdan seçin',
 
     // ── FindFriends ─────────────────────────────────────────
     find_friends_title: 'Arkadaş Bul',

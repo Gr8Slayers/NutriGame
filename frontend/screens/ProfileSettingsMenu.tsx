@@ -9,6 +9,7 @@ import styles from '../styles/ProfileSettingsMenu';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { UserProfile } from '../types';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const API_URL = `http://${IP_ADDRESS}:3000`;
 
@@ -57,6 +58,7 @@ const getAvatarSource = (path: string | undefined) => {
 };
 
 export default function ProfileSettingsMenu() {
+    const { t } = useLanguage();
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const route = useRoute<RouteProp<RootStackParamList, 'ProfileSettingsMenu'>>();
     const userData = route.params;
@@ -116,15 +118,15 @@ export default function ProfileSettingsMenu() {
             <View style={styles.statsContainer}>
                 <View style={styles.statCard}>
                     <Text style={styles.statValue}>{userData?.badgeCount || 0}</Text>
-                    <Text style={styles.statLabel}>Badges</Text>
+                    <Text style={styles.statLabel}>{t('profile_badges') || 'Badges'}</Text>
                 </View>
                 <View style={styles.statCard}>
                     <Text style={styles.statValue}>{userData?.followerCount || 0}</Text>
-                    <Text style={styles.statLabel}>Followers</Text>
+                    <Text style={styles.statLabel}>{t('profile_followers') || 'Followers'}</Text>
                 </View>
                 <View style={styles.statCard}>
                     <Text style={styles.statValue}>{userData?.followingCount || 0}</Text>
-                    <Text style={styles.statLabel}>Following</Text>
+                    <Text style={styles.statLabel}>{t('profile_following') || 'Following'}</Text>
                 </View>
             </View>
 
@@ -135,7 +137,7 @@ export default function ProfileSettingsMenu() {
                     onPress={() => navigation.navigate('EditProfile', userData)}
                 >
                     <Ionicons name="create-outline" size={24} color="#ffffff" />
-                    <Text style={styles.menuItemText}>Edit Profile</Text>
+                    <Text style={styles.menuItemText}>{t('edit_profile_title') || 'Edit Profile'}</Text>
                 </TouchableOpacity>
 
 
@@ -144,7 +146,7 @@ export default function ProfileSettingsMenu() {
                     onPress={() => setShowDeleteModal(true)}
                 >
                     <Ionicons name="trash-outline" size={24} color="#ff4d4d" />
-                    <Text style={[styles.menuItemText, { color: '#ff4d4d' }]}>Delete Account</Text>
+                    <Text style={[styles.menuItemText, { color: '#ff4d4d' }]}>{t('delete_account') || 'Delete Account'}</Text>
                 </TouchableOpacity>
             </View>
 
@@ -162,22 +164,22 @@ export default function ProfileSettingsMenu() {
                             loop
                             style={{ width: 40, height: 40 }}
                         />
-                        <Text style={styles.modalTitle}>Delete Account</Text>
+                        <Text style={styles.modalTitle}>{t('delete_account') || 'Delete Account'}</Text>
                         <Text style={styles.modalMessage}>
-                            Are you sure you want to delete your account? This action cannot be undone.
+                            {t('delete_account_msg') || 'Are you sure you want to delete your account? This action cannot be undone.'}
                         </Text>
                         <View style={styles.modalButtons}>
                             <TouchableOpacity
                                 style={[styles.modalButton, styles.modalButtonCancel]}
                                 onPress={() => setShowDeleteModal(false)}
                             >
-                                <Text style={styles.modalButtonText}>Cancel</Text>
+                                <Text style={styles.modalButtonText}>{t('cancel') || 'Cancel'}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={[styles.modalButton, styles.deleteButton]}
                                 onPress={handleDeleteAccount}
                             >
-                                <Text style={styles.modalButtonText}>Delete</Text>
+                                <Text style={styles.modalButtonText}>{t('delete') || 'Delete'}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
