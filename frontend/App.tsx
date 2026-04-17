@@ -31,6 +31,8 @@ import WeeklySummary from './screens/WeeklySummary';
 import DailyWeight from './screens/DailyWeight';
 import UserProfile from './screens/UserProfile';
 import Notifications from './screens/Notifications';
+import LegalPolicies from './screens/LegalPolicies';
+import DocumentViewer from './screens/DocumentViewer';
 import { UserProfile as UserProfileType, UpdatedMealParams } from './types';
 
 // Navigation tipi
@@ -72,10 +74,11 @@ export type RootStackParamList = {
   FindFriends: { selectMode?: boolean; onSelectUser?: (userId: string, username: string) => void } | undefined;
   Challenges: undefined;
   CreateChallenge: undefined;
-  ChallengeProgress: { challengeId: string };
   UserProfile: { userId: string };
   DailyWeight: undefined;
   Notifications: undefined;
+  LegalPolicies: undefined;
+  DocumentViewer: { documentType: 'kvkk' | 'tos' | 'consent' };
 
 };
 
@@ -183,6 +186,8 @@ export default function App() {
                 <Stack.Screen name="ChallengeProgress" component={ChallengeProgress} />
                 <Stack.Screen name="UserProfile" component={UserProfile} />
                 <Stack.Screen name="Notifications" component={Notifications} />
+                <Stack.Screen name="LegalPolicies" component={LegalPolicies} />
+                <Stack.Screen name="DocumentViewer" component={DocumentViewer} />
               </>
             ) : (
               <>
@@ -208,6 +213,8 @@ export default function App() {
                 <Stack.Screen name="ChallengeProgress" component={ChallengeProgress} />
                 <Stack.Screen name="UserProfile" component={UserProfile} />
                 <Stack.Screen name="Notifications" component={Notifications} />
+                <Stack.Screen name="LegalPolicies" component={LegalPolicies} />
+                <Stack.Screen name="DocumentViewer" component={DocumentViewer} />
               </>
             )}
           </Stack.Navigator>

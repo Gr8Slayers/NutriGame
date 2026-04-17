@@ -156,9 +156,26 @@ leafContainer:{
     marginTop: 15,
     marginBottom: 10,
     borderTopWidth: 1,
-    borderTopColor: '#463C33',
     paddingTop: 15,
   
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+    marginTop: 5,
+  },
+  checkboxText: {
+    marginLeft: 10,
+    color: '#463C33',
+    fontSize: 14,
+    flex: 1,
+    flexWrap: 'wrap',
+  },
+  kvkkLink: {
+    color: '#Db5B23',
+    fontWeight: 'bold',
+    textDecorationLine: 'underline',
   },
 
 });

@@ -39,6 +39,19 @@ export const translations = {
     login_timeout_error: 'Server did not respond (Timeout). Please check your IP address and internet connection.',
     login_connection_error: 'Could not connect to server. Backend is down or network error.',
 
+    kvkk_title: 'KVKK Document',
+    kvkk_accept_text: 'I have read and accept the KVKK document.',
+    kvkk_error: 'You must accept the KVKK agreement to register.',
+
+    legal_policies_title: 'Legal & Policies',
+    legal_policies_info: 'By signing in and using the application, you accept the following terms and policies.',
+    tos_title: 'Terms of Service',
+    tos_accept_text: 'I accept the Terms of Service.',
+    tos_error: 'You must accept the Terms of Service to register.',
+    consent_title: 'Health Data Consent',
+    consent_accept_text: 'I consent to the processing of my health data.',
+    consent_error: 'You must provide consent for health data processing.',
+
     // ── Sign Up ─────────────────────────────────────────────
     signup_title: 'SIGN UP',
     signup_username: 'Username',
@@ -334,6 +347,19 @@ export const translations = {
     login_sign_up: 'Kayıt Ol',
     login_timeout_error: 'Sunucu yanıt vermedi (Zaman aşımı). Lütfen IP adresi ve internet bağlantınızı kontrol edin.',
     login_connection_error: 'Sunucuya bağlanılamadı. Backend kapalı veya ağ hatası var.',
+
+    kvkk_title: 'KVKK Metni',
+    kvkk_accept_text: 'KVKK metnini okudum ve onaylıyorum.',
+    kvkk_error: 'Kayıt olmak için KVKK metnini onaylamanız gerekmektedir.',
+
+    legal_policies_title: 'Yasal Metinler & Politikalar',
+    legal_policies_info: 'Uygulamaya giriş yaparak ve kullanarak aşağıdaki şartları ve politikaları kabul etmiş sayılırsınız.',
+    tos_title: 'Kullanıcı Sözleşmesi',
+    tos_accept_text: 'Kullanıcı Sözleşmesi\'ni okudum ve kabul ediyorum.',
+    tos_error: 'Kayıt olmak için Kullanıcı Sözleşmesi\'ni onaylamanız gerekmektedir.',
+    consent_title: 'Sağlık Verileri Açık Rıza Beyanı',
+    consent_accept_text: 'Sağlık verilerimin işlenmesine açık rıza gösteriyorum.',
+    consent_error: 'Uygulamayı kullanabilmek için sağlık verilerinizin işlenmesine rıza göstermelisiniz.',
 
     // ── Sign Up ─────────────────────────────────────────────
     signup_title: 'KAYIT OL',

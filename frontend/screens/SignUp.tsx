@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { 
   View, Text, TextInput, Button,Image, Alert, TouchableOpacity, ScrollView,KeyboardAvoidingView, Platform
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../App';
 import styles from '../styles/SignUpStyle';
@@ -26,6 +27,9 @@ function SignUp({ navigation }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [kvkkAccepted, setKvkkAccepted] = useState(false);
+  const [tosAccepted, setTosAccepted] = useState(false);
+  const [consentAccepted, setConsentAccepted] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
   const { t } = useLanguage();
 
@@ -37,8 +41,23 @@ const handleBackButton = () => {
 
   const handleSignUp = async () => {
     if (loading) return;
-    if(!name || !name || !password){
+    if(!name || !email || !password){
       Alert.alert(t('error'), 'Please fill all fields.');
+      setLoading(false);
+      return;
+    }
+    if (!kvkkAccepted) {
+      Alert.alert(t('error'), t('kvkk_error'));
+      setLoading(false);
+      return;
+    }
+    if (!tosAccepted) {
+      Alert.alert(t('error'), t('tos_error'));
+      setLoading(false);
+      return;
+    }
+    if (!consentAccepted) {
+      Alert.alert(t('error'), t('consent_error'));
       setLoading(false);
       return;
     }
@@ -100,6 +119,46 @@ const handleBackButton = () => {
                   secureTextEntry={true}
                 />
                 </View>
+
+            <View style={styles.checkboxContainer}>
+                <TouchableOpacity onPress={() => setKvkkAccepted(!kvkkAccepted)}>
+                    <Ionicons 
+                        name={kvkkAccepted ? "checkbox" : "square-outline"} 
+                        size={24} 
+                        color={kvkkAccepted ? "#Db5B23" : "#463C33"} 
+                    />
+                </TouchableOpacity>
+                <Text style={styles.checkboxText}>
+                    {t('kvkk_accept_text')} <Text style={styles.kvkkLink} onPress={() => navigation.navigate('DocumentViewer', { documentType: 'kvkk' })}>{t('kvkk_title')}</Text>
+                </Text>
+            </View>
+
+            <View style={[styles.checkboxContainer, { marginTop: -10 }]}>
+                <TouchableOpacity onPress={() => setTosAccepted(!tosAccepted)}>
+                    <Ionicons 
+                        name={tosAccepted ? "checkbox" : "square-outline"} 
+                        size={24} 
+                        color={tosAccepted ? "#Db5B23" : "#463C33"} 
+                    />
+                </TouchableOpacity>
+                <Text style={styles.checkboxText}>
+                    {t('tos_accept_text')} <Text style={styles.kvkkLink} onPress={() => navigation.navigate('DocumentViewer', { documentType: 'tos' })}>{t('tos_title')}</Text>
+                </Text>
+            </View>
+
+            <View style={[styles.checkboxContainer, { marginTop: -10 }]}>
+                <TouchableOpacity onPress={() => setConsentAccepted(!consentAccepted)}>
+                    <Ionicons 
+                        name={consentAccepted ? "checkbox" : "square-outline"} 
+                        size={24} 
+                        color={consentAccepted ? "#Db5B23" : "#463C33"} 
+                    />
+                </TouchableOpacity>
+                <Text style={styles.checkboxText}>
+                    {t('consent_accept_text')} <Text style={styles.kvkkLink} onPress={() => navigation.navigate('DocumentViewer', { documentType: 'consent' })}>{t('consent_title')}</Text>
+                </Text>
+            </View>
+
         <TouchableOpacity style={styles.button} onPress={handleSignUp}>
           <Text style={styles.buttonText}>
             {loading ? t('loading') : t('signup_next')}

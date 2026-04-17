@@ -134,6 +134,14 @@ export default function ProfileSettingsMenu() {
             <View style={styles.menuItems}>
                 <TouchableOpacity
                     style={styles.menuItem}
+                    onPress={() => navigation.navigate('LegalPolicies' as never)}
+                >
+                    <Ionicons name="document-text-outline" size={24} color="#ffffff" />
+                    <Text style={styles.menuItemText}>{t('legal_policies_title')}</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={styles.menuItem}
                     onPress={() => navigation.navigate('EditProfile', userData)}
                 >
                     <Ionicons name="create-outline" size={24} color="#ffffff" />
