@@ -1,3 +1,3 @@
 declare module '@env' {
-    export const IP_ADDRESS: string;
+    export const API_URL: string;
 }

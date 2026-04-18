@@ -4,14 +4,12 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store';
 import { Ionicons } from '@expo/vector-icons';
 import LottieView from 'lottie-react-native';
-import { IP_ADDRESS } from "@env";
+import { API_URL } from '@env';
 import styles from '../styles/Menu';
 import { RootStackParamList } from '../App';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { UserProfile } from '../types';
 import { useLanguage } from '../i18n/LanguageContext';
-
-const API_URL = `http://${IP_ADDRESS}:3000`;
 
 // Helper to resolve avatar paths
 const getAvatarSource = (path: string | undefined) => {

@@ -7,10 +7,9 @@ import { useNavigation } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import styles from '../styles/ScanFood';
 import * as SecureStore from 'expo-secure-store';
-import { IP_ADDRESS } from "@env";
+import { API_URL } from '@env';
 import { useLanguage } from '../i18n/LanguageContext';
 
-const API_URL = `http://${IP_ADDRESS}:3000`;
 const SCAN_TIMEOUT_MS = 15000;
 
 type MealCategory = 'Breakfast' | 'Lunch' | 'Dinner' | 'Snack';

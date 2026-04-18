@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store';
-import { IP_ADDRESS } from '@env';
+import { API_URL } from '@env';
 import { useLanguage } from '../i18n/LanguageContext';
 
 export default function Notifications() {
@@ -17,7 +17,7 @@ export default function Notifications() {
         const fetchNotifications = async () => {
             try {
                 const token = await SecureStore.getItemAsync('userToken');
-                const res = await fetch(`http://${IP_ADDRESS}:3000/api/user/notifications`, {
+                const res = await fetch(`${API_URL}/api/user/notifications`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }

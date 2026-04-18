@@ -7,13 +7,11 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
-import { IP_ADDRESS } from '@env';
+import { API_URL } from '@env';
 import * as SecureStore from 'expo-secure-store';
 import { DailyProgress } from '../types';
 import styles from '../styles/DailyWeight';
 import { useLanguage } from '../i18n/LanguageContext';
-
-const API_URL = `http://${IP_ADDRESS}:3000`;
 
 type Props = NativeStackScreenProps<RootStackParamList, 'DailyWeight'>;
 

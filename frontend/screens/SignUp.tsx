@@ -6,10 +6,8 @@ import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../App';
 import styles from '../styles/SignUpStyle';
-import { IP_ADDRESS } from "@env";
+import { API_URL } from '@env';
 import { useLanguage } from '../i18n/LanguageContext';
-
-const API_URL = `http://${IP_ADDRESS}:3000`; 
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SignUp'>;
  const Leaf = () => {

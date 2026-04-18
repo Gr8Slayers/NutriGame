@@ -10,10 +10,8 @@ import GenderSelector from '../components/genderSelection'
 import GoalDropdown from '../components/goalSelection'
 import ActivityLevelDropdown from '../components/activityLevelSelection'
 import { RootStackParamList } from '../App';
-import { IP_ADDRESS } from "@env";
+import { API_URL } from '@env';
 import { useLanguage } from '../i18n/LanguageContext';
-
-const API_URL = `http://${IP_ADDRESS}:3000`;
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SignUpEnterData'>;
 const Leaf = () => {

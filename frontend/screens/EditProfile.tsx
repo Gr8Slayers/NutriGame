@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store';
 import { Ionicons } from '@expo/vector-icons';
-import { IP_ADDRESS } from "@env";
+import { API_URL } from '@env';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { UserProfile } from '../types';
@@ -13,8 +13,6 @@ import styles from '../styles/EditProfile';
 import GoalDropdown from '../components/goalSelection';
 import ActivityLevelDropdown from '../components/activityLevelSelection';
 import { useLanguage } from '../i18n/LanguageContext';
-
-const API_URL = `http://${IP_ADDRESS}:3000`;
 
 // Helper to resolve avatar paths
 const getAvatarSource = (path: string | undefined) => {

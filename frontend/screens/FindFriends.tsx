@@ -13,12 +13,10 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
-import { IP_ADDRESS } from '@env';
+import { API_URL } from '@env';
 import { PublicUser } from '../types';
 import styles from '../styles/FindFriends';
 import { useLanguage } from '../i18n/LanguageContext';
-
-const API_URL = `http://${IP_ADDRESS}:3000`;
 
 type Props = NativeStackScreenProps<RootStackParamList, 'FindFriends'>;
 

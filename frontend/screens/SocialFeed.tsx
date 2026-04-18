@@ -17,12 +17,11 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import styles from '../styles/SocialFeed';
 import { Ionicons } from '@expo/vector-icons';
-import { IP_ADDRESS } from "@env";
+import { API_URL } from '@env';
 import * as SecureStore from 'expo-secure-store';
 import { Post, Comment } from '../types';
 import { useLanguage } from '../i18n/LanguageContext';
 
-const API_URL = `http://${IP_ADDRESS}:3000`;
 const DEFAULT_AVATAR = require('../assets/default_avatar.png');
 
 const getAvatarSource = (path: string | undefined) => {
@@ -125,7 +124,7 @@ function SocialFeed({ navigation }: Props) {
             setFeedData(recipePosts);
         } catch (error: any) {
             console.error('Ağ hatası (SocialFeed):', error.message || error);
-            Alert.alert('Network Error', `Could not connect to server at ${API_URL}. Check your IP_ADDRESS in .env (${IP_ADDRESS})`);
+            Alert.alert('Network Error', `Could not connect to server at ${API_URL}. Check your API_URL config.`);
         } finally {
             setLoading(false);
             setRefreshing(false);

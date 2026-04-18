@@ -6,11 +6,8 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as SecureStore from 'expo-secure-store';
 import { RootStackParamList } from '../App';
 import styles from '../styles/LoginStyle';
-import { IP_ADDRESS } from "@env";
+import { API_URL } from '@env';
 import { useLanguage } from '../i18n/LanguageContext';
-
-const API_URL = `http://${IP_ADDRESS}:3000`;
-
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 

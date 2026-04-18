@@ -15,12 +15,11 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
-import { IP_ADDRESS } from '@env';
+import { API_URL } from '@env';
 import styles from '../styles/UserProfile';
 import { BadgeImages } from '../constants/BadgeImages';
 import { useLanguage } from '../i18n/LanguageContext';
 
-const API_URL = `http://${IP_ADDRESS}:3000`;
 const DEFAULT_AVATAR = require('../assets/default_avatar.png');
 
 const getAvatarSource = (path: string | null | undefined) => {
