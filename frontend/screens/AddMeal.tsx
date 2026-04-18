@@ -27,6 +27,9 @@ interface FoodItem {
   calories?: number;
   portion?: string;
   portionValue?: number;
+  entry_method?: string;
+  scan_image_url?: string | null;
+  createdAt?: string;
 }
 
 
@@ -94,7 +97,10 @@ export default function AddMeal({ route, navigation }: Props) {
           p_unit: item.p_unit,
           calories: item.t_calorie,
           portion: `${item.p_count} Portion (${item.t_amount}${item.p_unit})`,
-          portionValue: item.p_count
+          portionValue: item.p_count,
+          entry_method: item.entry_method ?? 'manual',
+          scan_image_url: item.scan_image_url ?? null,
+          createdAt: item.createdAt ?? null,
         }));
         setSelectedItems(fetchedItems);
       } else {
@@ -335,12 +341,12 @@ export default function AddMeal({ route, navigation }: Props) {
         fetchMealTotal();
       }
       else {
-        Alert.alert("Hata", "Silinemedi");
+        Alert.alert(t('error'), t('error'));
       }
     }
     catch (e) {
       console.error(e);
-      Alert.alert("Hata", "Sunucu hatası.");
+      Alert.alert(t('error'), t('scan_connection_error'));
     }
 
   };
@@ -476,17 +482,38 @@ export default function AddMeal({ route, navigation }: Props) {
                 </View>
 
                 <ScrollView style={styles.modalScroll}>
-                  {selectedItems.map((item, index) => (
-                    <View key={index} style={styles.modalItem}>
-                      <View>
-                        <Text style={styles.modalItemName}>{item.food_name}</Text>
-                        <Text style={styles.modalItemCal}>{item.portionValue} - {item.p_calorie} kcal</Text>
+                  {selectedItems.map((item, index) => {
+                    const isScan = item.entry_method === 'scan';
+                    const timeLabel = item.createdAt
+                      ? new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                      : null;
+                    const thumbUrl = item.scan_image_url
+                      ? (item.scan_image_url.startsWith('http') ? item.scan_image_url : `${API_URL}${item.scan_image_url}`)
+                      : null;
+                    return (
+                      <View key={index} style={styles.modalItem}>
+                        {isScan && thumbUrl ? (
+                          <Image source={{ uri: thumbUrl }} style={{ width: 44, height: 44, borderRadius: 8, marginRight: 10 }} />
+                        ) : (
+                          <View style={{ width: 44, height: 44, borderRadius: 8, marginRight: 10, backgroundColor: '#f0ebe5', justifyContent: 'center', alignItems: 'center' }}>
+                            <Ionicons name="pencil-outline" size={20} color="#473C33" />
+                          </View>
+                        )}
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.modalItemName}>{item.food_name}</Text>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                            <Text style={styles.modalItemCal}>{item.portionValue} - {item.p_calorie} kcal</Text>
+                            {timeLabel && (
+                              <Text style={{ fontSize: 11, color: '#999' }}>{timeLabel}</Text>
+                            )}
+                          </View>
+                        </View>
+                        <TouchableOpacity onPress={() => handleRemoveItem(index, item)}>
+                          <Ionicons name="trash-outline" size={20} color="#e57373" />
+                        </TouchableOpacity>
                       </View>
-                      <TouchableOpacity onPress={() => handleRemoveItem(index, item)}>
-                        <Ionicons name="trash-outline" size={20} color="#e57373" />
-                      </TouchableOpacity>
-                    </View>
-                  ))}
+                    );
+                  })}
                 </ScrollView>
 
                 <View style={styles.modalFooter}>

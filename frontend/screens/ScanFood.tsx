@@ -57,6 +57,7 @@ export default function ScanFood() {
     const [isLoading, setIsLoading] = useState(false);
     const [detections, setDetections] = useState<any[] | null>(null);
     const [annotatedImage, setAnnotatedImage] = useState<string | null>(null);
+    const [scanImageUrl, setScanImageUrl] = useState<string | null>(null);
     const [mealCategory, setMealCategory] = useState<MealCategory>('Breakfast');
     const [selectedMatches, setSelectedMatches] = useState<Record<string, any>>({});
     const [addToLogModalVisible, setAddToLogModalVisible] = useState(false);
@@ -199,6 +200,7 @@ export default function ScanFood() {
                 const dets = data.detections || [];
                 initDetectionState(dets);
                 if (data.annotated_image) setAnnotatedImage(data.annotated_image);
+                if (data.photoRecord?.imageUrl) setScanImageUrl(data.photoRecord.imageUrl);
 
                 if (dets.length === 0) {
                     Alert.alert(t('warning'), t('scan_no_food_try'), [
@@ -300,12 +302,28 @@ export default function ScanFood() {
                         body: JSON.stringify({
                             date: dateStr,
                             meal_category: mealCategory,
-                            food_id: selected.food_id,
+                            food_id: selected.food_id ?? undefined,
+                            food_name: selected.food_name,
+                            p_calorie: selected.p_calorie,
+                            p_protein: selected.p_protein,
+                            p_fat: selected.p_fat,
+                            p_carb: selected.p_carb,
+                            p_unit: selected.p_unit,
+                            p_amount: selected.p_amount,
                             p_count: portions[item.tempId] ?? 1.0,
+                            entry_method: 'scan',
+                            scan_image_url: scanImageUrl,
                         }),
                     });
-                    response.ok ? successCount++ : failCount++;
-                } catch {
+                    if (response.ok) {
+                        successCount++;
+                    } else {
+                        const errBody = await response.json().catch(() => ({}));
+                        console.error('[AddToLog] failed:', response.status, JSON.stringify(errBody));
+                        failCount++;
+                    }
+                } catch (e) {
+                    console.error('[AddToLog] fetch error:', e);
                     failCount++;
                 }
             }
@@ -340,6 +358,7 @@ export default function ScanFood() {
         setPhotos([]);
         setDetections(null);
         setAnnotatedImage(null);
+        setScanImageUrl(null);
         setIsCameraActive(true);
         setSelectedMatches({});
         setPortions({});

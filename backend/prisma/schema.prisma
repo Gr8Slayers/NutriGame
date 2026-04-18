@@ -65,19 +65,22 @@ model FoodSearchCache {
 }
 
 model MealLog {
-  meal_log_id   Int      @id @default(sequence())
-  userId        Int
-  date          DateTime @default(now()) @db.Date
-  meal_category String
-  p_count       Int
-  food_id       Int
-  food_name     String
-  p_unit        String
-  t_amount      Float
-  t_calorie     Float
-  t_protein     Float
-  t_fat         Float
-  t_carb        Float
+  meal_log_id    Int      @id @default(sequence())
+  userId         Int
+  date           DateTime @default(now()) @db.Date
+  meal_category  String
+  p_count        Int
+  food_id        Int
+  food_name      String
+  p_unit         String
+  t_amount       Float
+  t_calorie      Float
+  t_protein      Float
+  t_fat          Float
+  t_carb         Float
+  entry_method   String   @default("manual")
+  createdAt      DateTime @default(now())
+  scan_image_url String?
 }
 
 model MealTotals {

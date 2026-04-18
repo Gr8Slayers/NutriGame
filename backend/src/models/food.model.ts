@@ -21,12 +21,11 @@ export const foodModel = {
         });
     },
 
-    addFoodToMealLog: async (user_id: number, date: Date, meal_category: string, p_count: number, food_id: number, food_name: string, p_unit: string, t_amount: number, t_calorie: number, t_protein: number, t_fat: number, t_carb: number) => {
+    addFoodToMealLog: async (user_id: number, date: Date, meal_category: string, p_count: number, food_id: number, food_name: string, p_unit: string, t_amount: number, t_calorie: number, t_protein: number, t_fat: number, t_carb: number, entry_method: string = 'manual', scan_image_url: string | null = null) => {
 
         return await prisma.$transaction(async (tx) => {
-            //yemek once mealLoga ekleniyor
             const log = await tx.mealLog.create({
-                data: { userId: user_id, date: date, meal_category, p_count, food_id, food_name, p_unit, t_amount, t_calorie, t_protein, t_fat, t_carb }
+                data: { userId: user_id, date: date, meal_category, p_count, food_id, food_name, p_unit, t_amount, t_calorie, t_protein, t_fat, t_carb, entry_method, scan_image_url }
             });
 
             // ilgili ogune eklsense de bir de overall adi altinda tum gunun degerlerine de ekleme yapiliyor yoksa yeni olusturuluyor

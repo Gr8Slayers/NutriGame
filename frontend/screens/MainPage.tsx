@@ -160,7 +160,7 @@ function MainPage({ navigation }: Props) {
                     </View>
                 </View>
 
-                <View style={styles.addMealCard}>
+                <TouchableOpacity style={styles.addMealCard} onPress={() => navigation.navigate("AddMeal", { selectedDate: formattedDate, type: "Breakfast" })}>
                     <Image source={require("../assets/breakfast.png")} style={styles.iconContainer} resizeMode="contain" />
                     <View style={styles.labelContainer}>
                         <Text style={styles.mealTitle}>{t('main_add_breakfast')}</Text>
@@ -169,9 +169,9 @@ function MainPage({ navigation }: Props) {
                     <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate("AddMeal", { selectedDate: formattedDate, type: "Breakfast" })}>
                         <Text style={styles.plus}>+</Text>
                     </TouchableOpacity>
-                </View>
+                </TouchableOpacity>
 
-                <View style={styles.addMealCard}>
+                <TouchableOpacity style={styles.addMealCard} onPress={() => navigation.navigate("AddMeal", { selectedDate: formattedDate, type: "Lunch" })}>
                     <Image source={require("../assets/lunch.png")} style={styles.iconContainer} resizeMode="contain" />
                     <View style={styles.labelContainer}>
                         <Text style={styles.mealTitle}>{t('main_add_lunch')}</Text>
@@ -180,9 +180,9 @@ function MainPage({ navigation }: Props) {
                     <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate("AddMeal", { selectedDate: formattedDate, type: "Lunch" })}>
                         <Text style={styles.plus}>+</Text>
                     </TouchableOpacity>
-                </View>
+                </TouchableOpacity>
 
-                <View style={styles.addMealCard}>
+                <TouchableOpacity style={styles.addMealCard} onPress={() => navigation.navigate("AddMeal", { selectedDate: formattedDate, type: "Dinner" })}>
                     <Image source={require("../assets/dinner.png")} style={styles.iconContainer} resizeMode="contain" />
                     <View style={styles.labelContainer}>
                         <Text style={styles.mealTitle}>{t('main_add_dinner')}</Text>
@@ -191,9 +191,9 @@ function MainPage({ navigation }: Props) {
                     <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate("AddMeal", { selectedDate: formattedDate, type: "Dinner" })}>
                         <Text style={styles.plus}>+</Text>
                     </TouchableOpacity>
-                </View>
+                </TouchableOpacity>
 
-                <View style={styles.addMealCard}>
+                <TouchableOpacity style={styles.addMealCard} onPress={() => navigation.navigate("AddMeal", { selectedDate: formattedDate, type: "Snack" })}>
                     <Image source={require("../assets/snack.png")} style={styles.iconContainer} resizeMode="contain" />
                     <View style={styles.labelContainer}>
                         <Text style={styles.mealTitle}>{t('main_add_snack')}</Text>
@@ -202,7 +202,7 @@ function MainPage({ navigation }: Props) {
                     <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate("AddMeal", { selectedDate: formattedDate, type: "Snack" })}>
                         <Text style={styles.plus}>+</Text>
                     </TouchableOpacity>
-                </View>
+                </TouchableOpacity>
 
                 <View style={styles.addMealCard}>
                     <Image source={require("../assets/water.png")} style={styles.iconContainer} resizeMode="contain" />

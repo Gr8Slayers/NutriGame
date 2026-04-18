@@ -43,7 +43,7 @@ export class FoodController {
     async add_to_meal(req: Request, res: Response, next: NextFunction) {
         try {
             const user_id = req.user!.id;
-            const { date, meal_category, food_id, p_count, food_name, p_calorie, p_protein, p_fat, p_carb, p_unit, p_amount } = req.body;
+            const { date, meal_category, food_id, p_count, food_name, p_calorie, p_protein, p_fat, p_carb, p_unit, p_amount, entry_method, scan_image_url } = req.body;
 
             if (!date || !meal_category || !p_count) {
                 return res.status(400).json({ success: false, message: 'Please provide required information { date, meal_category, p_count }.' });
@@ -103,7 +103,7 @@ export class FoodController {
             const t_fat = fetchedFood.p_fat * p_count;
             const t_carb_val = fetchedFood.p_carb * p_count;
 
-            const added_food = await foodModel.addFoodToMealLog(user_id, parsedDate, meal_category, p_count, fetchedFood.food_id, fetchedFood.food_name, fetchedFood.p_unit, t_amount, t_calorie, t_protein, t_fat, t_carb_val);
+            const added_food = await foodModel.addFoodToMealLog(user_id, parsedDate, meal_category, p_count, fetchedFood.food_id, fetchedFood.food_name, fetchedFood.p_unit, t_amount, t_calorie, t_protein, t_fat, t_carb_val, entry_method ?? 'manual', scan_image_url ?? null);
             if (!added_food) {
                 res.status(400).json({ success: false, message: 'Food could not be added to the meal log.' });
             }
