@@ -6,8 +6,11 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#0a1812',
+    },
+    contentContainer: {
         padding: 20,
         paddingTop: 60,
+        flexGrow: 1,
     },
     header: {
         flexDirection: 'row',
@@ -97,9 +100,7 @@ const styles = StyleSheet.create({
         padding: 10,
         borderRadius: 15,
     },
-    menuList: {
-        flex: 1,
-    },
+    menuList: {},
     menuItem: {
         flexDirection: 'row',
         alignItems: 'center',

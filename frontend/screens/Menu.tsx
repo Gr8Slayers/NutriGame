@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, Image, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, Image, TouchableOpacity, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store';
 import { Ionicons } from '@expo/vector-icons';
@@ -141,7 +141,7 @@ export default function Menu() {
 
 
     return (
-        <View style={styles.container}>
+        <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
             {/* Back Button */}
             <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                 <Ionicons name="arrow-back" size={24} color="#f7e5c5" />
@@ -253,6 +253,6 @@ export default function Menu() {
                 <Ionicons name="log-out-outline" size={24} color="#e57373" />
                 <Text style={styles.logoutText}>{t('menu_logout')}</Text>
             </TouchableOpacity>
-        </View>
+        </ScrollView>
     );
 }

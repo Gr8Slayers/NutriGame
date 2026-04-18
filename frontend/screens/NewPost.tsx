@@ -18,11 +18,13 @@ import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import * as ImagePicker from 'expo-image-picker';
 import { IP_ADDRESS } from '@env';
+import { useLanguage } from '../i18n/LanguageContext';
 const API_URL = `http://${IP_ADDRESS}:3000`;
 
 type Props = NativeStackScreenProps<RootStackParamList, 'NewPost'>;
 
 function NewPost({ navigation }: Props) {
+    const { t } = useLanguage();
     const [caption, setCaption] = useState('');
     const [imageUri, setImageUri] = useState<string | null>(null);
 
@@ -37,7 +39,7 @@ function NewPost({ navigation }: Props) {
     const pickImage = useCallback(async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
-            Alert.alert('Permission needed', 'Gallery access is required to pick a photo.');
+            Alert.alert(t('permission_needed'), t('gallery_permission_msg'));
             return;
         }
         const result = await ImagePicker.launchImageLibraryAsync({
@@ -108,17 +110,17 @@ function NewPost({ navigation }: Props) {
             });
 
             if (res.ok) {
-                Alert.alert('Success 🎉', 'Your recipe has been shared!', [
-                    { text: 'OK', onPress: () => navigation.goBack() },
+                Alert.alert(t('success'), t('recipe_shared'), [
+                    { text: t('ok'), onPress: () => navigation.goBack() },
                 ]);
             } else {
                 const err = await res.text();
                 console.error('Post hatası:', err);
-                Alert.alert('Error', 'Could not share your post. Please try again.');
+                Alert.alert(t('error'), t('post_share_error'));
             }
         } catch (e) {
             console.error('Post hatası:', e);
-            Alert.alert('Error', 'Something went wrong.');
+            Alert.alert(t('error'), t('something_went_wrong'));
         } finally {
             setSubmitting(false);
         }
@@ -135,7 +137,7 @@ function NewPost({ navigation }: Props) {
                     <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                         <Ionicons name="arrow-back" size={24} color="#333" />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>New Recipe Post</Text>
+                    <Text style={styles.headerTitle}>{t('new_recipe_post')}</Text>
                     <TouchableOpacity
                         style={[styles.shareButton, !isValid && styles.shareButtonDisabled]}
                         onPress={handleSubmit}
@@ -144,7 +146,7 @@ function NewPost({ navigation }: Props) {
                     >
                         {submitting
                             ? <ActivityIndicator size="small" color="#fff" />
-                            : <Text style={styles.shareButtonText}>Share</Text>
+                            : <Text style={styles.shareButtonText}>{t('new_post_share')}</Text>
                         }
                     </TouchableOpacity>
                 </View>
@@ -162,23 +164,23 @@ function NewPost({ navigation }: Props) {
                                 <Image source={{ uri: imageUri }} style={styles.pickedImage} />
                                 <View style={styles.imageOverlay}>
                                     <Ionicons name="camera" size={24} color="#fff" />
-                                    <Text style={styles.imageOverlayText}>Change Photo</Text>
+                                    <Text style={styles.imageOverlayText}>{t('change_photo')}</Text>
                                 </View>
                             </>
                         ) : (
                             <View style={styles.imagePlaceholder}>
                                 <Ionicons name="image-outline" size={40} color="#6b5440" />
-                                <Text style={styles.imagePlaceholderText}>Add a Photo</Text>
-                                <Text style={styles.imagePlaceholderSub}>optional</Text>
+                                <Text style={styles.imagePlaceholderText}>{t('add_photo')}</Text>
+                                <Text style={styles.imagePlaceholderSub}>{t('optional_label')}</Text>
                             </View>
                         )}
                     </TouchableOpacity>
 
                     <View style={styles.fieldGroup}>
-                        <Text style={styles.fieldLabel}>Caption</Text>
+                        <Text style={styles.fieldLabel}>{t('caption_label')}</Text>
                         <TextInput
                             style={[styles.input, styles.inputMultiline]}
-                            placeholder="Write something about your recipe..."
+                            placeholder={t('recipe_caption_placeholder')}
                             placeholderTextColor="#6b5440"
                             value={caption}
                             onChangeText={setCaption}
@@ -189,14 +191,14 @@ function NewPost({ navigation }: Props) {
 
                     <View style={styles.sectionDivider}>
                         <Ionicons name="restaurant-outline" size={16} color="#c8a96e" />
-                        <Text style={styles.sectionDividerText}>Recipe Details</Text>
+                        <Text style={styles.sectionDividerText}>{t('recipe_details_label')}</Text>
                     </View>
 
                     <View style={styles.fieldGroup}>
-                        <Text style={styles.fieldLabel}>Recipe Title <Text style={styles.required}>*</Text></Text>
+                        <Text style={styles.fieldLabel}>{t('recipe_title_label')} <Text style={styles.required}>*</Text></Text>
                         <TextInput
                             style={styles.input}
-                            placeholder="e.g. Mediterranean Quinoa Salad"
+                            placeholder={t('recipe_title_placeholder')}
                             placeholderTextColor="#6b5440"
                             value={title}
                             onChangeText={setTitle}
@@ -205,7 +207,7 @@ function NewPost({ navigation }: Props) {
 
                     <View style={styles.rowGroup}>
                         <View style={[styles.fieldGroup, { flex: 1 }]}>
-                            <Text style={styles.fieldLabel}>Calories <Text style={styles.required}>*</Text></Text>
+                            <Text style={styles.fieldLabel}>{t('calories_label')} <Text style={styles.required}>*</Text></Text>
                             <View style={styles.inputWithUnit}>
                                 <TextInput
                                     style={[styles.input, { flex: 1 }]}
@@ -219,7 +221,7 @@ function NewPost({ navigation }: Props) {
                             </View>
                         </View>
                         <View style={[styles.fieldGroup, { flex: 1 }]}>
-                            <Text style={styles.fieldLabel}>Prep Time</Text>
+                            <Text style={styles.fieldLabel}>{t('prep_time')}</Text>
                             <View style={styles.inputWithUnit}>
                                 <TextInput
                                     style={[styles.input, { flex: 1 }]}
@@ -235,8 +237,8 @@ function NewPost({ navigation }: Props) {
                     </View>
 
                     <View style={styles.fieldGroup}>
-                        <Text style={styles.fieldLabel}>Ingredients <Text style={styles.required}>*</Text></Text>
-                        <Text style={styles.fieldHint}>One ingredient per line</Text>
+                        <Text style={styles.fieldLabel}>{t('ingredients')} <Text style={styles.required}>*</Text></Text>
+                        <Text style={styles.fieldHint}>{t('ingredient_hint')}</Text>
                         <TextInput
                             style={[styles.input, styles.inputMultiline, styles.inputTall]}
                             placeholder={"1 cup quinoa\n1 cucumber\n100g feta cheese\n..."}
@@ -250,8 +252,8 @@ function NewPost({ navigation }: Props) {
                     </View>
 
                     <View style={styles.fieldGroup}>
-                        <Text style={styles.fieldLabel}>Instructions <Text style={styles.required}>*</Text></Text>
-                        <Text style={styles.fieldHint}>One step per line</Text>
+                        <Text style={styles.fieldLabel}>{t('instructions')} <Text style={styles.required}>*</Text></Text>
+                        <Text style={styles.fieldHint}>{t('instruction_hint')}</Text>
                         <TextInput
                             style={[styles.input, styles.inputMultiline, styles.inputTall]}
                             placeholder={"1. Cook quinoa with 2x water for 15 min.\n2. Chop all vegetables.\n3. Mix together..."}
@@ -274,7 +276,7 @@ function NewPost({ navigation }: Props) {
                             ? <ActivityIndicator color="#fff" />
                             : <>
                                 <Ionicons name="share-social-outline" size={20} color="#fff" />
-                                <Text style={styles.submitButtonText}>Share Recipe</Text>
+                                <Text style={styles.submitButtonText}>{t('new_post_recipe')}</Text>
                             </>
                         }
                     </TouchableOpacity>

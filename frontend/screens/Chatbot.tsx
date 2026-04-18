@@ -81,11 +81,11 @@ export default function Chatbot() {
         return [
             {
                 _id: 1,
-                text: 'Hello! I am your AI assistant. How can I help you?',
+                text: t('chatbot_greeting'),
                 createdAt: new Date(),
                 user: {
                     _id: 2,
-                    name: 'AI Bot',
+                    name: t('chatbot_bot_name'),
                     avatar: require('../assets/logo.png'),
                 },
             },
@@ -121,7 +121,7 @@ export default function Chatbot() {
         try {
             const token = await SecureStore.getItemAsync('userToken');
             if (!token) {
-                Alert.alert('Error', 'You need to be logged in to use the chatbot.');
+                Alert.alert(t('error'), t('chatbot_login_required'));
                 setIsTyping(false);
                 return;
             }
@@ -144,9 +144,9 @@ export default function Chatbot() {
             if (!response.ok) {
                 // Handle rate limit error
                 if (response.status === 429) {
-                    Alert.alert('Too Many Messages', data.message || 'Please wait before sending another message.');
+                    Alert.alert(t('chatbot_rate_limit_title'), data.message || t('chatbot_ai_error'));
                 } else {
-                    Alert.alert('Error', data.message || 'Failed to get AI response.');
+                    Alert.alert(t('error'), data.message || t('chatbot_ai_error'));
                 }
                 setIsTyping(false);
                 return;
@@ -181,7 +181,7 @@ export default function Chatbot() {
 
         } catch (error: any) {
             console.error('Chatbot API error:', error);
-            Alert.alert('Connection Error', `Could not connect to the chatbot service.`);
+            Alert.alert(t('chatbot_connection_error_title'), t('chatbot_connection_error'));
         } finally {
             setIsTyping(false);
         }
@@ -258,7 +258,7 @@ export default function Chatbot() {
             <Composer
                 {...props}
                 textInputStyle={styles.composer}
-                placeholder={'Message...'}
+                placeholder={t('chatbot_message_placeholder')}
                 placeholderTextColor={'#8e8e93'}
                 multiline={true}
             />
@@ -344,7 +344,7 @@ export default function Chatbot() {
                     setMessages(messagesWithAvatar);
                 }
             } else {
-                Alert.alert("Hata", "Sohbet detayları yüklenemedi.");
+                Alert.alert(t('error'), t('chat_load_error'));
             }
         } catch (error) {
             console.error('Sohbet yüklenirken hata:', error);
@@ -359,7 +359,7 @@ export default function Chatbot() {
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <View style={{ flex: 1 }}>
                     <Text numberOfLines={1} style={{ color: 'white', fontWeight: 'bold' }}>
-                        {item.title || "New Chat"}
+                        {item.title || t('chatbot_new_chat')}
                     </Text>
 
                     <Text style={{ color: '#aaa', fontSize: 10 }}>
@@ -445,10 +445,10 @@ export default function Chatbot() {
                         onStartShouldSetResponder={() => true}
                     >
                         <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>
-                            Delete Chat
+                            {t('delete_chat')}
                         </Text>
                         <Text style={{ color: '#aaa', fontSize: 14, marginBottom: 20 }}>
-                            Are you sure you want to delete this chat? This action cannot be undone.
+                            {t('delete_chat_confirm')}
                         </Text>
                         <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 10 }}>
                             <TouchableOpacity
@@ -460,7 +460,7 @@ export default function Chatbot() {
                                     backgroundColor: '#3a3a3c',
                                 }}
                             >
-                                <Text style={{ color: 'white', fontWeight: '600' }}>Cancel</Text>
+                                <Text style={{ color: 'white', fontWeight: '600' }}>{t('cancel')}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 onPress={() => selectedChatId && deleteChat(selectedChatId)}
@@ -471,7 +471,7 @@ export default function Chatbot() {
                                     backgroundColor: '#ff3b30',
                                 }}
                             >
-                                <Text style={{ color: 'white', fontWeight: '600' }}>Delete</Text>
+                                <Text style={{ color: 'white', fontWeight: '600' }}>{t('delete')}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -499,7 +499,7 @@ export default function Chatbot() {
                     }
                 ]}>
                     <View style={styles.menuHeader}>
-                        <Text style={styles.menuTitle}>Menu</Text>
+                        <Text style={styles.menuTitle}>{t('chatbot_menu_title')}</Text>
                         <TouchableOpacity onPress={toggleMenu} style={styles.closeButton}>
                             <Ionicons name="close" size={24} color="#ffffff" />
                         </TouchableOpacity>
@@ -508,7 +508,7 @@ export default function Chatbot() {
 
                     <TouchableOpacity style={styles.menuItem} onPress={openNewChat}>
                         <Ionicons name="add-circle-outline" size={24} color="#ffffff" style={styles.menuIcon} />
-                        <Text style={styles.menuText}>New Chat</Text>
+                        <Text style={styles.menuText}>{t('chatbot_new_chat')}</Text>
                     </TouchableOpacity>
                     <View style={styles.menuItem}>
                         <Ionicons name="chatbubble-ellipses-outline" size={24} color="#ffffff" style={styles.menuIcon} />
@@ -538,7 +538,7 @@ export default function Chatbot() {
                             <Ionicons name="menu" size={24} color="#333" />
                         </TouchableOpacity>
 
-                        <Text style={styles.headerTitle}>NutriCoach</Text>
+                        <Text style={styles.headerTitle}>{t('chatbot_title')}</Text>
                         <TouchableOpacity
                             style={styles.backButton}
                             onPress={() => navigation.goBack()}

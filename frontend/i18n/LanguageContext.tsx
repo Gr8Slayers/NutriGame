@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import * as SecureStore from 'expo-secure-store';
+import * as Localization from 'expo-localization';
 import { translations, Language, TranslationKey } from './translations';
 
 const STORAGE_KEY = 'appLanguage';
@@ -16,10 +17,15 @@ const LanguageContext = createContext<LanguageContextType>({
   t: (key) => key,
 });
 
-export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<Language>('en');
+function getSystemLanguage(): Language {
+  const locale = Localization.getLocales?.()?.[0]?.languageCode ?? 'en';
+  return locale === 'tr' ? 'tr' : 'en';
+}
 
-  // Load saved language on mount
+export function LanguageProvider({ children }: { children: ReactNode }) {
+  const [language, setLanguageState] = useState<Language>(getSystemLanguage);
+
+  // İlk açılışta kayıtlı tercih varsa onu kullan, yoksa sistem dili geçerli
   useEffect(() => {
     SecureStore.getItemAsync(STORAGE_KEY).then((saved) => {
       if (saved === 'en' || saved === 'tr') {
