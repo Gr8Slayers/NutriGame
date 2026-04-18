@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import {
-  View, Text, TextInput, Button, Alert, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform
+  View, Text, TextInput, Alert, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as SecureStore from 'expo-secure-store';
-import { Image } from 'react-native';
 import { RootStackParamList } from '../App';
 import styles from '../styles/LoginStyle';
 import { IP_ADDRESS } from "@env";
@@ -57,8 +56,6 @@ function Login({ navigation }: Props) {
       const data = await res.json();
 
       if (res.ok) {
-        Alert.alert('Success', data.message);
-
         const token = data.token || "No Token";
         await SecureStore.setItemAsync('userToken', token);
         if (data.user?.id) {
@@ -73,7 +70,7 @@ function Login({ navigation }: Props) {
 
         navigation.navigate('MainPage');
       } else {
-        Alert.alert('Hata', data.message || 'Giriş yapılamadı');
+        Alert.alert(t('error'), data.message || t('login_connection_error'));
       }
     } catch (error: any) {
       clearTimeout(timeoutId);

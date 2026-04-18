@@ -11,6 +11,11 @@ import { IP_ADDRESS } from "@env";
 import { useLanguage } from '../i18n/LanguageContext';
 
 const API_URL = `http://${IP_ADDRESS}:3000`;
+const SCAN_TIMEOUT_MS = 15000;
+
+type MealCategory = 'Breakfast' | 'Lunch' | 'Dinner' | 'Snack';
+
+const MEAL_CATEGORIES: MealCategory[] = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
 
 const getImageUrl = (url: string | null | undefined): string | null => {
     if (!url) return null;
@@ -24,12 +29,17 @@ const getImageUrl = (url: string | null | undefined): string | null => {
     return `${API_URL}${url.startsWith('/') ? '' : '/'}${url}`;
 };
 
-// FIX 1: Timezone-safe tarih string'i — DailyWeight ile aynı helper
 const getLocalDateString = (date: Date): string => {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, '0');
     const d = String(date.getDate()).padStart(2, '0');
     return `${y}-${m}-${d}`;
+};
+
+const fetchWithTimeout = (url: string, options: RequestInit, timeoutMs: number): Promise<Response> => {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeoutMs);
+    return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(id));
 };
 
 export default function ScanFood() {
@@ -46,9 +56,8 @@ export default function ScanFood() {
 
     const [isLoading, setIsLoading] = useState(false);
     const [detections, setDetections] = useState<any[] | null>(null);
-    const [totalCalories, setTotalCalories] = useState<number | null>(null);
     const [annotatedImage, setAnnotatedImage] = useState<string | null>(null);
-    const [mealCategory, setMealCategory] = useState<'Breakfast' | 'Lunch' | 'Dinner' | 'Snack'>('Breakfast');
+    const [mealCategory, setMealCategory] = useState<MealCategory>('Breakfast');
     const [selectedMatches, setSelectedMatches] = useState<Record<string, any>>({});
     const [addToLogModalVisible, setAddToLogModalVisible] = useState(false);
     const [portions, setPortions] = useState<Record<string, number>>({});
@@ -61,6 +70,16 @@ export default function ScanFood() {
             setPermissionModalVisible(false);
         }
     }, [permission]);
+
+    const getCategoryLabel = (cat: MealCategory): string => {
+        const keys: Record<MealCategory, string> = {
+            Breakfast: 'scan_cat_breakfast',
+            Lunch: 'scan_cat_lunch',
+            Dinner: 'scan_cat_dinner',
+            Snack: 'scan_cat_snack',
+        };
+        return t(keys[cat] as any);
+    };
 
     const handlePermissionButton = async () => {
         if (!permission) return;
@@ -86,11 +105,10 @@ export default function ScanFood() {
             if (data?.uri) {
                 setPhotos(prev => [...prev, data.uri]);
                 setDetections(null);
-                setTotalCalories(null);
                 setAnnotatedImage(null);
             }
         } catch {
-            Alert.alert("Error", "Failed to take photo.");
+            Alert.alert(t('error'), t('scan_take_photo_error'));
         }
     };
 
@@ -107,7 +125,7 @@ export default function ScanFood() {
             const data = await response.json();
             if (response.ok && data.success) setAllPhotos(data.photos);
         } catch {
-            Alert.alert("Error", "Failed to load photo history.");
+            Alert.alert(t('error'), t('scan_gallery_error'));
         } finally {
             setIsLoadingGallery(false);
             setGalleryVisible(true);
@@ -118,9 +136,7 @@ export default function ScanFood() {
         setPhotos(prev => prev.filter((_, i) => i !== index));
     };
 
-    // FIX 2: detection sonuçlarını init eden ortak helper — tekrar eden kod kaldırıldı
     const initDetectionState = (newDetections: any[]) => {
-        // Her tespite benzersiz bir tempId ata (index kaymalarını önlemek için)
         const detectionsWithId = newDetections.map((det, idx) => ({
             ...det,
             tempId: (Date.now() + Math.random() + idx).toString()
@@ -147,7 +163,7 @@ export default function ScanFood() {
         try {
             const token = await SecureStore.getItemAsync('userToken');
             if (!token) {
-                Alert.alert("Error", "Authentication token not found.");
+                Alert.alert(t('error'), t('scan_session_error'));
                 return;
             }
 
@@ -161,24 +177,35 @@ export default function ScanFood() {
                     type: 'image/jpeg',
                 } as any);
 
-                const response = await fetch(`${API_URL}/api/scan/analyze`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                        Authorization: `Bearer ${token}`,
+                const response = await fetchWithTimeout(
+                    `${API_URL}/api/scan/analyze`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                            Authorization: `Bearer ${token}`,
+                        },
+                        body: formData,
                     },
-                    body: formData,
-                });
+                    SCAN_TIMEOUT_MS
+                );
                 const data = await response.json();
 
                 if (!response.ok) {
-                    Alert.alert("Error", data.message || "Failed to analyze image.");
+                    Alert.alert(t('error'), data.message || t('scan_analyze_error'));
                     return;
                 }
 
-                initDetectionState(data.detections || []);
-                setTotalCalories(data.totalCalories ?? 0);
+                const dets = data.detections || [];
+                initDetectionState(dets);
                 if (data.annotated_image) setAnnotatedImage(data.annotated_image);
+
+                if (dets.length === 0) {
+                    Alert.alert(t('warning'), t('scan_no_food_try'), [
+                        { text: t('cancel') },
+                        { text: t('scan_add_manually'), onPress: () => navigation.navigate('MainPage') },
+                    ]);
+                }
 
             } else {
                 photos.forEach((uri, index) => {
@@ -189,18 +216,22 @@ export default function ScanFood() {
                     } as any);
                 });
 
-                const response = await fetch(`${API_URL}/api/scan/analyze-batch`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                        Authorization: `Bearer ${token}`,
+                const response = await fetchWithTimeout(
+                    `${API_URL}/api/scan/analyze-batch`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                            Authorization: `Bearer ${token}`,
+                        },
+                        body: formData,
                     },
-                    body: formData,
-                });
+                    SCAN_TIMEOUT_MS
+                );
                 const data = await response.json();
 
                 if (!response.ok) {
-                    Alert.alert("Error", data.error || data.message || "Failed to analyze batch.");
+                    Alert.alert(t('error'), data.error || data.message || t('scan_batch_error'));
                     return;
                 }
 
@@ -215,12 +246,24 @@ export default function ScanFood() {
                     );
 
                 initDetectionState(allDetections);
-                setTotalCalories(null);
                 setAnnotatedImage(null);
+
+                if (allDetections.length === 0) {
+                    Alert.alert(t('warning'), t('scan_no_food_try'), [
+                        { text: t('cancel') },
+                        { text: t('scan_add_manually'), onPress: () => navigation.navigate('MainPage') },
+                    ]);
+                }
             }
-        } catch (error) {
-            console.error("Scan error:", error);
-            Alert.alert("Network Error", "Failed to connect to the server.");
+        } catch (error: any) {
+            if (error?.name === 'AbortError') {
+                Alert.alert(t('error'), t('scan_timeout'), [
+                    { text: t('cancel') },
+                    { text: t('scan_add_manually'), onPress: () => navigation.navigate('MainPage') },
+                ]);
+            } else {
+                Alert.alert(t('error'), t('scan_network_error'));
+            }
         } finally {
             setIsLoading(false);
         }
@@ -233,11 +276,10 @@ export default function ScanFood() {
         try {
             const token = await SecureStore.getItemAsync('userToken');
             if (!token) {
-                Alert.alert("Error", "Session not found.");
+                Alert.alert(t('error'), t('scan_session_error'));
                 return;
             }
 
-            // FIX 3: timezone-safe tarih
             const dateStr = getLocalDateString(new Date());
 
             let successCount = 0;
@@ -271,24 +313,23 @@ export default function ScanFood() {
             setAddToLogModalVisible(false);
 
             if (successCount > 0 && failCount === 0) {
-                Alert.alert("Success ", `${successCount} food item(s) added to your log.`, [
-                    { text: "OK", onPress: () => navigation.navigate('MainPage') }
+                Alert.alert(t('success'), `${successCount} ${t('scan_success')}`, [
+                    { text: 'OK', onPress: () => navigation.navigate('MainPage') }
                 ]);
             } else if (successCount > 0) {
-                Alert.alert("Partial Success", `${successCount} added, ${failCount} failed.`, [
-                    { text: "OK", onPress: () => navigation.navigate('MainPage') }
+                Alert.alert(t('scan_partial_success'), `${successCount} ${t('scan_partial')}, ${failCount} ${t('scan_failed')}`, [
+                    { text: 'OK', onPress: () => navigation.navigate('MainPage') }
                 ]);
             } else {
-                Alert.alert("Error", "Could not add foods to log.");
+                Alert.alert(t('error'), t('scan_could_not_add'));
             }
         } catch {
-            Alert.alert("Error", "A connection error occurred.");
+            Alert.alert(t('error'), t('scan_connection_error'));
         } finally {
             setIsSavingLog(false);
         }
     };
 
-    // ── Kalori toplamı hesabı (ortak, iki yerde kullanılıyor)
     const selectedTotal = Object.keys(selectedMatches).reduce((sum, tempId) => {
         const match = selectedMatches[tempId];
         const portion = portions[tempId] ?? 1.0;
@@ -298,17 +339,15 @@ export default function ScanFood() {
     const resetAll = () => {
         setPhotos([]);
         setDetections(null);
-        setTotalCalories(null);
         setAnnotatedImage(null);
         setIsCameraActive(true);
         setSelectedMatches({});
         setPortions({});
     };
 
-    // ── Modalları her iki görünümde de render etmek için yardımcı fonksiyon ──
     const renderModals = () => (
         <>
-            {/* İzin modalı */}
+            {/* Camera permission modal */}
             <Modal visible={permissionModalVisible} animationType="fade" transparent>
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
@@ -325,7 +364,7 @@ export default function ScanFood() {
                 </View>
             </Modal>
 
-            {/* Galeri modalı */}
+            {/* Photo history modal */}
             <Modal visible={galleryVisible} animationType="slide">
                 <View style={{ flex: 1, backgroundColor: '#121212', paddingTop: 60 }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginBottom: 20 }}>
@@ -355,7 +394,7 @@ export default function ScanFood() {
                 </View>
             </Modal>
 
-            {/* Loga ekle modalı */}
+            {/* Save to log confirmation modal */}
             <Modal
                 visible={addToLogModalVisible}
                 animationType="fade"
@@ -364,9 +403,11 @@ export default function ScanFood() {
             >
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.7)' }}>
                     <View style={{ width: '85%', backgroundColor: '#1e1e1e', borderRadius: 20, padding: 25, borderWidth: 1, borderColor: '#333' }}>
-                        <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 20, textAlign: 'center', marginBottom: 5 }}>Add to Log</Text>
+                        <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 20, textAlign: 'center', marginBottom: 5 }}>
+                            {t('scan_add_to_log')}
+                        </Text>
                         <Text style={{ color: '#aaa', fontSize: 13, textAlign: 'center', marginBottom: 20 }}>
-                            Do you want to add these foods to your daily calorie log?
+                            {t('scan_do_you_want')}
                         </Text>
 
                         <ScrollView style={{ maxHeight: 200, marginBottom: 15 }}>
@@ -377,7 +418,7 @@ export default function ScanFood() {
                                 return (
                                     <View key={item.tempId} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#333' }}>
                                         <Text style={{ color: 'white', fontSize: 15, textTransform: 'capitalize', flex: 1 }}>
-                                            {selected ? selected.food_name : item.class} ({portion} portion)
+                                            {selected ? selected.food_name : item.class} ({portion} {t('scan_portion').toLowerCase()})
                                         </Text>
                                         <Text style={{ color: '#fc8500', fontSize: 15, fontWeight: '600' }}>
                                             {calculatedKcal !== null ? `${calculatedKcal} kcal` : t('scan_not_selected')}
@@ -396,7 +437,9 @@ export default function ScanFood() {
                             </View>
                         )}
 
-                        <Text style={{ color: '#888', fontSize: 11, textAlign: 'center', marginBottom: 15 }}>{t('scan_meal')}: {mealCategory}</Text>
+                        <Text style={{ color: '#888', fontSize: 11, textAlign: 'center', marginBottom: 15 }}>
+                            {t('scan_meal')}: {getCategoryLabel(mealCategory)}
+                        </Text>
 
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10 }}>
                             <TouchableOpacity
@@ -423,7 +466,7 @@ export default function ScanFood() {
         </>
     );
 
-    // ── Sonuç ekranı ─────────────────────────────────────────
+    // ── Results screen ───────────────────────────────────────
     if (!isCameraActive && photos.length > 0) {
         return (
             <View style={styles.previewContainer}>
@@ -442,30 +485,35 @@ export default function ScanFood() {
                             <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 20, marginBottom: 20, textAlign: 'center' }}>{t('scan_result')}</Text>
 
                             {detections.length === 0 ? (
-                                <Text style={{ color: '#ddd', textAlign: 'center', marginVertical: 10 }}>{t('scan_no_items')}</Text>
+                                <View style={{ alignItems: 'center', paddingVertical: 20 }}>
+                                    <Text style={{ color: '#ddd', textAlign: 'center', marginBottom: 16, fontSize: 15 }}>{t('scan_no_food_try')}</Text>
+                                    <TouchableOpacity
+                                        style={{ backgroundColor: '#47dd7caf', paddingVertical: 12, paddingHorizontal: 28, borderRadius: 12 }}
+                                        onPress={() => navigation.navigate('MainPage')}
+                                    >
+                                        <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 15 }}>{t('scan_add_manually')}</Text>
+                                    </TouchableOpacity>
+                                </View>
                             ) : (
                                 detections.map((item, index) => (
                                     <View key={item.tempId || index} style={{ marginBottom: 20, borderBottomWidth: 1, borderBottomColor: '#444', paddingBottom: 15 }}>
                                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                                             <Text style={{ color: '#47dd7caf', fontWeight: 'bold', fontSize: 13, letterSpacing: 0.5 }}>
-                                                DETECTED: {item.class.toUpperCase()}
+                                                {t('scan_detected')}: {item.class.toUpperCase()}
                                             </Text>
                                             <TouchableOpacity
                                                 onPress={() => {
                                                     setDetections(prev => prev ? prev.filter(d => d.tempId !== item.tempId) : []);
-
-                                                    // State'leri temizle
                                                     const newMatches = { ...selectedMatches };
                                                     delete newMatches[item.tempId];
                                                     setSelectedMatches(newMatches);
-
                                                     const newPortions = { ...portions };
                                                     delete newPortions[item.tempId];
                                                     setPortions(newPortions);
                                                 }}
                                                 style={{ backgroundColor: 'rgba(255,0,0,0.2)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 }}
                                             >
-                                                <Text style={{ color: '#ff4444', fontSize: 11, fontWeight: 'bold' }}>REMOVE</Text>
+                                                <Text style={{ color: '#ff4444', fontSize: 11, fontWeight: 'bold' }}>{t('scan_remove')}</Text>
                                             </TouchableOpacity>
                                         </View>
 
@@ -502,7 +550,7 @@ export default function ScanFood() {
 
                                                     <View style={{ marginHorizontal: 20, alignItems: 'center' }}>
                                                         <Text style={{ color: '#47dd7caf', fontWeight: 'bold', fontSize: 18 }}>{portions[item.tempId] ?? 1.0}</Text>
-                                                        <Text style={{ color: '#888', fontSize: 11 }}>Portion</Text>
+                                                        <Text style={{ color: '#888', fontSize: 11 }}>{t('scan_portion')}</Text>
                                                     </View>
 
                                                     <TouchableOpacity
@@ -564,7 +612,7 @@ export default function ScanFood() {
         );
     }
 
-    // ── Kamera görünümü ──────────────────────────────────────
+    // ── Camera view ──────────────────────────────────────────
     return (
         <View style={styles.container}>
             {permission?.granted ? (
@@ -614,13 +662,13 @@ export default function ScanFood() {
             {photos.length > 0 && (
                 <View style={styles.analyzeBatchContainer}>
                     <View style={styles.categoryContainer}>
-                        {(['Breakfast', 'Lunch', 'Dinner', 'Snack'] as const).map(cat => (
+                        {MEAL_CATEGORIES.map(cat => (
                             <TouchableOpacity
                                 key={cat}
                                 style={[styles.categoryButton, mealCategory === cat && styles.activeCategoryButton]}
                                 onPress={() => setMealCategory(cat)}
                             >
-                                <Text style={styles.categoryButtonText}>{cat}</Text>
+                                <Text style={styles.categoryButtonText}>{getCategoryLabel(cat)}</Text>
                             </TouchableOpacity>
                         ))}
                     </View>
