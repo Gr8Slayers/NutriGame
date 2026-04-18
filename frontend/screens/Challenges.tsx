@@ -8,7 +8,7 @@ import { API_URL } from '@env';
 import * as SecureStore from 'expo-secure-store';
 import { useLanguage } from '../i18n/LanguageContext';
 
-const API_URL = `${API_URL}/api`;
+const BASE_URL = `${API_URL}/api`;
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Challenges'>;
 
@@ -30,7 +30,7 @@ const Challenges = ({ navigation }: Props) => {
   const fetchData = async () => {
     try {
       const token = await SecureStore.getItemAsync('userToken');
-      const res = await fetch(`${API_URL}/gamification/challenges`, {
+      const res = await fetch(`${BASE_URL}/gamification/challenges`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       const data = await res.json();
@@ -100,7 +100,7 @@ const Challenges = ({ navigation }: Props) => {
   const respondToInvite = async (challengeId: string, accept: boolean) => {
     try {
       const token = await SecureStore.getItemAsync('userToken');
-      await fetch(`${API_URL}/gamification/challenge/respond`, {
+      await fetch(`${BASE_URL}/gamification/challenge/respond`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ challengeId, accept }),

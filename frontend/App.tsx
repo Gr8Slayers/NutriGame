@@ -79,7 +79,7 @@ export type RootStackParamList = {
   Notifications: undefined;
   LegalPolicies: undefined;
   DocumentViewer: { documentType: 'kvkk' | 'tos' | 'consent' };
-
+  ChallengeProgress: { challengeId: string };
 };
 
 const theme = {

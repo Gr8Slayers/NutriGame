@@ -10,7 +10,7 @@ import * as SecureStore from 'expo-secure-store';
 import BadgeAwardModal from '../components/BadgeAwardModal';
 import { useLanguage } from '../i18n/LanguageContext';
 
-const API_URL = `${API_URL}/api`;
+const BASE_URL = `${API_URL}/api`;
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ChallengeProgress'>;
 
@@ -37,7 +37,7 @@ const ChallengeProgress: React.FC<Props> = ({ navigation, route }) => {
       setCurrentUserId(userId);
     };
     fetchUserId();
-    
+
     fetchProgress();
     const unsubscribe = navigation.addListener('focus', () => {
       fetchProgress();
@@ -52,7 +52,7 @@ const ChallengeProgress: React.FC<Props> = ({ navigation, route }) => {
     const { challengeId } = route.params;
     try {
       const token = await SecureStore.getItemAsync('userToken');
-      const response = await fetch(`${API_URL}/gamification/challenge/progress?challengeId=${challengeId}`, {
+      const response = await fetch(`${BASE_URL}/gamification/challenge/progress?challengeId=${challengeId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const res = await response.json();
@@ -78,7 +78,7 @@ const ChallengeProgress: React.FC<Props> = ({ navigation, route }) => {
     const { challengeId } = route.params;
     try {
       const token = await SecureStore.getItemAsync('userToken');
-      const response = await fetch(`${API_URL}/gamification/challenge/complete`, {
+      const response = await fetch(`${BASE_URL}/gamification/challenge/complete`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -117,7 +117,7 @@ const ChallengeProgress: React.FC<Props> = ({ navigation, route }) => {
           onPress: async () => {
             try {
               const token = await SecureStore.getItemAsync('userToken');
-              const response = await fetch(`${API_URL}/gamification/challenge/${challengeId}`, {
+              const response = await fetch(`${BASE_URL}/gamification/challenge/${challengeId}`, {
                 method: 'DELETE',
                 headers: {
                   'Authorization': `Bearer ${token}`

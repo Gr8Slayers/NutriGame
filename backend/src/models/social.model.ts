@@ -31,7 +31,21 @@ export const socialModel = {
 
     // Feed: tüm postları kullanıcı bilgileriyle döndür (en yeni önce)
     getFeed: async (currentUserId: number) => {
+        // Find users that current user follows
+        const following = await prisma.userFollow.findMany({
+            where: { followerId: currentUserId },
+            select: { followingId: true }
+        });
+
+        const followingIds = following.map(f => f.followingId);
+        
+        // Include current user's own ID in the list of allowed authors
+        const allowedUserIds = [currentUserId, ...followingIds];
+
         const posts = await prisma.post.findMany({
+            where: {
+                userId: { in: allowedUserIds }
+            },
             orderBy: { createdAt: 'desc' },
             include: {
                 likes: true,

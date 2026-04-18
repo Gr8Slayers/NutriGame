@@ -9,7 +9,7 @@ import { API_URL } from '@env';
 import * as SecureStore from 'expo-secure-store';
 import { useLanguage } from '../i18n/LanguageContext';
 
-const API_URL = `${API_URL}/api`;
+const BASE_URL = `${API_URL}/api`;
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CreateChallenge'>;
 
@@ -55,7 +55,7 @@ const CreateChallenge: React.FC<Props> = ({ navigation }) => {
     setIsSubmitting(true);
     try {
       const token = await SecureStore.getItemAsync('userToken');
-      const response = await fetch(`${API_URL}/gamification/challenge/create`, {
+      const response = await fetch(`${BASE_URL}/gamification/challenge/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
