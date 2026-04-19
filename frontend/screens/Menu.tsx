@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, Image, TouchableOpacity, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import * as SecureStore from '../storage';
+import { setItem, getItem, removeItem } from '../storage';
 import { Ionicons } from '@expo/vector-icons';
 import LottieView from 'lottie-react-native';
 import { API_URL } from '../env';
@@ -69,7 +69,7 @@ export default function Menu() {
         const timeoutId = setTimeout(() => controller.abort(), 20000);
 
         try {
-            const token = await SecureStore.getItemAsync('userToken');
+            const token = await getItem('userToken');
             if (!token) {
                 setLoading(false);
                 return;
@@ -118,8 +118,8 @@ export default function Menu() {
 
     const handleLogout = async () => {
         try {
-            await SecureStore.deleteItemAsync('userToken');
-            await SecureStore.deleteItemAsync('rememberMeFlag');
+            await removeItem('userToken');
+            await removeItem('rememberMeFlag');
             navigation.reset({
                 index: 0,
                 routes: [{ name: 'Login' as never }],

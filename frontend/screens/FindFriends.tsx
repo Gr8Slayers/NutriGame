@@ -12,7 +12,7 @@ import {
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { Ionicons } from '@expo/vector-icons';
-import * as SecureStore from '../storage';
+import { setItem, getItem, removeItem } from '../storage';
 import { API_URL } from '../env';
 import { PublicUser } from '../types';
 import styles from '../styles/FindFriends';
@@ -40,7 +40,7 @@ export default function FindFriends({ navigation, route }: Props) {
         }
         setLoading(true);
         try {
-            const token = await SecureStore.getItemAsync('userToken');
+            const token = await getItem('userToken');
             const res = await fetch(
                 `${API_URL}/api/user/search?query=${encodeURIComponent(trimmed)}`,
                 {
@@ -87,7 +87,7 @@ export default function FindFriends({ navigation, route }: Props) {
             )
         );
         try {
-            const token = await SecureStore.getItemAsync('userToken');
+            const token = await getItem('userToken');
             await fetch(`${API_URL}/api/social/follow/${user.id}`, {
                 method: user.isFollowing ? 'DELETE' : 'POST',
                 headers: {

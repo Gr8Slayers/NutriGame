@@ -8,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { API_URL } from '../env';
-import * as SecureStore from '../storage';
+import { setItem, getItem, removeItem } from '../storage';
 import { DailyProgress } from '../types';
 import styles from '../styles/DailyWeight';
 import { useLanguage } from '../i18n/LanguageContext';
@@ -77,7 +77,7 @@ const DailyWeight: React.FC<Props> = ({ navigation }) => {
     const fetchProgressData = useCallback(async () => {
         try {
             setIsLoading(true);
-            const token = await SecureStore.getItemAsync('userToken');
+            const token = await getItem('userToken');
             const res = await fetch(`${API_URL}/api/progress/weekly`, {
                 headers: { Authorization: `Bearer ${token}` },
             }).then(r => r.json());
@@ -87,7 +87,7 @@ const DailyWeight: React.FC<Props> = ({ navigation }) => {
 
     const fetchUserProfile = useCallback(async () => {
         try {
-            const token = await SecureStore.getItemAsync('userToken');
+            const token = await getItem('userToken');
             const res = await fetch(`${API_URL}/api/user/profile`, {
                 headers: { Authorization: `Bearer ${token}` },
             }).then(r => r.json());
@@ -124,7 +124,7 @@ const DailyWeight: React.FC<Props> = ({ navigation }) => {
         if (!todayWeight && !todayMood && !todayMovement) return;
         setIsSubmitting(true);
         try {
-            const token = await SecureStore.getItemAsync('userToken');
+            const token = await getItem('userToken');
             const res = await fetch(`${API_URL}/api/progress/upsert`, {
                 method: 'POST',
                 headers: {

@@ -4,7 +4,7 @@ import Markdown from 'react-native-markdown-display';
 import { GiftedChat, Avatar, IMessage, Bubble, MessageText, InputToolbar, Composer, Send } from 'react-native-gifted-chat';
 import { Ionicons } from '@expo/vector-icons';
 import { TypingAnimation } from 'react-native-typing-animation';
-import * as SecureStore from '../storage';
+import { setItem, getItem, removeItem } from '../storage';
 import { useLanguage } from '../i18n/LanguageContext';
 
 import styles from '../styles/Chatbot';
@@ -54,7 +54,7 @@ export default function Chatbot() {
 
     const fetchHistory = async () => {
         try {
-            const token = await SecureStore.getItemAsync('userToken');
+            const token = await getItem('userToken');
             if (!token) return;
 
             const response = await fetch(`${API_URL}/api/chat/history`, {
@@ -117,7 +117,7 @@ export default function Chatbot() {
         setIsTyping(true);
 
         try {
-            const token = await SecureStore.getItemAsync('userToken');
+            const token = await getItem('userToken');
             if (!token) {
                 Alert.alert(t('error'), t('chatbot_login_required'));
                 setIsTyping(false);
@@ -314,7 +314,7 @@ export default function Chatbot() {
         setMessages([]);
 
         try {
-            const token = await SecureStore.getItemAsync('userToken');
+            const token = await getItem('userToken');
 
             const response = await fetch(`${API_URL}/api/chat/history/${chat.id}`, {
                 method: 'GET',
@@ -386,7 +386,7 @@ export default function Chatbot() {
     const deleteChat = async (chatIdToDelete: string) => {
         // Also delete on backend
         try {
-            const token = await SecureStore.getItemAsync('userToken');
+            const token = await getItem('userToken');
             if (token) {
                 await fetch(`${API_URL}/api/chat/${chatIdToDelete}`, {
                     method: 'DELETE',

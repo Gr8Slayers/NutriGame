@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator }
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import * as SecureStore from '../storage';
+import { setItem, getItem, removeItem } from '../storage';
 import { API_URL } from '../env';
 import { useLanguage } from '../i18n/LanguageContext';
 
@@ -16,7 +16,7 @@ export default function Notifications() {
     useEffect(() => {
         const fetchNotifications = async () => {
             try {
-                const token = await SecureStore.getItemAsync('userToken');
+                const token = await getItem('userToken');
                 const res = await fetch(`${API_URL}/api/user/notifications`, {
                     headers: {
                         'Authorization': `Bearer ${token}`

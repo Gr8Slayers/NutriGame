@@ -6,7 +6,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import styles from '../styles/ScanFood';
-import * as SecureStore from '../storage';
+import { setItem, getItem, removeItem } from '../storage';
 import { API_URL } from '../env';
 
 import { useLanguage } from '../i18n/LanguageContext';
@@ -116,8 +116,8 @@ export default function ScanFood() {
     const openGallery = async () => {
         setIsLoadingGallery(true);
         try {
-            const token = await SecureStore.getItemAsync('userToken');
-            const userId = await SecureStore.getItemAsync('userId');
+            const token = await getItem('userToken');
+            const userId = await getItem('userId');
             if (!userId || !token) return;
 
             const response = await fetch(`${API_URL}/api/scan/history/${userId}`, {
@@ -162,7 +162,7 @@ export default function ScanFood() {
         setIsLoading(true);
 
         try {
-            const token = await SecureStore.getItemAsync('userToken');
+            const token = await getItem('userToken');
             if (!token) {
                 Alert.alert(t('error'), t('scan_session_error'));
                 return;
@@ -276,7 +276,7 @@ export default function ScanFood() {
         setIsSavingLog(true);
 
         try {
-            const token = await SecureStore.getItemAsync('userToken');
+            const token = await getItem('userToken');
             if (!token) {
                 Alert.alert(t('error'), t('scan_session_error'));
                 return;

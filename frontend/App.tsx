@@ -7,6 +7,8 @@ import { View, ActivityIndicator } from 'react-native';
 import { usePushNotifications } from './hooks/usePushNotifications';
 import { API_URL } from './env';
 import { LanguageProvider } from './i18n/LanguageContext';
+import { setItem, getItem, removeItem } from './storage';
+
 
 // Ekranlar
 import Login from './screens/Login';
@@ -110,8 +112,8 @@ export default function App() {
       let rememberMeFlag: string | null = null;
 
       try {
-        token = await SecureStore.getItemAsync('userToken');
-        rememberMeFlag = await SecureStore.getItemAsync('rememberMeFlag');
+        token = await getItem('userToken');
+        rememberMeFlag = await getItem('rememberMeFlag');
 
         if (token && rememberMeFlag == 'true') {
           setIsAuthenticated(true);
@@ -132,7 +134,7 @@ export default function App() {
     const registerPushToken = async () => {
       if (isAuthenticated && expoPushToken) {
         try {
-          const userToken = await SecureStore.getItemAsync('userToken');
+          const userToken = await getItem('userToken');
           if (!userToken) return;
 
           await fetch(`${API_URL}/api/user/push-token`, {

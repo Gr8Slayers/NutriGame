@@ -14,7 +14,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { Ionicons } from '@expo/vector-icons';
-import * as SecureStore from '../storage';
+import { setItem, getItem, removeItem } from '../storage';
 import { API_URL } from '../env';
 import styles from '../styles/UserProfile';
 import { BadgeImages } from '../constants/BadgeImages';
@@ -160,8 +160,8 @@ export default function UserProfile({ navigation, route }: Props) {
 
     const fetchProfile = useCallback(async () => {
         try {
-            const token = await SecureStore.getItemAsync('userToken');
-            const myId = await SecureStore.getItemAsync('userId');
+            const token = await getItem('userToken');
+            const myId = await getItem('userId');
             setCurrentUserId(myId);
 
             const res = await fetch(`${API_URL}/api/user/profile/${userId}`, {
@@ -178,7 +178,7 @@ export default function UserProfile({ navigation, route }: Props) {
 
     const fetchPosts = useCallback(async () => {
         try {
-            const token = await SecureStore.getItemAsync('userToken');
+            const token = await getItem('userToken');
             const res = await fetch(`${API_URL}/api/social/posts/${userId}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -211,7 +211,7 @@ export default function UserProfile({ navigation, route }: Props) {
         } : null);
 
         try {
-            const token = await SecureStore.getItemAsync('userToken');
+            const token = await getItem('userToken');
             await fetch(`${API_URL}/api/social/follow/${userId}`, {
                 method: profile.isFollowing ? 'DELETE' : 'POST',
                 headers: {
@@ -240,7 +240,7 @@ export default function UserProfile({ navigation, route }: Props) {
                 style: 'destructive',
                 onPress: async () => {
                     try {
-                        const token = await SecureStore.getItemAsync('userToken');
+                        const token = await getItem('userToken');
                         const res = await fetch(`${API_URL}/api/social/post/${postId}`, {
                             method: 'DELETE',
                             headers: { Authorization: `Bearer ${token}` }
@@ -266,7 +266,7 @@ export default function UserProfile({ navigation, route }: Props) {
         setModalLoading(true);
 
         try {
-            const token = await SecureStore.getItemAsync('userToken');
+            const token = await getItem('userToken');
             const res = await fetch(`${API_URL}/api/social/${type}/${userId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });

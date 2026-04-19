@@ -6,7 +6,7 @@ import styles from '../styles/AddMeal';
 import CalorieCircle from '../components/calorieCircle';
 import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList } from '../App';
-import * as SecureStore from '../storage';
+import { setItem, getItem, removeItem } from '../storage';
 import { API_URL } from '../env';
 import { useLanguage } from '../i18n/LanguageContext';
 
@@ -74,7 +74,7 @@ export default function AddMeal({ route, navigation }: Props) {
 
   // Fetch meal log items (for the list)
   const fetchDailyData = useCallback(async () => {
-    const token = await SecureStore.getItemAsync('userToken');
+    const token = await getItem('userToken');
     try {
       const params = new URLSearchParams({ date: selectedDate, meal_category: type }).toString();
       const res = await fetch(`${API_URL}/api/food/get_meal_log?${params}`, {
@@ -111,7 +111,7 @@ export default function AddMeal({ route, navigation }: Props) {
 
   // Fetch actual saved totals for the circle (from MealTotals table)
   const fetchMealTotal = useCallback(async () => {
-    const token = await SecureStore.getItemAsync('userToken');
+    const token = await getItem('userToken');
     try {
       const params = new URLSearchParams({ date: selectedDate, meal_category: type }).toString();
       const res = await fetch(`${API_URL}/api/food/get_meal_total?${params}`, {
@@ -134,7 +134,7 @@ export default function AddMeal({ route, navigation }: Props) {
 
   // Fetch personalized daily targets to get this meal's goal
   const fetchMealGoal = useCallback(async () => {
-    const token = await SecureStore.getItemAsync('userToken');
+    const token = await getItem('userToken');
     try {
       const res = await fetch(`${API_URL}/api/user/daily_targets`, {
         method: 'GET',
@@ -164,7 +164,7 @@ export default function AddMeal({ route, navigation }: Props) {
 
   //databaseden food verileri request edilir.
   const getFood = async () => {
-    const token = await SecureStore.getItemAsync('userToken');
+    const token = await getItem('userToken');
 
     const searchParams = new URLSearchParams({
       food_name: searchText
@@ -241,7 +241,7 @@ export default function AddMeal({ route, navigation }: Props) {
 
   //seçilen yemekler backende send edilir.
   const handleAddMeal = async (items?: FoodItem[]) => {
-    const token = await SecureStore.getItemAsync('userToken');
+    const token = await getItem('userToken');
     const itemsToSend = items || selectedItems;
     if (itemsToSend.length === 0) return;
 
@@ -287,7 +287,7 @@ export default function AddMeal({ route, navigation }: Props) {
   }
 
   const handleStreakUpdate = async () => {
-    const token = await SecureStore.getItemAsync('userToken');
+    const token = await getItem('userToken');
     const url = `${API_URL}/api/gamification/streak/update`;
     console.log(url);
 
@@ -323,7 +323,7 @@ export default function AddMeal({ route, navigation }: Props) {
       return;
     }
     try {
-      const token = await SecureStore.getItemAsync('userToken');
+      const token = await getItem('userToken');
       console.log(`${API_URL}/api/food/delete_from_meal`);
       const res = await fetch(`${API_URL}/api/food/delete_from_meal`, {
         method: 'POST',

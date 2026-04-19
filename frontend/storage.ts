@@ -1,18 +1,26 @@
 import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 
-/**
- * Universal Storage Wrapper - Native Version
- * Uses SecureStore for encrypted storage on iOS/Android.
- */
-
-export const getItemAsync = async (key: string): Promise<string | null> => {
-  return await SecureStore.getItemAsync(key);
+export const setItem = async (key: string, value: string): Promise<void> => {
+  if (Platform.OS === 'web') {
+    localStorage.setItem(key, value);
+  } else {
+    await SecureStore.setItemAsync(key, value);
+  }
 };
 
-export const setItemAsync = async (key: string, value: string): Promise<void> => {
-  await SecureStore.setItemAsync(key, value);
+export const getItem = async (key: string): Promise<string | null> => {
+  if (Platform.OS === 'web') {
+    return localStorage.getItem(key);
+  } else {
+    return await SecureStore.getItemAsync(key);
+  }
 };
 
-export const deleteItemAsync = async (key: string): Promise<void> => {
-  await SecureStore.deleteItemAsync(key);
+export const removeItem = async (key: string): Promise<void> => {
+  if (Platform.OS === 'web') {
+    localStorage.removeItem(key);
+  } else {
+    await SecureStore.deleteItemAsync(key);
+  }
 };

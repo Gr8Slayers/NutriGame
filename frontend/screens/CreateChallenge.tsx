@@ -6,7 +6,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import styles from '../styles/CreateChallenge';
 import { API_URL } from '../env';
-import * as SecureStore from '../storage';
+import { setItem, getItem, removeItem } from '../storage';
 import { useLanguage } from '../i18n/LanguageContext';
 
 const BASE_URL = `${API_URL}/api`;
@@ -27,7 +27,7 @@ const CreateChallenge: React.FC<Props> = ({ navigation }) => {
 
   useEffect(() => {
     const fetchUserId = async () => {
-      const userId = await SecureStore.getItemAsync('userId');
+      const userId = await getItem('userId');
       if (userId) {
         setCurrentUserId(userId);
       }
@@ -54,7 +54,7 @@ const CreateChallenge: React.FC<Props> = ({ navigation }) => {
 
     setIsSubmitting(true);
     try {
-      const token = await SecureStore.getItemAsync('userToken');
+      const token = await getItem('userToken');
       const response = await fetch(`${BASE_URL}/gamification/challenge/create`, {
         method: 'POST',
         headers: {

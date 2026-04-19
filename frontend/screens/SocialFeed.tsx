@@ -18,7 +18,7 @@ import { RootStackParamList } from '../App';
 import styles from '../styles/SocialFeed';
 import { Ionicons } from '@expo/vector-icons';
 import { API_URL } from '../env';
-import * as SecureStore from '../storage';
+import { setItem, getItem, removeItem } from '../storage';
 import { Post, Comment } from '../types';
 import { useLanguage } from '../i18n/LanguageContext';
 
@@ -99,7 +99,7 @@ function SocialFeed({ navigation }: Props) {
 
     const fetchFeed = useCallback(async (): Promise<void> => {
         try {
-            const token = await SecureStore.getItemAsync('userToken');
+            const token = await getItem('userToken');
             const url = `${API_URL}/api/social/get_feed`;
             const res = await fetch(url, {
                 method: 'GET',
@@ -156,7 +156,7 @@ function SocialFeed({ navigation }: Props) {
         if (!isOpening || commentsByPost[postId]) return;
 
         try {
-            const token = await SecureStore.getItemAsync('userToken');
+            const token = await getItem('userToken');
             const res = await fetch(`${API_URL}/api/social/comments/${postId}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -169,7 +169,7 @@ function SocialFeed({ navigation }: Props) {
     }, [expandedComments, commentsByPost]);
 
     const handleLike = useCallback(async (post: Post) => {
-        const token = await SecureStore.getItemAsync('userToken');
+        const token = await getItem('userToken');
         try {
             await fetch(`${API_URL}/api/social/like/${post.id}`, {
                 method: post.isLikedByCurrentUser ? 'DELETE' : 'POST',
@@ -201,7 +201,7 @@ function SocialFeed({ navigation }: Props) {
             createdAt: new Date().toISOString(),
         };
 
-        const token = await SecureStore.getItemAsync('userToken');
+        const token = await getItem('userToken');
         try {
             await fetch(`${API_URL}/api/social/comment/${postId}`, {
                 method: 'POST',

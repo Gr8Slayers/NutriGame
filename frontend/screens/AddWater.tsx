@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, Alert, Modal } from 'react-na
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import * as SecureStore from '../storage';
+import { setItem, getItem, removeItem } from '../storage';
 import { RootStackParamList } from '../App';
 import WaterWave from "../components/waterContainer";
 import styles from '../styles/AddWater';
@@ -37,7 +37,7 @@ export default function AddWater({ route, navigation }: Props) {
      // Fetch current water intake for the selected date
      const fetchWaterData = useCallback(async () => {
           try {
-               const token = await SecureStore.getItemAsync('userToken');
+               const token = await getItem('userToken');
                const params = new URLSearchParams({ date: selectedDate }).toString();
                const url = `${API_URL}/api/food/get_water_total?${params}`;
 
@@ -65,7 +65,7 @@ export default function AddWater({ route, navigation }: Props) {
      }, [selectedDate]);
 
      const fetchWaterGoal = useCallback(async () => {
-          const token = await SecureStore.getItemAsync('userToken');
+          const token = await getItem('userToken');
           try {
                const res = await fetch(`${API_URL}/api/user/daily_targets`, {
                     method: 'GET',
@@ -122,7 +122,7 @@ export default function AddWater({ route, navigation }: Props) {
                     {
                          text: t('delete'), style: 'destructive', onPress: async () => {
                               try {
-                                   const token = await SecureStore.getItemAsync('userToken');
+                                   const token = await getItem('userToken');
                                    const res = await fetch(`${API_URL}/api/food/delete_from_water`, {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -150,7 +150,7 @@ export default function AddWater({ route, navigation }: Props) {
           }
 
           try {
-               const token = await SecureStore.getItemAsync('userToken');
+               const token = await getItem('userToken');
                const url = `${API_URL}/api/food/add_to_water`;
 
                const res = await fetch(url, {

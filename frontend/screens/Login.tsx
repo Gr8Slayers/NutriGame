@@ -3,7 +3,7 @@ import {
   View, Text, TextInput, Alert, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import * as SecureStore from '../storage';
+import { setItem, getItem, removeItem } from '../storage';
 import { RootStackParamList } from '../App';
 import styles from '../styles/LoginStyle';
 import { API_URL } from '../env';
@@ -54,15 +54,15 @@ function Login({ navigation }: Props) {
 
       if (res.ok) {
         const token = data.token || "No Token";
-        await SecureStore.setItemAsync('userToken', token);
+        await setItem('userToken', token);
         if (data.user?.id) {
-          await SecureStore.setItemAsync('userId', String(data.user.id));
+          await setItem('userId', String(data.user.id));
         }
 
         if (remember) {
-          await SecureStore.setItemAsync('rememberMeFlag', 'true');
+          await setItem('rememberMeFlag', 'true');
         } else {
-          await SecureStore.deleteItemAsync('rememberMeFlag');
+          await removeItem('rememberMeFlag');
         }
 
         navigation.navigate('MainPage');

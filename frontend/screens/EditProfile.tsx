@@ -3,7 +3,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { Asset } from 'expo-asset';
 import { useState } from 'react';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import * as SecureStore from '../storage';
+import { setItem, getItem, removeItem } from '../storage';
 import { Ionicons } from '@expo/vector-icons';
 import { API_URL } from '../env';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -118,7 +118,7 @@ export default function EditProfile() {
     const handleSave = async () => {
         try {
             setSaving(true);
-            const token = await SecureStore.getItemAsync('userToken');
+            const token = await getItem('userToken');
             if (!token) {
                 Alert.alert(t('error') || 'Error', 'Please login again');
                 return;

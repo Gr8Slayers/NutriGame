@@ -10,7 +10,7 @@ import styles from '../styles/MainPage';
 import CalorieCircle from '../components/calorieCircle';
 import { Ionicons } from '@expo/vector-icons';
 import { API_URL } from '../env';
-import * as SecureStore from '../storage';
+import { setItem, getItem, removeItem } from '../storage';
 import { useLanguage } from '../i18n/LanguageContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MainPage'>;
@@ -63,7 +63,7 @@ function MainPage({ navigation }: Props) {
 
     const formattedDate = selectedDate.toISOString().split("T")[0];
     const fetchDailyData = useCallback(async () => {
-        const token = await SecureStore.getItemAsync('userToken');
+        const token = await getItem('userToken');
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000);
         const queryParams = new URLSearchParams({ date: formattedDate, meal_category: "OVERALL" }).toString();
@@ -92,7 +92,7 @@ function MainPage({ navigation }: Props) {
 
     const fetchDailyTargets = useCallback(async () => {
         try {
-            const token = await SecureStore.getItemAsync('userToken');
+            const token = await getItem('userToken');
             const res = await fetch(`${API_URL}/api/user/daily_targets`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },

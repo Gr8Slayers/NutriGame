@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity, Alert, Modal } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import * as SecureStore from '../storage';
+import { setItem, getItem, removeItem } from '../storage';
 import { Ionicons } from '@expo/vector-icons';
 import LottieView from 'lottie-react-native';
 import { API_URL } from '../env';
@@ -65,7 +65,7 @@ export default function ProfileSettingsMenu() {
 
     const handleDeleteAccount = async () => {
         try {
-            const token = await SecureStore.getItemAsync('userToken');
+            const token = await getItem('userToken');
             if (!token) return;
             console.log(`${API_URL}/api/user/profile/delete`)
 
@@ -77,8 +77,8 @@ export default function ProfileSettingsMenu() {
             });
 
             if (res.ok) {
-                await SecureStore.deleteItemAsync('userToken');
-                await SecureStore.deleteItemAsync('rememberMeFlag');
+                await removeItem('userToken');
+                await removeItem('rememberMeFlag');
                 navigation.reset({
                     index: 0,
                     routes: [{ name: 'Login' as never }],

@@ -5,7 +5,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import styles from '../styles/WeeklySummary';
 import { API_URL } from '../env';
-import * as SecureStore from '../storage';
+import { setItem, getItem, removeItem } from '../storage';
 import { WeeklySummary as WeeklySummaryData, DailyProgress } from '../types';
 import { useLanguage } from '../i18n/LanguageContext';
 
@@ -24,7 +24,7 @@ const WeeklySummary: React.FC<Props> = ({ navigation }) => {
 
     const fetchWeeklyData = useCallback(async () => {
         try {
-            const token = await SecureStore.getItemAsync('userToken');
+            const token = await getItem('userToken');
             const response = await fetch(`${API_URL}/api/food/get_weekly_summary`, {
                 method: 'GET',
                 headers: {

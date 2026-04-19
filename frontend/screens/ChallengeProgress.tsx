@@ -6,7 +6,7 @@ import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import { RootStackParamList } from '../App';
 import styles from '../styles/ChallengeProgress';
 import { API_URL } from '../env';
-import * as SecureStore from '../storage';
+import { setItem, getItem, removeItem } from '../storage';
 import BadgeAwardModal from '../components/BadgeAwardModal';
 import { useLanguage } from '../i18n/LanguageContext';
 
@@ -33,7 +33,7 @@ const ChallengeProgress: React.FC<Props> = ({ navigation, route }) => {
 
   useEffect(() => {
     const fetchUserId = async () => {
-      const userId = await SecureStore.getItemAsync('userId');
+      const userId = await getItem('userId');
       setCurrentUserId(userId);
     };
     fetchUserId();
@@ -51,7 +51,7 @@ const ChallengeProgress: React.FC<Props> = ({ navigation, route }) => {
   const fetchProgress = async (): Promise<void> => {
     const { challengeId } = route.params;
     try {
-      const token = await SecureStore.getItemAsync('userToken');
+      const token = await getItem('userToken');
       const response = await fetch(`${BASE_URL}/gamification/challenge/progress?challengeId=${challengeId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -77,7 +77,7 @@ const ChallengeProgress: React.FC<Props> = ({ navigation, route }) => {
   const claimReward = async (): Promise<void> => {
     const { challengeId } = route.params;
     try {
-      const token = await SecureStore.getItemAsync('userToken');
+      const token = await getItem('userToken');
       const response = await fetch(`${BASE_URL}/gamification/challenge/complete`, {
         method: 'POST',
         headers: {
@@ -116,7 +116,7 @@ const ChallengeProgress: React.FC<Props> = ({ navigation, route }) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              const token = await SecureStore.getItemAsync('userToken');
+              const token = await getItem('userToken');
               const response = await fetch(`${BASE_URL}/gamification/challenge/${challengeId}`, {
                 method: 'DELETE',
                 headers: {

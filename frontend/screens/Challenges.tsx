@@ -5,7 +5,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import styles from '../styles/Challenges';
 import { API_URL } from '../env';
-import * as SecureStore from '../storage';
+import { setItem, getItem, removeItem } from '../storage';
 import { useLanguage } from '../i18n/LanguageContext';
 
 const BASE_URL = `${API_URL}/api`;
@@ -29,7 +29,7 @@ const Challenges = ({ navigation }: Props) => {
 
   const fetchData = async () => {
     try {
-      const token = await SecureStore.getItemAsync('userToken');
+      const token = await getItem('userToken');
       const res = await fetch(`${BASE_URL}/gamification/challenges`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
@@ -99,7 +99,7 @@ const Challenges = ({ navigation }: Props) => {
 
   const respondToInvite = async (challengeId: string, accept: boolean) => {
     try {
-      const token = await SecureStore.getItemAsync('userToken');
+      const token = await getItem('userToken');
       await fetch(`${BASE_URL}/gamification/challenge/respond`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
