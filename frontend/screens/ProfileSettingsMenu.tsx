@@ -4,7 +4,8 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store';
 import { Ionicons } from '@expo/vector-icons';
 import LottieView from 'lottie-react-native';
-import { API_URL } from '@env';
+import { API_URL } from '../env';
+
 import styles from '../styles/ProfileSettingsMenu';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';

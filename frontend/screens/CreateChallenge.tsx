@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import styles from '../styles/CreateChallenge';
-import { API_URL } from '@env';
+import { API_URL } from '../env';
 import * as SecureStore from 'expo-secure-store';
 import { useLanguage } from '../i18n/LanguageContext';
 
@@ -119,7 +119,7 @@ const CreateChallenge: React.FC<Props> = ({ navigation }) => {
         <View style={{ width: 24 }} />
       </View>
 
-      <KeyboardAwareScrollView 
+      <KeyboardAwareScrollView
         contentContainerStyle={styles.content}
         extraScrollHeight={100}
         enableOnAndroid={true}

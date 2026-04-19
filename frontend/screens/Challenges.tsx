@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import styles from '../styles/Challenges';
-import { API_URL } from '@env';
+import { API_URL } from '../env';
 import * as SecureStore from 'expo-secure-store';
 import { useLanguage } from '../i18n/LanguageContext';
 

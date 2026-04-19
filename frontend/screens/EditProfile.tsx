@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store';
 import { Ionicons } from '@expo/vector-icons';
-import { API_URL } from '@env';
+import { API_URL } from '../env';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { UserProfile } from '../types';
@@ -202,7 +202,7 @@ export default function EditProfile() {
                 <Text style={styles.headerTitle}>{t('edit_profile_title') || 'Edit Profile'}</Text>
             </View>
 
-            <KeyboardAwareScrollView 
+            <KeyboardAwareScrollView
                 style={{ flex: 1 }}
                 contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 }]}
                 showsVerticalScrollIndicator={false}

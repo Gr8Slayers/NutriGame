@@ -8,7 +8,7 @@ import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../App';
 
 import styles from '../styles/CreateAvatar';
-import { API_URL } from '@env';
+import { API_URL } from '../env';
 import { useLanguage } from '../i18n/LanguageContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CreateAvatar'>;

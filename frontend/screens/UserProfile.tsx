@@ -15,7 +15,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
-import { API_URL } from '@env';
+import { API_URL } from '../env';
 import styles from '../styles/UserProfile';
 import { BadgeImages } from '../constants/BadgeImages';
 import { useLanguage } from '../i18n/LanguageContext';
@@ -334,10 +334,10 @@ export default function UserProfile({ navigation, route }: Props) {
                         <View style={styles.miniBadges}>
                             {profile.badges.slice(0, 5).map(badge => (
                                 BadgeImages[badge.iconName] && (
-                                    <Image 
-                                        key={`mini-${badge.id}`} 
-                                        source={BadgeImages[badge.iconName]} 
-                                        style={styles.miniBadge} 
+                                    <Image
+                                        key={`mini-${badge.id}`}
+                                        source={BadgeImages[badge.iconName]}
+                                        style={styles.miniBadge}
                                     />
                                 )
                             ))}
@@ -410,9 +410,9 @@ export default function UserProfile({ navigation, route }: Props) {
                                 <View key={badge.id} style={styles.badgeItem}>
                                     <View style={styles.badgeIcon}>
                                         {BadgeImages[badge.iconName] ? (
-                                            <Image 
-                                                source={BadgeImages[badge.iconName]} 
-                                                style={{ width: 30, height: 30, resizeMode: 'contain' }} 
+                                            <Image
+                                                source={BadgeImages[badge.iconName]}
+                                                style={{ width: 30, height: 30, resizeMode: 'contain' }}
                                             />
                                         ) : (
                                             <Ionicons name={badge.iconName as any} size={22} color="#c8a96e" />

@@ -5,7 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as SecureStore from 'expo-secure-store';
 import { View, ActivityIndicator } from 'react-native';
 import { usePushNotifications } from './hooks/usePushNotifications';
-import { API_URL } from '@env';
+import { API_URL } from './env';
 import { LanguageProvider } from './i18n/LanguageContext';
 
 // Ekranlar
@@ -134,7 +134,7 @@ export default function App() {
         try {
           const userToken = await SecureStore.getItemAsync('userToken');
           if (!userToken) return;
-          
+
           await fetch(`${API_URL}/api/user/push-token`, {
             method: 'PUT',
             headers: {

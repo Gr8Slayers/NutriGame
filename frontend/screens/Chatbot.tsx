@@ -9,7 +9,7 @@ import { useLanguage } from '../i18n/LanguageContext';
 
 import styles from '../styles/Chatbot';
 import { useNavigation } from '@react-navigation/native';
-import { API_URL } from '@env';
+import { API_URL } from '../env';
 
 const { width } = Dimensions.get('window');
 const MENU_WIDTH = width * 0.7;

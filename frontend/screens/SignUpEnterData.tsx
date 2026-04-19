@@ -10,7 +10,7 @@ import GenderSelector from '../components/genderSelection'
 import GoalDropdown from '../components/goalSelection'
 import ActivityLevelDropdown from '../components/activityLevelSelection'
 import { RootStackParamList } from '../App';
-import { API_URL } from '@env';
+import { API_URL } from '../env';
 import { useLanguage } from '../i18n/LanguageContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SignUpEnterData'>;

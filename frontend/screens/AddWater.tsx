@@ -8,7 +8,7 @@ import { RootStackParamList } from '../App';
 import WaterWave from "../components/waterContainer";
 import styles from '../styles/AddWater';
 import { WaterPortion, AddedEntry, SavedLog } from '../types';
-import { API_URL } from '@env';
+import { API_URL } from '../env';
 import { useLanguage } from '../i18n/LanguageContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AddWater'>;

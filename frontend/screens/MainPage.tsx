@@ -9,7 +9,7 @@ import { RootStackParamList } from '../App';
 import styles from '../styles/MainPage';
 import CalorieCircle from '../components/calorieCircle';
 import { Ionicons } from '@expo/vector-icons';
-import { API_URL } from '@env';
+import { API_URL } from '../env';
 import * as SecureStore from 'expo-secure-store';
 import { useLanguage } from '../i18n/LanguageContext';
 

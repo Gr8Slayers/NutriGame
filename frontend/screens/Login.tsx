@@ -6,7 +6,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as SecureStore from 'expo-secure-store';
 import { RootStackParamList } from '../App';
 import styles from '../styles/LoginStyle';
-import { API_URL } from '@env';
+import { API_URL } from '../env';
 import { useLanguage } from '../i18n/LanguageContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
