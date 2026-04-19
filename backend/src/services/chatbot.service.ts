@@ -10,7 +10,7 @@ const MAX_MESSAGES_PER_MINUTE = parseInt(process.env.MAX_MESSAGES_PER_MINUTE ?? 
 const MAX_MESSAGE_LENGTH = parseInt(process.env.MAX_MESSAGE_LENGTH ?? '2000', 10);
 const CONVERSATION_TTL_MS = parseInt(process.env.CONVERSATION_TTL_MS ?? '3600000', 10);
 const MAX_CONTEXT_MESSAGES = parseInt(process.env.CHATBOT_CONTEXT_MESSAGES ?? '12', 10);
-const GEMINI_MODEL = process.env.GEMINI_MODEL ?? 'gemini-2.5-flash-preview-04-17';
+const GEMINI_MODEL = process.env.GEMINI_MODEL ?? 'gemini-2.5-flash';
 
 const CHATBOT_SYSTEM_PROMPT = `
 You are NutriCoach, a friendly nutrition and healthy-lifestyle assistant for the NutriGame app.
