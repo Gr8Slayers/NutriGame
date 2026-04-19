@@ -106,10 +106,8 @@ function isNutritionRelated(message: string): boolean {
   return TOPIC_KEYWORDS.some((keyword) => normalized.includes(keyword));
 }
 
-function buildFallbackReply(message: string, usedAiFallback = false): string {
-  const prefix = usedAiFallback
-    ? 'NutriCoach gecici olarak sinirli modda yanit veriyor. '
-    : '';
+function buildFallbackReply(message: string): string {
+  const prefix = '';
 
   if (!isNutritionRelated(message)) {
     return `${prefix}Ben daha cok beslenme, su tuketimi, ogun planlama, kilo yonetimi ve saglikli yasam konularinda yardimci olabiliyorum. Istersen bu hedeflerden biriyle ilgili sorunu yaz.`;
@@ -271,7 +269,7 @@ export async function chat(
       response = normalizeReply(result.response.text());
     } catch (error) {
       console.error('[chatbot.service] Gemini request failed:', error);
-      response = buildFallbackReply(message, true);
+      response = buildFallbackReply(message);
     }
   }
 
