@@ -41,6 +41,9 @@
       "display": "standalone",
       "orientation": "portrait"
     },
+    "notification": {
+      "vapidPublicKey": "BGZFxbCJMiWtQrjVOS_ddyUix46V9y3UR_yjGmmWrbYV09rPrAAYJiS21NP1KEP84CGZZgT7x9xr_fQYsNe3VIg"
+    },
     "plugins": [
       "expo-secure-store",
       "expo-camera",

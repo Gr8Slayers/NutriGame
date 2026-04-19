@@ -31,14 +31,16 @@ export const usePushNotifications = (): PushNotificationState => {
       if (token) setExpoPushToken(token);
     });
 
-    notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
-      setNotification(notification);
-    });
+    if (Platform.OS !== 'web') {
+      notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
+        setNotification(notification);
+      });
 
-    responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
-      // You can handle notification tap navigation here
-      console.log('Notification tapped:', response);
-    });
+      responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
+        // You can handle notification tap navigation here
+        console.log('Notification tapped:', response);
+      });
+    }
 
     return () => {
       if (notificationListener.current) {
@@ -65,7 +67,8 @@ async function registerForPushNotificationsAsync() {
     });
   }
 
-  if (Device.isDevice) {
+  // Web permissions or device check
+  if (Platform.OS === 'web' || Device.isDevice) {
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
     if (existingStatus !== 'granted') {
@@ -89,13 +92,16 @@ async function registerForPushNotificationsAsync() {
       // Attempt to get token
       token = await Notifications.getExpoPushTokenAsync({
         projectId: projectId,
+        ...(Platform.OS === 'web' && {
+          vapidPublicKey: 'BGZFxbCJMiWtQrjVOS_ddyUix46V9y3UR_yjGmmWrbYV09rPrAAYJiS21NP1KEP84CGZZgT7x9xr_fQYsNe3VIg',
+        }),
       });
       // console.log(token);
     } catch (e) {
       console.log("Error getting push token", e);
     }
   } else {
-    // console.log('Must use physical device for Push Notifications');
+    console.log('Push Notifications are only supported on physical devices (Mobile) or Browsers (Web).');
   }
 
   return token;
