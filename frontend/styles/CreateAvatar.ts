@@ -11,13 +11,12 @@ export default StyleSheet.create({
 
   leafContainer: {
     position: 'absolute',
-    top: height * 0.13,
+    top: height * 0.18 - 50,
     left: '50%',
     marginLeft: -50,
     width: 100,
     height: 100,
     zIndex: 10,
-
   },
 
   leaf1: { // Koyu Yeşil Yaprak
