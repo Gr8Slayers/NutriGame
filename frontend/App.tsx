@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { Provider as PaperProvider, MD3DarkTheme as DefaultTheme } from 'react-native-paper';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import * as SecureStore from './storage';
 import { View, ActivityIndicator } from 'react-native';
 import { usePushNotifications } from './hooks/usePushNotifications';
 import { API_URL } from './env';
 import { LanguageProvider } from './i18n/LanguageContext';
 import { setItem, getItem, removeItem } from './storage';
+
 
 
 // Ekranlar
