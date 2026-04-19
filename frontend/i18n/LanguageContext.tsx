@@ -3,7 +3,7 @@ import { getItem, setItem } from '../storage';
 import * as Localization from 'expo-localization';
 import { translations, Language, TranslationKey } from './translations';
 
-const STORAGE_KEY = 'user-language';
+const STORAGE_KEY = 'appLanguage';
 
 interface LanguageContextType {
   language: Language;
@@ -11,10 +11,19 @@ interface LanguageContextType {
   t: (key: TranslationKey) => string;
 }
 
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+const LanguageContext = createContext<LanguageContextType>({
+  language: 'en',
+  setLanguage: () => { },
+  t: (key) => key,
+});
 
-export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [language, setLanguageState] = useState<Language>('tr');
+function getSystemLanguage(): Language {
+  const locale = Localization.getLocales?.()?.[0]?.languageCode ?? 'en';
+  return locale === 'tr' ? 'tr' : 'en';
+}
+
+export function LanguageProvider({ children }: { children: ReactNode }) {
+  const [language, setLanguageState] = useState<Language>(getSystemLanguage);
 
   useEffect(() => {
     getItem(STORAGE_KEY).then((saved) => {
