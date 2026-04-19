@@ -13,6 +13,7 @@ import styles from '../styles/EditProfile';
 import GoalDropdown from '../components/goalSelection';
 import ActivityLevelDropdown from '../components/activityLevelSelection';
 import { useLanguage } from '../i18n/LanguageContext';
+import { createUploadFormData } from '../utils/uploadHelper';
 
 // Helper to resolve avatar paths
 const getAvatarSource = (path: string | undefined) => {
@@ -133,13 +134,8 @@ export default function EditProfile() {
                     const asset = Asset.fromModule(source);
                     await asset.downloadAsync();
 
-                    const formData = new FormData();
-                    formData.append('image', {
-                        uri: asset.localUri || asset.uri,
-                        name: `avatar_${Date.now()}.png`,
-                        type: 'image/png',
-                    } as any);
-
+                    const formData = await createUploadFormData(asset.localUri || asset.uri);
+                    
                     const uploadRes = await fetch(`${API_URL}/api/upload`, {
                         method: 'POST',
                         body: formData,

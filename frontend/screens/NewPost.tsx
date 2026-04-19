@@ -19,6 +19,7 @@ import { setItem, getItem, removeItem } from '../storage';
 import * as ImagePicker from 'expo-image-picker';
 import { API_URL } from '../env';
 import { useLanguage } from '../i18n/LanguageContext';
+import { createUploadFormData } from '../utils/uploadHelper';
 type Props = NativeStackScreenProps<RootStackParamList, 'NewPost'>;
 
 function NewPost({ navigation }: Props) {
@@ -68,12 +69,8 @@ function NewPost({ navigation }: Props) {
             // Resim varsa önce backend'e yükle, public URL al
             let uploadedImageUrl: string | undefined;
             if (imageUri) {
-                const formData = new FormData();
-                const filename = imageUri.split('/').pop() ?? 'photo.jpg';
-                const match = /\.(\w+)$/.exec(filename);
-                const type = match ? `image/${match[1]}` : 'image/jpeg';
-                formData.append('image', { uri: imageUri, name: filename, type } as any);
-
+                const formData = await createUploadFormData(imageUri);
+                
                 const uploadRes = await fetch(`${API_URL}/api/upload`, {
                     method: 'POST',
                     headers: { Authorization: `Bearer ${token}` },

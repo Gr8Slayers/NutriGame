@@ -10,6 +10,7 @@ import { RootStackParamList } from '../App';
 import styles from '../styles/CreateAvatar';
 import { API_URL } from '../env';
 import { useLanguage } from '../i18n/LanguageContext';
+import { createUploadFormData } from '../utils/uploadHelper';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CreateAvatar'>;
 
@@ -104,13 +105,8 @@ function CreateAvatar({ navigation, route }: Props) {
       const uri = asset.localUri ?? asset.uri;
       if (!uri) throw new Error('Avatar URI alınamadı.');
 
-      const formData = new FormData();
-      formData.append('image', {
-        uri,
-        name: `avatar_${Date.now()}.png`,
-        type: 'image/png',
-      } as any);
-
+      const formData = await createUploadFormData(uri);
+      
       const uploadRes = await fetch(`${API_URL}/api/upload`, {
         method: 'POST',
         body: formData,
