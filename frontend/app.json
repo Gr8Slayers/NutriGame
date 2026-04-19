@@ -24,7 +24,16 @@
       "edgeToEdgeEnabled": true
     },
     "web": {
-      "favicon": "./assets/logo.png"
+      "favicon": "./assets/logo.png",
+      "bundler": "metro",
+      "output": "single",
+      "name": "NutriGame",
+      "shortName": "NutriGame",
+      "description": "Gamified Nutrition and Health Tracking",
+      "backgroundColor": "#FBE577",
+      "themeColor": "#FBE577",
+      "display": "standalone",
+      "orientation": "portrait"
     },
     "plugins": [
       "expo-secure-store",
