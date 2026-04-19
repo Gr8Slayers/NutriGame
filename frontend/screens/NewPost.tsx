@@ -15,7 +15,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import styles from '../styles/NewPost';
 import { Ionicons } from '@expo/vector-icons';
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from '../storage';
 import * as ImagePicker from 'expo-image-picker';
 import { API_URL } from '../env';
 import { useLanguage } from '../i18n/LanguageContext';

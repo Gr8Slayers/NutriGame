@@ -6,7 +6,7 @@ import styles from '../styles/AddMeal';
 import CalorieCircle from '../components/calorieCircle';
 import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList } from '../App';
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from '../storage';
 import { API_URL } from '../env';
 import { useLanguage } from '../i18n/LanguageContext';
 

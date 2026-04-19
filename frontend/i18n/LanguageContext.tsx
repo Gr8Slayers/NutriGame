@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from '../storage';
 import * as Localization from 'expo-localization';
 import { translations, Language, TranslationKey } from './translations';
 

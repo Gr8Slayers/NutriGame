@@ -6,7 +6,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import styles from '../styles/ScanFood';
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from '../storage';
 import { API_URL } from '../env';
 
 import { useLanguage } from '../i18n/LanguageContext';

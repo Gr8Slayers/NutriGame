@@ -3,7 +3,7 @@ import {
   View, Text, TextInput, Alert, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from '../storage';
 import { RootStackParamList } from '../App';
 import styles from '../styles/LoginStyle';
 import { API_URL } from '../env';

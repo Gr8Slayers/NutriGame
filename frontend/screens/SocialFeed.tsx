@@ -18,7 +18,7 @@ import { RootStackParamList } from '../App';
 import styles from '../styles/SocialFeed';
 import { Ionicons } from '@expo/vector-icons';
 import { API_URL } from '../env';
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from '../storage';
 import { Post, Comment } from '../types';
 import { useLanguage } from '../i18n/LanguageContext';
 

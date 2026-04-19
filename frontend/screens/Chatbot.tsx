@@ -4,7 +4,7 @@ import Markdown from 'react-native-markdown-display';
 import { GiftedChat, Avatar, IMessage, Bubble, MessageText, InputToolbar, Composer, Send } from 'react-native-gifted-chat';
 import { Ionicons } from '@expo/vector-icons';
 import { TypingAnimation } from 'react-native-typing-animation';
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from '../storage';
 import { useLanguage } from '../i18n/LanguageContext';
 
 import styles from '../styles/Chatbot';

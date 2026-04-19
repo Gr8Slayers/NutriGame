@@ -5,7 +5,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import styles from '../styles/WeeklySummary';
 import { API_URL } from '../env';
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from '../storage';
 import { WeeklySummary as WeeklySummaryData, DailyProgress } from '../types';
 import { useLanguage } from '../i18n/LanguageContext';
 

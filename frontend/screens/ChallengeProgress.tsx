@@ -6,7 +6,7 @@ import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import { RootStackParamList } from '../App';
 import styles from '../styles/ChallengeProgress';
 import { API_URL } from '../env';
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from '../storage';
 import BadgeAwardModal from '../components/BadgeAwardModal';
 import { useLanguage } from '../i18n/LanguageContext';
 

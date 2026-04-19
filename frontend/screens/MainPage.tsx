@@ -10,7 +10,7 @@ import styles from '../styles/MainPage';
 import CalorieCircle from '../components/calorieCircle';
 import { Ionicons } from '@expo/vector-icons';
 import { API_URL } from '../env';
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from '../storage';
 import { useLanguage } from '../i18n/LanguageContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MainPage'>;

@@ -5,7 +5,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import styles from '../styles/Challenges';
 import { API_URL } from '../env';
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from '../storage';
 import { useLanguage } from '../i18n/LanguageContext';
 
 const BASE_URL = `${API_URL}/api`;

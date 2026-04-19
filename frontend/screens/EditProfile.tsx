@@ -3,7 +3,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { Asset } from 'expo-asset';
 import { useState } from 'react';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from '../storage';
 import { Ionicons } from '@expo/vector-icons';
 import { API_URL } from '../env';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
