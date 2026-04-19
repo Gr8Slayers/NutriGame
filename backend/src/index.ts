@@ -27,7 +27,17 @@ startCronJobs();
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(cors());
+app.use(cors({
+    origin: [
+        'https://nutrigameweb.vercel.app',
+        'https://nutrigameweb-git-main-duygus-projects-3cb7c95e.vercel.app',
+        'http://localhost:8081',
+        'http://localhost:3000',
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 app.use(express.json());
 
 // Request logger
