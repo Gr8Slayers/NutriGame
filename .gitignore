@@ -16,3 +16,4 @@ yarn-error.log*
 
 *.tgz
 node_modules
+*firebase-adminsdk*.json

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "86327424578",
+    "project_id": "nutrigame-1f171",
+    "storage_bucket": "nutrigame-1f171.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:86327424578:android:685f21ba5ee67b0f6b5fdb",
+        "android_client_info": {
+          "package_name": "com.betulaydeger.nutrigame"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBD9M0vBRk6SXxr7nPwKws5eNOBMr1eO8o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

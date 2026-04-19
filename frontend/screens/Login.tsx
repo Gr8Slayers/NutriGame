@@ -8,6 +8,7 @@ import { RootStackParamList } from '../App';
 import styles from '../styles/LoginStyle';
 import { API_URL } from '../env';
 import { useLanguage } from '../i18n/LanguageContext';
+import { registerForPushNotificationsAsync } from '../hooks/usePushNotifications';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -63,6 +64,22 @@ function Login({ navigation }: Props) {
           await setItem('rememberMeFlag', 'true');
         } else {
           await removeItem('rememberMeFlag');
+        }
+
+        try {
+          const pushToken = await registerForPushNotificationsAsync();
+          if (pushToken?.data) {
+            await fetch(`${API_URL}/api/user/push-token`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+              },
+              body: JSON.stringify({ expoPushToken: pushToken.data }),
+            });
+          }
+        } catch (pushError) {
+          console.error('[Login] Failed to register push token:', pushError);
         }
 
         navigation.navigate('MainPage');

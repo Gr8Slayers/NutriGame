@@ -55,7 +55,7 @@ export const usePushNotifications = (): PushNotificationState => {
   return { expoPushToken, notification };
 };
 
-async function registerForPushNotificationsAsync() {
+export async function registerForPushNotificationsAsync() {
   let token;
 
   if (Platform.OS === 'android') {

@@ -132,22 +132,21 @@ export default function App() {
 
   useEffect(() => {
     const registerPushToken = async () => {
-      if (isAuthenticated && expoPushToken) {
-        try {
-          const userToken = await getItem('userToken');
-          if (!userToken) return;
+      if (!expoPushToken) return;
+      try {
+        const userToken = await getItem('userToken');
+        if (!userToken) return;
 
-          await fetch(`${API_URL}/api/user/push-token`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${userToken}`,
-            },
-            body: JSON.stringify({ expoPushToken: expoPushToken.data }),
-          });
-        } catch (error) {
-          console.error('[App] Failed to register push token with backend:', error);
-        }
+        await fetch(`${API_URL}/api/user/push-token`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${userToken}`,
+          },
+          body: JSON.stringify({ expoPushToken: expoPushToken.data }),
+        });
+      } catch (error) {
+        console.error('[App] Failed to register push token with backend:', error);
       }
     };
 

@@ -10,7 +10,7 @@
     "extra": {
       "apiUrl": "https://nutrigame-754w.onrender.com",
       "eas": {
-        "projectId": "6a01f1fa-c06f-4db3-93f0-738220760b60"
+        "projectId": "5f38ec40-fcf8-4c2d-bba6-1157950c1b8a"
       }
     },
     "splash": {
@@ -23,11 +23,16 @@
     },
     "android": {
       "package": "com.betulaydeger.nutrigame",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/logo.png",
         "backgroundColor": "#FBE577"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/logo.png",
@@ -55,6 +60,7 @@
           "color": "#FBE577"
         }
       ]
-    ]
+    ],
+    "owner": "betulaydeger"
   }
 }
