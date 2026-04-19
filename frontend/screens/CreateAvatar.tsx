@@ -1,6 +1,6 @@
-import { View, Image, TouchableOpacity, Alert, StyleSheet, Text, ScrollView, Button, ActivityIndicator } from 'react-native';
+import { View, Image, TouchableOpacity, Alert, StyleSheet, Text, ScrollView, Button, ActivityIndicator, View as RNView } from 'react-native';
 import { Asset } from 'expo-asset';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 import { Menu } from 'react-native-paper';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -14,9 +14,9 @@ import { createUploadFormData } from '../utils/uploadHelper';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CreateAvatar'>;
 
-const Leaf = () => {
+const Leaf = ({ top }: { top: number }) => {
   return (
-    <View style={styles.leafContainer}>
+    <View style={[styles.leafContainer, { top: top - 100 }]}>
       {/* Sağdaki koyu yeşil büyük yaprak */}
       <View style={styles.leaf1} />
       {/* Soldaki açık yeşil küçük yaprak */}
@@ -31,6 +31,9 @@ function CreateAvatar({ navigation, route }: Props) {
   const [name, setUserName] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [selected, setSelected] = useState<string | null>(null);
+  const [greenAreaTop, setGreenAreaTop] = useState(0);
+  const dataContainerRef = useRef<RNView>(null);
+
   const avatars = [
     { src: require('../assets/avatars/av1.png'), path: "../assets/avatars/av1.png" },
     { src: require('../assets/avatars/av2.png'), path: "../assets/avatars/av2.png" },
@@ -106,7 +109,7 @@ function CreateAvatar({ navigation, route }: Props) {
       if (!uri) throw new Error('Avatar URI alınamadı.');
 
       const formData = await createUploadFormData(uri);
-      
+
       const uploadRes = await fetch(`${API_URL}/api/upload`, {
         method: 'POST',
         body: formData,
@@ -171,8 +174,16 @@ function CreateAvatar({ navigation, route }: Props) {
           style={{ width: 25 }}
         />
       </TouchableOpacity>
-      <Leaf />
-      <View style={styles.dataContainer}>
+      {greenAreaTop > 0 && <Leaf top={greenAreaTop} />}
+      <View 
+        ref={dataContainerRef}
+        style={styles.dataContainer} 
+        onLayout={() => {
+          dataContainerRef.current?.measureInWindow((x, y) => {
+            setGreenAreaTop(y);
+          });
+        }}
+      >
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <Text style={styles.label}>{t('welcome')}, {name}! </Text>
           <Text style={styles.label}>{t('choose_avatar')}</Text>

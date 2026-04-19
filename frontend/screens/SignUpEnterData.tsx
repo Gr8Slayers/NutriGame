@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
-  View, Text, TextInput, Button, Image, Alert, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform
+  View, Text, TextInput, Button, Image, Alert, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, View as RNView
 } from 'react-native';
 import { Menu } from 'react-native-paper';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -14,9 +14,9 @@ import { API_URL } from '../env';
 import { useLanguage } from '../i18n/LanguageContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SignUpEnterData'>;
-const Leaf = () => {
+const Leaf = ({ top }: { top: number }) => {
   return (
-    <View style={styles.leafContainer}>
+    <View style={[styles.leafContainer, { top: top - 100 }]}>
       {/* Sağdaki koyu yeşil büyük yaprak */}
       <View style={styles.leaf1} />
       {/* Soldaki açık yeşil küçük yaprak */}
@@ -30,14 +30,14 @@ function SignUpEnterData({ navigation, route }: Props) {
   const [age, setAge] = useState('');
   const [gender, setGender] = useState<'male' | 'female' | null>(null);
   const [weight, setWeight] = useState('');
-  const [height, setHeight] = useState('');
+  const [height_box, setHeightBox] = useState('');
   const [goal, setGoal] = useState('');
   const [target_weight, setTargetWeight] = useState('');
   const [activity_level, setActivityLevel] = useState('');
   const [goal_duration_months, setGoalDurationMonths] = useState('');
-
-
+  const [greenAreaTop, setGreenAreaTop] = useState(0);
   const [loading, setLoading] = useState<boolean>(false);
+  const dataContainerRef = useRef<RNView>(null);
   const handleBackButton = () => {
     navigation.goBack();
   }
@@ -48,7 +48,7 @@ function SignUpEnterData({ navigation, route }: Props) {
     if (loading) return;
     setLoading(true);
 
-    if (!age || !gender || !weight || !height || !goal || !activity_level) {
+    if (!age || !gender || !weight || !height_box || !goal || !activity_level) {
       Alert.alert(t('error') || "Missing Info", t('missing_info') || "Please fill in all required fields.");
       setLoading(false);
       return;
@@ -71,7 +71,7 @@ function SignUpEnterData({ navigation, route }: Props) {
       age: parseInt(age),
       gender,
       weight: parseFloat(weight),
-      height: parseFloat(height),
+      height: parseFloat(height_box),
       reason_to_diet: goal,
       target_weight: target_weight ? parseFloat(target_weight) : 0,
       activity_level,
@@ -90,13 +90,21 @@ function SignUpEnterData({ navigation, route }: Props) {
           style={{ width: 25 }}
         />
       </TouchableOpacity>
-      <Leaf />
+      {greenAreaTop > 0 && <Leaf top={greenAreaTop} />}
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20} // Android'de bazen azıcık pay gerekir
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
-        <View style={styles.dataContainer}>
+        <View 
+          ref={dataContainerRef}
+          style={styles.dataContainer} 
+          onLayout={() => {
+            dataContainerRef.current?.measureInWindow((x, y) => {
+              setGreenAreaTop(y);
+            });
+          }}
+        >
           <ScrollView contentContainerStyle={styles.scrollContent}>
             <View style={styles.inputContainer}>
               <Text style={styles.label}>{t('edit_profile_age') || 'Age'} *</Text>
@@ -125,9 +133,9 @@ function SignUpEnterData({ navigation, route }: Props) {
               <TextInput
                 style={styles.input}
                 placeholder={t('edit_profile_height') || 'Height (cm)'}
-                value={height}
+                value={height_box}
                 keyboardType="numeric"
-                onChangeText={setHeight}
+                onChangeText={setHeightBox}
               />
             </View>
             <GoalDropdown value={goal} onChange={setGoal} />

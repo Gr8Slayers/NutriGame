@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
-  View, Text, TextInput, Button, Image, Alert, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform
+  View, Text, TextInput, Button, Image, Alert, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, View as RNView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -10,9 +10,9 @@ import { API_URL } from '../env';
 import { useLanguage } from '../i18n/LanguageContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SignUp'>;
-const Leaf = () => {
+const Leaf = ({ top }: { top: number }) => {
   return (
-    <View style={styles.leafContainer}>
+    <View style={[styles.leafContainer, { top: top - 100 }]}>
       {/* Sağdaki koyu yeşil büyük yaprak */}
       <View style={styles.leaf1} />
       {/* Soldaki açık yeşil küçük yaprak */}
@@ -29,9 +29,9 @@ function SignUp({ navigation }: Props) {
   const [tosAccepted, setTosAccepted] = useState(false);
   const [consentAccepted, setConsentAccepted] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
+  const [greenAreaTop, setGreenAreaTop] = useState(0);
   const { t } = useLanguage();
-
-
+  const dataContainerRef = useRef<RNView>(null);
 
   const handleBackButton = () => {
     navigation.goBack();
@@ -76,13 +76,21 @@ function SignUp({ navigation }: Props) {
           style={{ width: 25 }}
         />
       </TouchableOpacity>
-      <Leaf />
+      {greenAreaTop > 0 && <Leaf top={greenAreaTop} />}
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20} // Android'de bazen azıcık pay gerekir
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
-        <View style={styles.dataContainer}>
+        <View 
+          ref={dataContainerRef}
+          style={styles.dataContainer} 
+          onLayout={() => {
+            dataContainerRef.current?.measureInWindow((x, y) => {
+              setGreenAreaTop(y);
+            });
+          }}
+        >
           <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
 
             <Text style={styles.title}>{t('signup_title')}</Text>

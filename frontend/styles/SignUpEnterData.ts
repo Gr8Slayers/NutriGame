@@ -12,7 +12,7 @@ export default StyleSheet.create({
 
   leafContainer: {
     position: 'absolute',
-    top: height * 0.18 - 50,
+    top: (Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0) + (height * 0.18) - 50,
     left: '50%',
     marginLeft: -50,
     width: 100,
@@ -56,7 +56,7 @@ export default StyleSheet.create({
     zIndex: 20, // En üstte görünsün
   },
   dataContainer: {
-    marginTop: Platform.OS === 'ios' ? height * 0.25 : height * 0.20,
+    marginTop: height * 0.20,
     flex: 1,
     backgroundColor: '#ABC270',
     borderTopLeftRadius: 40,

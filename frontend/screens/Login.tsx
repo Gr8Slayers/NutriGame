@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
-  View, Text, TextInput, Alert, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform
+  View, Text, TextInput, Alert, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, View as RNView
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { setItem, getItem, removeItem } from '../storage';
@@ -11,9 +11,9 @@ import { useLanguage } from '../i18n/LanguageContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
-const Leaf = () => {
+const Leaf = ({ top }: { top: number }) => {
   return (
-    <View style={styles.leafContainer}>
+    <View style={[styles.leafContainer, { top: top - 100 }]}>
       {/* Sağdaki koyu yeşil büyük yaprak */}
       <View style={styles.leaf1} />
       {/* Soldaki açık yeşil küçük yaprak */}
@@ -21,18 +21,18 @@ const Leaf = () => {
     </View>
   );
 };
-
 function Login({ navigation }: Props) {
   const [email, setEmail] = useState('');
   const [username, setUserName] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState<boolean>(false);
   const [remember, setRemember] = useState(false);
+  const [greenAreaTop, setGreenAreaTop] = useState(0);
   const { t } = useLanguage();
-
-
+  const dataContainerRef = useRef<RNView>(null);
 
   const handleLogin = async () => {
+    // ... handles login logic
     if (loading) return;
     setLoading(true);
 
@@ -84,16 +84,22 @@ function Login({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
-      <Leaf />
+      {greenAreaTop > 0 && <Leaf top={greenAreaTop} />}
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20} // Android'de bazen azıcık pay gerekir
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
-
-        <View style={styles.dataContainer}>
+        <View
+          ref={dataContainerRef}
+          style={styles.dataContainer}
+          onLayout={() => {
+            dataContainerRef.current?.measureInWindow((x, y) => {
+              setGreenAreaTop(y);  // Ekrana göre mutlak Y pozisyonu
+            });
+          }}
+        >
           <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-
             <Text style={styles.logInTitle}>{t('login_title')}</Text>
 
             <View style={styles.inputContainer}>
