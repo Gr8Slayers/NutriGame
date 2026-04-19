@@ -7,6 +7,12 @@
     "icon": "./assets/logo.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "extra": {
+      "apiUrl": "https://nutrigame-754w.onrender.com",
+      "eas": {
+        "projectId": "6a01f1fa-c06f-4db3-93f0-738220760b60"
+      }
+    },
     "splash": {
       "image": "./assets/logo.png",
       "resizeMode": "contain",
