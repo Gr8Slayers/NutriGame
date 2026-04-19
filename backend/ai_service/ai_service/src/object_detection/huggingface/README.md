@@ -1,6 +1,6 @@
-# Hugging Face Space - YOLOv8n Food Detection Integration
+# Hugging Face Space - YOLOv8l Food Detection Integration
 
-Bu klasör, Hugging Face Space üzerinde çalışan YOLOv8n modelini Node.js'den kullanmak için gerekli entegrasyon kodlarını içerir.
+Bu klasör, Hugging Face Space üzerinde çalışan YOLOv8l modelini Node.js'den kullanmak için gerekli entegrasyon kodlarını içerir.
 
 ## 📦 Kurulum
 
