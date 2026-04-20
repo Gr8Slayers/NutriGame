@@ -57,12 +57,19 @@ beforeAll(async () => {
 
 afterAll(async () => {
     if (testUserId) {
-        // Delete logs and totals first (foreign keys)
+        await prisma.postComment.deleteMany({ where: { userId: testUserId } });
+        await prisma.postLike.deleteMany({ where: { userId: testUserId } });
+        await prisma.userFollow.deleteMany({ where: { OR: [{ followerId: testUserId }, { followingId: testUserId }] } });
+        await prisma.challengeParticipant.deleteMany({ where: { userId: testUserId } });
+        await prisma.userBadge.deleteMany({ where: { userId: testUserId } });
+        await prisma.post.deleteMany({ where: { userId: testUserId } });
+        await prisma.challenge.deleteMany({ where: { creatorId: testUserId } });
         await prisma.mealLog.deleteMany({ where: { userId: testUserId } });
         await prisma.mealTotals.deleteMany({ where: { userId: testUserId } });
         await prisma.waterLog.deleteMany({ where: { userId: testUserId } });
         await prisma.user.delete({ where: { id: testUserId } });
     }
+    await prisma.badge.deleteMany({ where: { name: { startsWith: TEST_PREFIX } } });
     await prisma.$disconnect();
 });
 
@@ -254,6 +261,131 @@ describe('🔗 Integration Tests — User Data Endpoints', () => {
 });
 
 it('DELETE /api/user/profile should completely delete the user account and associated data', async () => {
+    const createdBadge = await prisma.badge.create({
+        data: {
+            name: `${TEST_PREFIX}badge_${Date.now()}`,
+            description: 'Temporary test badge',
+            iconName: 'trophy',
+        },
+    });
+
+    const createdChallenge = await prisma.challenge.create({
+        data: {
+            title: `${TEST_PREFIX}challenge_${Date.now()}`,
+            type: 'steps',
+            startDate: new Date(),
+            endDate: new Date(Date.now() + 86_400_000),
+            status: 'active',
+            creatorId: testUserId,
+            description: 'Temporary test challenge',
+            goalValue: 5000,
+        },
+    });
+
+    const ownPost = await prisma.post.create({
+        data: {
+            userId: testUserId,
+            caption: 'Temporary test post',
+        },
+    });
+
+    const likedPost = await prisma.post.create({
+        data: {
+            userId: 987654321,
+            caption: 'External post for delete-account test',
+        },
+    });
+
+    await prisma.$transaction([
+        prisma.mealLog.create({
+            data: {
+                userId: testUserId,
+                date: new Date(),
+                meal_category: 'Breakfast',
+                p_count: 1,
+                food_id: 1,
+                food_name: 'Test Food',
+                p_unit: 'portion',
+                t_amount: 1,
+                t_calorie: 100,
+                t_protein: 10,
+                t_fat: 5,
+                t_carb: 10,
+            },
+        }),
+        prisma.mealTotals.create({
+            data: {
+                userId: testUserId,
+                date: new Date(),
+                meal_category: 'Breakfast',
+                t_calorie: 100,
+                t_protein: 10,
+                t_fat: 5,
+                t_carb: 10,
+            },
+        }),
+        prisma.waterLog.create({
+            data: {
+                userId: testUserId,
+                date: new Date(),
+                amount: 250,
+                portion_name: 'Glass',
+            },
+        }),
+        prisma.userFollow.create({
+            data: {
+                followerId: testUserId,
+                followingId: 987654321,
+            },
+        }),
+        prisma.userFollow.create({
+            data: {
+                followerId: 987654320,
+                followingId: testUserId,
+            },
+        }),
+        prisma.challengeParticipant.create({
+            data: {
+                challengeId: createdChallenge.id,
+                userId: testUserId,
+                role: 'creator',
+                status: 'active',
+            },
+        }),
+        prisma.userBadge.create({
+            data: {
+                userId: testUserId,
+                badgeId: createdBadge.id,
+            },
+        }),
+        prisma.postLike.create({
+            data: {
+                postId: ownPost.id,
+                userId: 987654319,
+            },
+        }),
+        prisma.postComment.create({
+            data: {
+                postId: ownPost.id,
+                userId: 987654318,
+                text: 'Temporary comment on own post',
+            },
+        }),
+        prisma.postLike.create({
+            data: {
+                postId: likedPost.id,
+                userId: testUserId,
+            },
+        }),
+        prisma.postComment.create({
+            data: {
+                postId: likedPost.id,
+                userId: testUserId,
+                text: 'Temporary comment by test user',
+            },
+        }),
+    ]);
+
     const deleteRes = await request(app)
         .delete('/api/user/profile')
         .set('Authorization', `Bearer ${userToken}`);
@@ -281,8 +413,42 @@ it('DELETE /api/user/profile should completely delete the user account and assoc
     const userMealLogs = await prisma.mealLog.findMany({ where: { userId: testUserId } });
     expect(userMealLogs.length).toBe(0);
 
+    const userMealTotals = await prisma.mealTotals.findMany({ where: { userId: testUserId } });
+    expect(userMealTotals.length).toBe(0);
+
     const userWaterLogs = await prisma.waterLog.findMany({ where: { userId: testUserId } });
     expect(userWaterLogs.length).toBe(0);
+
+    const userFollows = await prisma.userFollow.findMany({
+        where: {
+            OR: [{ followerId: testUserId }, { followingId: testUserId }],
+        },
+    });
+    expect(userFollows.length).toBe(0);
+
+    const userParticipants = await prisma.challengeParticipant.findMany({ where: { userId: testUserId } });
+    expect(userParticipants.length).toBe(0);
+
+    const userBadges = await prisma.userBadge.findMany({ where: { userId: testUserId } });
+    expect(userBadges.length).toBe(0);
+
+    const userPosts = await prisma.post.findMany({ where: { userId: testUserId } });
+    expect(userPosts.length).toBe(0);
+
+    const userChallenges = await prisma.challenge.findMany({ where: { creatorId: testUserId } });
+    expect(userChallenges.length).toBe(0);
+
+    const userLikes = await prisma.postLike.findMany({ where: { userId: testUserId } });
+    expect(userLikes.length).toBe(0);
+
+    const userComments = await prisma.postComment.findMany({ where: { userId: testUserId } });
+    expect(userComments.length).toBe(0);
+
+    const likesOnOwnPost = await prisma.postLike.findMany({ where: { postId: ownPost.id } });
+    expect(likesOnOwnPost.length).toBe(0);
+
+    const commentsOnOwnPost = await prisma.postComment.findMany({ where: { postId: ownPost.id } });
+    expect(commentsOnOwnPost.length).toBe(0);
 
     // afterAll kancasının hata vermemesi için testUserId'yi sıfırlıyoruz
     testUserId = 0;

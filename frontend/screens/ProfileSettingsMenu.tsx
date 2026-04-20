@@ -67,7 +67,6 @@ export default function ProfileSettingsMenu() {
         try {
             const token = await getItem('userToken');
             if (!token) return;
-            console.log(`${API_URL}/api/user/profile/delete`)
 
             const res = await fetch(`${API_URL}/api/user/profile`, {
                 method: 'DELETE',
@@ -79,9 +78,10 @@ export default function ProfileSettingsMenu() {
             if (res.ok) {
                 await removeItem('userToken');
                 await removeItem('rememberMeFlag');
+                setShowDeleteModal(false);
                 navigation.reset({
                     index: 0,
-                    routes: [{ name: 'Login' as never }],
+                    routes: [{ name: 'SignUp' as never }],
                 });
             } else {
                 console.error("Delete account error", res);

@@ -45,10 +45,57 @@ export const userModel = {
     return updatedProfile;
   },
 
-  //deleteUser: verilen user id ye sahip userin user ve userprofile tablolari siliniyor
+  //deleteUser: verilen user id ye sahip userin tüm ilişkili verileri temizlenip hesap siliniyor
   deleteUser: async (userId: number) => {
-    return await prisma.user.delete({
-      where: { id: userId }
+    return await prisma.$transaction(async (tx) => {
+      await tx.postComment.deleteMany({
+        where: { userId },
+      });
+
+      await tx.postLike.deleteMany({
+        where: { userId },
+      });
+
+      await tx.userFollow.deleteMany({
+        where: {
+          OR: [
+            { followerId: userId },
+            { followingId: userId },
+          ],
+        },
+      });
+
+      await tx.challengeParticipant.deleteMany({
+        where: { userId },
+      });
+
+      await tx.userBadge.deleteMany({
+        where: { userId },
+      });
+
+      await tx.mealLog.deleteMany({
+        where: { userId },
+      });
+
+      await tx.mealTotals.deleteMany({
+        where: { userId },
+      });
+
+      await tx.waterLog.deleteMany({
+        where: { userId },
+      });
+
+      await tx.challenge.deleteMany({
+        where: { creatorId: userId },
+      });
+
+      await tx.post.deleteMany({
+        where: { userId },
+      });
+
+      return tx.user.delete({
+        where: { id: userId }
+      });
     });
   },
 

@@ -169,6 +169,10 @@ export default function App() {
           >
             {isAuthenticated ? (
               <>
+                <Stack.Screen name="Login" component={Login} />
+                <Stack.Screen name="SignUp" component={SignUp} />
+                <Stack.Screen name="SignUpEnterData" component={SignUpEnterData} />
+                <Stack.Screen name="CreateAvatar" component={CreateAvatar} />
                 <Stack.Screen name="MainPage" component={MainPage} initialParams={undefined} />
                 <Stack.Screen name="Chatbot" component={Chatbot} />
                 <Stack.Screen name="ScanFood" component={ScanFood} />
