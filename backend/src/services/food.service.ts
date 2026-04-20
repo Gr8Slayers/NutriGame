@@ -16,12 +16,15 @@ export class FoodService {
   async searchAcrossAllSources(query: string): Promise<{ data: any[], source: string }> {
     const lowerQuery = query.toLowerCase().trim();
     const turkishTranslation = FOOD_MAPPING[lowerQuery];
-    
-    // 1. Yerel Veritabanında Ara (Orijinal isim + Türkçe çeviri)
+
+    // 1. Yerel Veritabanında Ara
+    // Orijinal sorgu her zaman aranır (İngilizce veya Türkçe olabilir)
     let localMatches = await foodModel.searchFoodByName(query);
-    if (turkishTranslation && turkishTranslation !== lowerQuery) {
+
+    // Türkçe çeviri yalnızca anlamlı uzunluktaysa (>3 harf) ek olarak aranır.
+    // "meat"→"et", "egg"→"yumurta" gibi kısa çeviriler çok fazla yanlış eşleşme üretir.
+    if (turkishTranslation && turkishTranslation !== lowerQuery && turkishTranslation.length > 3) {
       const trMatches = await foodModel.searchFoodByName(turkishTranslation);
-      // Birleştir ve tekilleştir
       const existingIds = new Set(localMatches.map(m => m.id));
       trMatches.forEach(m => {
         if (!existingIds.has(m.id)) localMatches.push(m);
@@ -30,17 +33,17 @@ export class FoodService {
 
     // Eğer yerel sonuçlar varsa, API'ye çıkmadan bunları dön (Performans için)
     if (localMatches.length > 0) {
-      return { 
-        data: localMatches.map(f => ({ ...f, source: 'local' })), 
-        source: 'local' 
+      return {
+        data: localMatches.map(f => ({ ...f, source: 'local' })),
+        source: 'local'
       };
     }
 
     // 2. Harici Kaynaklarda Ara (OFF API + Cache)
     const offResult = await this.getOffFoodsWithCache(query);
     
-    // Eğer harici sonuç yoksa ve Türkçe çeviri varsa, çeviriyle API'de de ara
-    if (offResult.data.length === 0 && turkishTranslation) {
+    // Eğer harici sonuç yoksa ve Türkçe çeviri anlamlı uzunluktaysa, çeviriyle API'de de ara
+    if (offResult.data.length === 0 && turkishTranslation && turkishTranslation.length > 3) {
       return await this.getOffFoodsWithCache(turkishTranslation);
     }
 
