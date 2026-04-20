@@ -143,7 +143,12 @@ export default function Chatbot() {
             if (!response.ok) {
                 // Handle rate limit error
                 if (response.status === 429) {
-                    Alert.alert(t('chatbot_rate_limit_title'), data.message || t('chatbot_ai_error'));
+                    const title = data.code === 'AI_QUOTA_EXCEEDED'
+                        ? t('chatbot_quota_title')
+                        : t('chatbot_rate_limit_title');
+                    Alert.alert(title, data.message || t('chatbot_ai_error'));
+                } else if (response.status === 503) {
+                    Alert.alert(t('chatbot_unavailable_title'), data.message || t('chatbot_ai_error'));
                 } else {
                     Alert.alert(t('error'), data.message || t('chatbot_ai_error'));
                 }

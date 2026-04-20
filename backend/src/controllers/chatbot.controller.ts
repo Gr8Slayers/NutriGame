@@ -177,6 +177,9 @@ function handleChatError(err: any, res: Response) {
 
   if (err.statusCode) {
     const body: any = { success: false, message: err.message };
+    if (err.code) {
+      body.code = err.code;
+    }
     if (err.retryAfterMs) {
       body.retryAfterMs = err.retryAfterMs;
       res.setHeader('Retry-After', Math.ceil(err.retryAfterMs / 1000));

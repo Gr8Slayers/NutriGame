@@ -104,11 +104,14 @@ function cleanupExpiredSessions() {
 const cleanupTimer = setInterval(cleanupExpiredSessions, 60_000);
 cleanupTimer.unref();
 
-function createHttpError(message: string, statusCode: number, retryAfterMs?: number) {
-  const error = new Error(message) as Error & { statusCode: number; retryAfterMs?: number };
+function createHttpError(message: string, statusCode: number, retryAfterMs?: number, code?: string) {
+  const error = new Error(message) as Error & { statusCode: number; retryAfterMs?: number; code?: string };
   error.statusCode = statusCode;
   if (retryAfterMs !== undefined) {
     error.retryAfterMs = retryAfterMs;
+  }
+  if (code) {
+    error.code = code;
   }
   return error;
 }
@@ -279,6 +282,8 @@ async function generateModelResponse(model: GenerativeModelLike, history: ChatHi
   throw createHttpError(
     'NutriCoach could not generate a usable response right now. Please try again.',
     503,
+    undefined,
+    'AI_UNAVAILABLE',
   );
 }
 
@@ -351,6 +356,7 @@ export async function chat(
       'Too many chatbot messages. Please wait a bit before trying again.',
       429,
       rateLimit.retryAfterMs,
+      'CHAT_RATE_LIMIT',
     );
   }
 
@@ -381,6 +387,7 @@ export async function chat(
           'NutriCoach is temporarily unavailable because the AI quota has been reached. Please try again shortly.',
           429,
           extractRetryAfterMs(providerError),
+          'AI_QUOTA_EXCEEDED',
         );
       }
 
