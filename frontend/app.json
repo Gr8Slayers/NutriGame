@@ -19,7 +19,10 @@
       "backgroundColor": "#FBE577"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "NutriGame needs access to your photo library to analyze food photos."
+      }
     },
     "android": {
       "package": "com.betulaydeger.nutrigame",
@@ -31,7 +34,9 @@
       "edgeToEdgeEnabled": true,
       "permissions": [
         "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_EXTERNAL_STORAGE"
       ]
     },
     "web": {
