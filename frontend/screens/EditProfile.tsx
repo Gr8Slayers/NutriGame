@@ -108,8 +108,8 @@ export default function EditProfile() {
     const [username, setUsername] = useState(userData.username || '');
     const [email, setEmail] = useState(userData.email || '');
     const [password, setPassword] = useState('');
-    const [currentWeight, setCurrentWeight] = useState('');
-    const [height, setHeight] = useState('');
+    const [currentWeight, setCurrentWeight] = useState(userData.weight ? String(userData.weight) : '');
+    const [height, setHeight] = useState(userData.height ? String(userData.height) : '');
     const [selectedAvatar, setSelectedAvatar] = useState(userData.avatar_url || '');
     const [reasonToDiet, setReasonToDiet] = useState(userData.reason_to_diet || 'Maintain Weight');
     const [activityLevel, setActivityLevel] = useState('Moderately Active'); // Assuming default or mapping if it was stored
@@ -161,6 +161,14 @@ export default function EditProfile() {
             }
             if (height) {
                 updateData.height = parseFloat(height);
+            }
+            if (password) {
+                if (password.length < 8) {
+                    Alert.alert(t('error'), t('signup_password_invalid'));
+                    setSaving(false);
+                    return;
+                }
+                updateData.password = password;
             }
 
             const response = await fetch(`${API_URL}/api/user/profile`, {

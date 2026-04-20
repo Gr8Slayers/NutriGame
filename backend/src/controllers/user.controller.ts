@@ -3,6 +3,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { userModel, calculateDailyTargets } from '../models/user.model';
 import prisma from '../config/prisma';
+import bcrypt from 'bcrypt';
 
 export class UserController {
 
@@ -10,22 +11,37 @@ export class UserController {
         try {
             const userId = req.user!.id;
 
-            const { age, gender, weight, height, target_weight, reason_to_diet, avatar_url, ...extra } = req.body;
+            const { age, gender, weight, height, target_weight, reason_to_diet, avatar_url, username, email, password } = req.body;
 
-            const updates: any = {};
-            if (age) updates.age = age;
-            if (gender) updates.gender = gender;
-            if (weight) updates.weight = weight;
-            if (height) updates.height = height;
-            if (target_weight) updates.target_weight = target_weight;
-            if (reason_to_diet) updates.reason_to_diet = reason_to_diet;
-            if (avatar_url) updates.avatar_url = avatar_url;
+            // user tablosu güncellemeleri (username, email, password)
+            const userUpdates: any = {};
+            if (username) userUpdates.username = username;
+            if (email) userUpdates.email = email;
+            if (password && password.length >= 8) {
+                userUpdates.password = await bcrypt.hash(password, 10);
+            }
 
-            if (Object.keys(updates).length === 0) {
+            // userProfile tablosu güncellemeleri
+            const profileUpdates: any = {};
+            if (age) profileUpdates.age = age;
+            if (gender) profileUpdates.gender = gender;
+            if (weight) profileUpdates.weight = weight;
+            if (height) profileUpdates.height = height;
+            if (target_weight) profileUpdates.target_weight = target_weight;
+            if (reason_to_diet) profileUpdates.reason_to_diet = reason_to_diet;
+            if (avatar_url) profileUpdates.avatar_url = avatar_url;
+
+            if (Object.keys(userUpdates).length === 0 && Object.keys(profileUpdates).length === 0) {
                 return res.status(400).json({ success: false, message: 'No data to update.' });
             }
 
-            await userModel.updateUserProfileById(Number(userId), updates);
+            if (Object.keys(userUpdates).length > 0) {
+                await userModel.updateUser(Number(userId), userUpdates);
+            }
+            if (Object.keys(profileUpdates).length > 0) {
+                await userModel.updateUserProfileById(Number(userId), profileUpdates);
+            }
+
             return res.status(200).json({ success: true, message: 'User Profile is updated successfully.' });
         } catch (err) {
             next(err);
