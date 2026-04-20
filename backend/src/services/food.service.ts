@@ -14,15 +14,16 @@ export class FoodService {
    * "Önce yerel, sonra harici" stratejisini izler.
    */
   async searchAcrossAllSources(query: string): Promise<{ data: any[], source: string }> {
-    const lowerQuery = query.toLowerCase().trim();
+    // AI class adlarındaki underscore'ları temizle: "fried_meat" → "fried meat"
+    const normalizedQuery = query.replace(/_/g, ' ').trim();
+    const lowerQuery = normalizedQuery.toLowerCase();
     const turkishTranslation = FOOD_MAPPING[lowerQuery];
 
     // 1. Yerel Veritabanında Ara
-    // Orijinal sorgu her zaman aranır (İngilizce veya Türkçe olabilir)
-    let localMatches = await foodModel.searchFoodByName(query);
+    // ≤2 harf sorgular ("et", "un" vb.) çok fazla yanlış eşleşme üretir, atla
+    let localMatches = lowerQuery.length > 2 ? await foodModel.searchFoodByName(query) : [];
 
-    // Türkçe çeviri yalnızca anlamlı uzunluktaysa (>3 harf) ek olarak aranır.
-    // "meat"→"et", "egg"→"yumurta" gibi kısa çeviriler çok fazla yanlış eşleşme üretir.
+    // Türkçe çeviri yalnızca anlamlı uzunluktaysa (>3 harf) ek olarak aranır
     if (turkishTranslation && turkishTranslation !== lowerQuery && turkishTranslation.length > 3) {
       const trMatches = await foodModel.searchFoodByName(turkishTranslation);
       const existingIds = new Set(localMatches.map(m => m.id));
@@ -31,7 +32,6 @@ export class FoodService {
       });
     }
 
-    // Eğer yerel sonuçlar varsa, API'ye çıkmadan bunları dön (Performans için)
     if (localMatches.length > 0) {
       return {
         data: localMatches.map(f => ({ ...f, source: 'local' })),
@@ -39,12 +39,39 @@ export class FoodService {
       };
     }
 
-    // 2. Harici Kaynaklarda Ara (OFF API + Cache)
-    const offResult = await this.getOffFoodsWithCache(query);
-    
-    // Eğer harici sonuç yoksa ve Türkçe çeviri anlamlı uzunluktaysa, çeviriyle API'de de ara
+    // 2. Fallback listesinde ara — OFF API'den önce, offline çalışır
+    // Hem orijinal sorgu hem de Türkçe çeviriyle dene
+    const fallbackDirect = this.searchFallbackFoods(query);
+    if (fallbackDirect.data.length > 0) return fallbackDirect;
+    if (turkishTranslation) {
+      const fallbackTr = this.searchFallbackFoods(turkishTranslation);
+      if (fallbackTr.data.length > 0) return fallbackTr;
+    }
+
+    // 3. Harici Kaynaklarda Ara (OFF API + Cache)
+    // Çok kısa sorgular ("et") OFF API'de de anlamsız sonuç verir, atla
+    if (lowerQuery.length <= 2) {
+      return { data: [], source: 'none' };
+    }
+
+    const offResult = await this.getOffFoodsWithCache(normalizedQuery);
+
     if (offResult.data.length === 0 && turkishTranslation && turkishTranslation.length > 3) {
       return await this.getOffFoodsWithCache(turkishTranslation);
+    }
+
+    // Hâlâ sonuç yoksa compound query'nin ana kelimesiyle tekrar dene
+    // "fried meat" → "meat", "grilled chicken" → "chicken"
+    if (offResult.data.length === 0) {
+      const words = lowerQuery.split(' ');
+      if (words.length > 1) {
+        const mainWord = words[words.length - 1];
+        if (mainWord.length > 2) {
+          const fallbackByWord = this.searchFallbackFoods(mainWord);
+          if (fallbackByWord.data.length > 0) return fallbackByWord;
+          return await this.getOffFoodsWithCache(mainWord);
+        }
+      }
     }
 
     return offResult;
