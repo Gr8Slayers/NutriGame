@@ -23,7 +23,19 @@ export class AuthController {
                 });
             }
 
-            const { username, email, password, age, gender, height, weight, target_weight, reason_to_diet, avatar_url } = parsed.data;
+            const {
+                username,
+                email,
+                password,
+                age,
+                gender,
+                height,
+                weight,
+                target_weight,
+                reason_to_diet,
+                activity_level,
+                avatar_url,
+            } = parsed.data;
 
             const existingUser = await userModel.findUser(email, username);
             if (existingUser) {
@@ -41,6 +53,7 @@ export class AuthController {
                 weight,
                 target_weight ?? weight,
                 reason_to_diet ?? '',
+                activity_level ?? 'Moderately Active',
                 avatar_url ?? ''
             );
             return res.status(201).json({ success: true, message: 'Kayıt başarılı.' });

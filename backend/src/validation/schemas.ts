@@ -49,6 +49,7 @@ export const authRegisterSchema = z.object({
   weight: z.coerce.number().positive(),
   target_weight: optionalPositiveNumberSchema,
   reason_to_diet: optionalTrimmedStringSchema,
+  activity_level: optionalTrimmedStringSchema,
   avatar_url: optionalUrlSchema,
 });
 

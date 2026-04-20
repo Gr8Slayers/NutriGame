@@ -15,7 +15,19 @@ export const userModel = {
   },
 
   //createUser: register esnasinda girilen bilgiler ile user ve userprofile tablosuna girdi olusturuluyor
-  createUser: async (username: string, email: string, password: string, age: number, gender: string, height: number, weight: number, target_weight: number, reason_to_diet: string, avatar_url: string) => {
+  createUser: async (
+    username: string,
+    email: string,
+    password: string,
+    age: number,
+    gender: string,
+    height: number,
+    weight: number,
+    target_weight: number,
+    reason_to_diet: string,
+    activity_level: string,
+    avatar_url: string,
+  ) => {
     return prisma.user.create({
       data: {
         username,
@@ -29,6 +41,7 @@ export const userModel = {
             height,
             target_weight,
             reason_to_diet,
+            activity_level,
             avatar_url,
           },
         },
@@ -37,7 +50,19 @@ export const userModel = {
   },
 
   //updateUserProfileById: user in profilinde degisiklik yapmasini sagliyor, saglanan id ye sahip userin saglanan degisiklikleri user ve userprofile tablosunda guncelleniyor
-  updateUserProfileById: async (userId: number, updates: { age?: number, gender?: string, weight?: number, height?: number, target_weight?: number, reason_to_diet?: string, avatar_url?: string }) => {
+  updateUserProfileById: async (
+    userId: number,
+    updates: {
+      age?: number,
+      gender?: string,
+      weight?: number,
+      height?: number,
+      target_weight?: number,
+      reason_to_diet?: string,
+      activity_level?: string,
+      avatar_url?: string,
+    },
+  ) => {
     const updatedProfile = await prisma.userProfile.update({
       where: { userId: userId },  // userId üzerinden profili bul
       data: updates,              // hangi alandan degisiklik geldiyse onu güncelle

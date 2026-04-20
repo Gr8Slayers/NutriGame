@@ -41,6 +41,7 @@ model UserProfile {
   height         Int
   target_weight  Int
   reason_to_diet String
+  activity_level String @default("Moderately Active")
   avatar_url     String
   user           User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

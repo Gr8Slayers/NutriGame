@@ -11,7 +11,19 @@ export class UserController {
         try {
             const userId = req.user!.id;
 
-            const { age, gender, weight, height, target_weight, reason_to_diet, avatar_url, username, email, password } = req.body;
+            const {
+                age,
+                gender,
+                weight,
+                height,
+                target_weight,
+                reason_to_diet,
+                activity_level,
+                avatar_url,
+                username,
+                email,
+                password,
+            } = req.body;
 
             // user tablosu güncellemeleri (username, email, password)
             const userUpdates: any = {};
@@ -29,6 +41,7 @@ export class UserController {
             if (height) profileUpdates.height = height;
             if (target_weight) profileUpdates.target_weight = target_weight;
             if (reason_to_diet) profileUpdates.reason_to_diet = reason_to_diet;
+            if (activity_level) profileUpdates.activity_level = activity_level;
             if (avatar_url) profileUpdates.avatar_url = avatar_url;
 
             if (Object.keys(userUpdates).length === 0 && Object.keys(profileUpdates).length === 0) {
@@ -70,6 +83,7 @@ export class UserController {
                     weight: fetchedUser.profile?.weight,
                     target_weight: fetchedUser.profile?.target_weight,
                     reason_to_diet: fetchedUser.profile?.reason_to_diet,
+                    activity_level: fetchedUser.profile?.activity_level,
                     avatar_url: fetchedUser.profile?.avatar_url,
                     followerCount: (fetchedUser as any).followerCount,
                     followingCount: (fetchedUser as any).followingCount,
@@ -116,13 +130,12 @@ export class UserController {
             }
 
             const p = fetchedUser.profile;
-            // activity_level was removed from the schema; use 'Moderately Active' as default
             const targets = calculateDailyTargets(
                 p.age,
                 p.gender,
                 p.weight,
                 p.height,
-                'Moderately Active', // default since field no longer stored in DB
+                p.activity_level ?? 'Moderately Active',
                 p.reason_to_diet
             );
 
