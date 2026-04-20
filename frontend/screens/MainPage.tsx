@@ -61,7 +61,10 @@ function MainPage({ navigation }: Props) {
         setFat(0);
     };
 
-    const formattedDate = selectedDate.toISOString().split("T")[0];
+    const y = selectedDate.getFullYear();
+    const mo = String(selectedDate.getMonth() + 1).padStart(2, '0');
+    const d = String(selectedDate.getDate()).padStart(2, '0');
+    const formattedDate = `${y}-${mo}-${d}`;
     const fetchDailyData = useCallback(async () => {
         const token = await getItem('userToken');
         const controller = new AbortController();
