@@ -732,6 +732,15 @@ export default function ScanFood() {
                         <Text style={styles.text}>{t('scan_retake')}</Text>
                     </TouchableOpacity>
 
+                    {!detections && !isLoading && (
+                        <TouchableOpacity
+                            style={[styles.button, { backgroundColor: '#47dd7caf' }]}
+                            onPress={handleScanFood}
+                        >
+                            <Text style={styles.text}>{t('scan_analyze')} ({photos.length})</Text>
+                        </TouchableOpacity>
+                    )}
+
                     {detections && detections.length > 0 && (
                         <TouchableOpacity
                             style={[styles.button, { backgroundColor: '#fc8500' }]}
