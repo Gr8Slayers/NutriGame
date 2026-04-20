@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Image, TextInput } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Image, TextInput, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
@@ -58,6 +58,7 @@ const ChallengeProgress: React.FC<Props> = ({ navigation, route }) => {
   const [commentsByPost, setCommentsByPost] = useState<Record<string, Comment[]>>({});
   const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
   const [currentUsername, setCurrentUsername] = useState<string>('you');
+  const [refreshing, setRefreshing] = useState(false);
 
   const fetchFeed = useCallback(async () => {
     const { challengeId } = route.params;
@@ -84,7 +85,7 @@ const ChallengeProgress: React.FC<Props> = ({ navigation, route }) => {
       else next.add(postId);
       return next;
     });
-    if (!isOpening || commentsByPost[postId]) return;
+    if (!isOpening) return;
     try {
       const token = await getItem('userToken');
       const res = await fetch(`${BASE_URL}/social/comments/${postId}`, {
@@ -96,7 +97,7 @@ const ChallengeProgress: React.FC<Props> = ({ navigation, route }) => {
     } catch (e) {
       console.error('Yorumlar yüklenemedi:', e);
     }
-  }, [expandedComments, commentsByPost]);
+  }, [expandedComments]);
 
   const handleSubmitComment = useCallback(async (postId: string) => {
     const text = (commentInputs[postId] ?? '').trim();
@@ -154,17 +155,44 @@ const ChallengeProgress: React.FC<Props> = ({ navigation, route }) => {
     };
     fetchUserId();
 
-    fetchProgress();
-    fetchFeed();
-    const unsubscribe = navigation.addListener('focus', () => {
+    let pollId: ReturnType<typeof setInterval> | null = null;
+
+    const startPolling = () => {
       fetchProgress();
       fetchFeed();
-    });
+      if (pollId) clearInterval(pollId);
+      pollId = setInterval(() => {
+        fetchProgress();
+        fetchFeed();
+      }, 10000);
+    };
+
+    const stopPolling = () => {
+      if (pollId) {
+        clearInterval(pollId);
+        pollId = null;
+      }
+    };
+
+    startPolling();
+    const unsubFocus = navigation.addListener('focus', startPolling);
+    const unsubBlur = navigation.addListener('blur', stopPolling);
 
     return () => {
-      unsubscribe();
+      stopPolling();
+      unsubFocus();
+      unsubBlur();
     };
   }, [navigation, fetchFeed]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([fetchProgress(), fetchFeed()]);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [fetchFeed]);
 
   const fetchProgress = async (): Promise<void> => {
     const { challengeId } = route.params;
@@ -294,7 +322,17 @@ const ChallengeProgress: React.FC<Props> = ({ navigation, route }) => {
         )}
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#2ECC71"
+            colors={["#2ECC71"]}
+          />
+        }
+      >
         <View style={styles.card}>
           <View style={styles.cardHeader}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15, flex: 1, marginRight: 10 }}>
