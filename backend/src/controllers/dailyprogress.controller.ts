@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { dailyProgressModel } from '../models/dailyprogress.model';
+import { gamificationModel } from '../models/gamification.model';
 import { notificationService } from '../services/notification.service';
 import { dailyProgressUpsertSchema } from '../validation/schemas';
 import { getValidationErrors, getValidationMessage } from '../validation/utils';
@@ -32,6 +33,10 @@ export class DailyProgressController {
                 return res.status(400).json({ success: false, message: 'Invalid calendar date.' });
             }
 
+            // Check before upsert to detect first-time goal achievement
+            const existing = await dailyProgressModel.getProgressByDate(user_id, parsedDate);
+            const wasAlreadyAchieved = existing?.goalAchieved === true;
+
             const updated = await dailyProgressModel.upsertProgress(user_id, parsedDate, {
                 currentWeight,
                 mood,
@@ -41,12 +46,17 @@ export class DailyProgressController {
                 movement,
             });
 
-            // Notify user when daily goal is achieved
-            if (goalAchieved === true) {
+            if (goalAchieved === true && !wasAlreadyAchieved) {
+                const streak = await gamificationModel.getStreakByUserId(user_id);
+                if (streak) {
+                    await gamificationModel.updateStreakData(user_id, {
+                        totalPoints: streak.totalPoints + 10,
+                    });
+                }
                 await notificationService.sendPushNotification(
                     user_id,
                     "Daily Goal Achieved! 🎉",
-                    "You've hit your calorie goal for today. Keep up the great work!"
+                    "You've hit your calorie goal for today. +10 points added!"
                 );
             }
 

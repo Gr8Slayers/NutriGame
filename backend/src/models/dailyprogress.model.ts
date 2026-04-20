@@ -20,6 +20,12 @@ export const dailyProgressModel = {
         });
     },
 
+    getProgressByDate: async (userId: number, date: Date) => {
+        return await prisma.dailyProgress.findUnique({
+            where: { userId_date: { userId, date } }
+        });
+    },
+
     getWeeklyProgress: async (userId: number) => {
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
