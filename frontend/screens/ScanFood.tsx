@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import {
     StyleSheet, Text, View, TouchableOpacity, Image, Alert,
-    Modal, Linking, ActivityIndicator, ScrollView
+    Modal, Linking, ActivityIndicator, ScrollView, TextInput
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
@@ -63,6 +63,11 @@ export default function ScanFood() {
     const [addToLogModalVisible, setAddToLogModalVisible] = useState(false);
     const [portions, setPortions] = useState<Record<string, number>>({});
     const [isSavingLog, setIsSavingLog] = useState(false);
+    const [manualSearchVisible, setManualSearchVisible] = useState(false);
+    const [manualSearchTempId, setManualSearchTempId] = useState<string | null>(null);
+    const [manualSearchQuery, setManualSearchQuery] = useState('');
+    const [manualSearchResults, setManualSearchResults] = useState<any[]>([]);
+    const [manualSearchLoading, setManualSearchLoading] = useState(false);
 
     useEffect(() => {
         if (permission && !permission.granted) {
@@ -354,6 +359,41 @@ export default function ScanFood() {
         return sum + ((match?.p_calorie || 0) * portion);
     }, 0);
 
+    const openManualSearch = (tempId: string, initialQuery: string) => {
+        setManualSearchTempId(tempId);
+        setManualSearchQuery(initialQuery);
+        setManualSearchResults([]);
+        setManualSearchVisible(true);
+    };
+
+    const searchFoodsManually = async (query: string) => {
+        setManualSearchQuery(query);
+        if (!query.trim()) { setManualSearchResults([]); return; }
+        setManualSearchLoading(true);
+        try {
+            const token = await getItem('userToken');
+            const params = new URLSearchParams({ food_name: query });
+            const res = await fetch(`${API_URL}/api/food/search_food?${params}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await res.json();
+            setManualSearchResults(data.foods || []);
+        } catch {
+            setManualSearchResults([]);
+        } finally {
+            setManualSearchLoading(false);
+        }
+    };
+
+    const selectManualResult = (food: any) => {
+        if (!manualSearchTempId) return;
+        setSelectedMatches(prev => ({ ...prev, [manualSearchTempId]: food }));
+        setManualSearchVisible(false);
+        setManualSearchQuery('');
+        setManualSearchResults([]);
+        setManualSearchTempId(null);
+    };
+
     const resetAll = () => {
         setPhotos([]);
         setDetections(null);
@@ -482,6 +522,48 @@ export default function ScanFood() {
                     </View>
                 </View>
             </Modal>
+
+            {/* Manual food search modal */}
+            <Modal
+                visible={manualSearchVisible}
+                animationType="slide"
+                transparent
+                onRequestClose={() => setManualSearchVisible(false)}
+            >
+                <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.6)' }}>
+                    <View style={{ backgroundColor: '#1e1e1e', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, maxHeight: '75%' }}>
+                        <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 17, marginBottom: 12 }}>{t('scan_search_manually')}</Text>
+                        <TextInput
+                            value={manualSearchQuery}
+                            onChangeText={searchFoodsManually}
+                            placeholder={t('scan_search_placeholder')}
+                            placeholderTextColor="#666"
+                            autoFocus
+                            style={{ backgroundColor: '#2a2a2a', color: 'white', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, fontSize: 15, marginBottom: 12, borderWidth: 1, borderColor: '#444' }}
+                        />
+                        {manualSearchLoading && <ActivityIndicator color="#47dd7caf" style={{ marginBottom: 10 }} />}
+                        <ScrollView keyboardShouldPersistTaps="handled">
+                            {manualSearchResults.map((food: any, idx: number) => (
+                                <TouchableOpacity
+                                    key={idx}
+                                    onPress={() => selectManualResult(food)}
+                                    style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#333' }}
+                                >
+                                    <Text style={{ color: 'white', fontSize: 15, flex: 1 }}>{food.food_name}</Text>
+                                    <Text style={{ color: '#fc8500', fontSize: 13, marginRight: 10 }}>{food.p_calorie} kcal</Text>
+                                    <Text style={{ color: '#47dd7caf', fontSize: 13, fontWeight: 'bold' }}>{t('scan_select')}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+                        <TouchableOpacity
+                            onPress={() => setManualSearchVisible(false)}
+                            style={{ marginTop: 14, alignItems: 'center', paddingVertical: 12, backgroundColor: '#333', borderRadius: 10 }}
+                        >
+                            <Text style={{ color: '#ccc', fontWeight: '600' }}>{t('cancel')}</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </>
     );
 
@@ -559,6 +641,13 @@ export default function ScanFood() {
                                                     ))}
                                                 </ScrollView>
 
+                                                <TouchableOpacity
+                                                    onPress={() => openManualSearch(item.tempId, item.class)}
+                                                    style={{ marginTop: 8 }}
+                                                >
+                                                    <Text style={{ color: '#666', fontSize: 11, textDecorationLine: 'underline' }}>{t('scan_search_manually')}</Text>
+                                                </TouchableOpacity>
+
                                                 <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 15, backgroundColor: '#2a2a2a', padding: 10, borderRadius: 12, alignSelf: 'flex-start' }}>
                                                     <TouchableOpacity
                                                         onPress={() => setPortions(prev => ({ ...prev, [item.tempId]: Math.max(0.5, (prev[item.tempId] ?? 1) - 0.5) }))}
@@ -589,7 +678,12 @@ export default function ScanFood() {
                                                 </View>
                                             </View>
                                         ) : (
-                                            <Text style={{ color: '#888', fontSize: 12, marginTop: 5 }}>{t('scan_no_db_match')}</Text>
+                                            <TouchableOpacity
+                                                onPress={() => openManualSearch(item.tempId, item.class)}
+                                                style={{ marginTop: 8, paddingVertical: 8, paddingHorizontal: 14, backgroundColor: '#2a2a2a', borderRadius: 10, borderWidth: 1, borderColor: '#555', alignSelf: 'flex-start' }}
+                                            >
+                                                <Text style={{ color: '#aaa', fontSize: 12 }}>{t('scan_no_db_match')} — {t('scan_search_manually')}</Text>
+                                            </TouchableOpacity>
                                         )}
                                     </View>
                                 ))
