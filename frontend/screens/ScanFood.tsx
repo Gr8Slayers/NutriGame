@@ -205,7 +205,7 @@ export default function ScanFood() {
                 const dets = data.detections || [];
                 initDetectionState(dets);
                 if (data.annotated_image) setAnnotatedImage(data.annotated_image);
-                if (data.photoRecord?.imageUrl) setScanImageUrl(data.photoRecord.imageUrl);
+                if (data.photoRecord?.imageUrl) setScanImageUrl(getImageUrl(data.photoRecord.imageUrl));
 
                 if (dets.length === 0) {
                     Alert.alert(t('warning'), t('scan_no_food_try'), [
