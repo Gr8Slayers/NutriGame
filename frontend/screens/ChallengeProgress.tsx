@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Image } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Image, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
@@ -9,6 +9,7 @@ import { API_URL } from '../env';
 import { setItem, getItem, removeItem } from '../storage';
 import BadgeAwardModal from '../components/BadgeAwardModal';
 import { useLanguage } from '../i18n/LanguageContext';
+import { Comment } from '../types';
 
 const DEFAULT_AVATAR = require('../assets/default_avatar.png');
 
@@ -53,6 +54,10 @@ const ChallengeProgress: React.FC<Props> = ({ navigation, route }) => {
   const [earnedBadge, setEarnedBadge] = useState<any | null>(null);
   const [feedPosts, setFeedPosts] = useState<ChallengePost[]>([]);
   const [feedLoading, setFeedLoading] = useState(false);
+  const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
+  const [commentsByPost, setCommentsByPost] = useState<Record<string, Comment[]>>({});
+  const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
+  const [currentUsername, setCurrentUsername] = useState<string>('you');
 
   const fetchFeed = useCallback(async () => {
     const { challengeId } = route.params;
@@ -70,6 +75,60 @@ const ChallengeProgress: React.FC<Props> = ({ navigation, route }) => {
       setFeedLoading(false);
     }
   }, [route.params]);
+
+  const toggleComments = useCallback(async (postId: string) => {
+    const isOpening = !expandedComments.has(postId);
+    setExpandedComments(prev => {
+      const next = new Set(prev);
+      if (next.has(postId)) next.delete(postId);
+      else next.add(postId);
+      return next;
+    });
+    if (!isOpening || commentsByPost[postId]) return;
+    try {
+      const token = await getItem('userToken');
+      const res = await fetch(`${BASE_URL}/social/comments/${postId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      setCommentsByPost(prev => ({ ...prev, [postId]: data.data ?? [] }));
+    } catch (e) {
+      console.error('Yorumlar yüklenemedi:', e);
+    }
+  }, [expandedComments, commentsByPost]);
+
+  const handleSubmitComment = useCallback(async (postId: string) => {
+    const text = (commentInputs[postId] ?? '').trim();
+    if (!text) return;
+    const userId = (await getItem('userId')) ?? 'me';
+    const optimistic: Comment = {
+      id: `local_${Date.now()}`,
+      postId,
+      userId,
+      username: currentUsername,
+      text,
+      createdAt: new Date().toISOString(),
+    };
+    setCommentsByPost(prev => ({
+      ...prev,
+      [postId]: [...(prev[postId] ?? []), optimistic],
+    }));
+    setFeedPosts(prev =>
+      prev.map(p => p.id === postId ? { ...p, commentsCount: p.commentsCount + 1 } : p)
+    );
+    setCommentInputs(prev => ({ ...prev, [postId]: '' }));
+    try {
+      const token = await getItem('userToken');
+      await fetch(`${BASE_URL}/social/comment/${postId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ text }),
+      });
+    } catch (e) {
+      console.error('Yorum hatası:', e);
+    }
+  }, [commentInputs, currentUsername]);
 
   const toggleLike = async (post: ChallengePost) => {
     setFeedPosts(prev => prev.map(p => p.id === post.id ? {
@@ -90,6 +149,8 @@ const ChallengeProgress: React.FC<Props> = ({ navigation, route }) => {
     const fetchUserId = async () => {
       const userId = await getItem('userId');
       setCurrentUserId(userId);
+      const username = await getItem('username');
+      if (username) setCurrentUsername(username);
     };
     fetchUserId();
 
@@ -402,11 +463,60 @@ const ChallengeProgress: React.FC<Props> = ({ navigation, route }) => {
                     />
                     <Text style={styles.feedActionCount}>{post.likesCount}</Text>
                   </TouchableOpacity>
-                  <View style={styles.feedActionBtn}>
-                    <Ionicons name="chatbubble-outline" size={18} color="#888" />
+                  <TouchableOpacity
+                    style={styles.feedActionBtn}
+                    onPress={() => toggleComments(post.id)}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons
+                      name={expandedComments.has(post.id) ? 'chatbubble' : 'chatbubble-outline'}
+                      size={18}
+                      color={expandedComments.has(post.id) ? '#2ECC71' : '#888'}
+                    />
                     <Text style={styles.feedActionCount}>{post.commentsCount}</Text>
-                  </View>
+                  </TouchableOpacity>
                 </View>
+
+                {expandedComments.has(post.id) && (
+                  <View style={styles.commentSection}>
+                    {(commentsByPost[post.id] ?? []).length === 0 ? (
+                      <Text style={styles.noCommentText}>{t('no_comments_yet')}</Text>
+                    ) : (
+                      (commentsByPost[post.id] ?? []).map(c => (
+                        <View key={c.id} style={styles.commentRow}>
+                          <Image
+                            source={c.userAvatar ? { uri: c.userAvatar.startsWith('http') ? c.userAvatar : `${API_URL}${c.userAvatar}` } : DEFAULT_AVATAR}
+                            style={styles.commentAvatar}
+                          />
+                          <View style={styles.commentBubble}>
+                            <Text style={styles.commentUsername}>{c.username}</Text>
+                            <Text style={styles.commentText}>{c.text}</Text>
+                          </View>
+                        </View>
+                      ))
+                    )}
+                    <View style={styles.commentInputRow}>
+                      <TextInput
+                        style={styles.commentInput}
+                        value={commentInputs[post.id] ?? ''}
+                        onChangeText={text => setCommentInputs(prev => ({ ...prev, [post.id]: text }))}
+                        placeholder={t('add_comment')}
+                        placeholderTextColor="#666"
+                        multiline
+                      />
+                      <TouchableOpacity
+                        style={[
+                          styles.sendButton,
+                          !(commentInputs[post.id] ?? '').trim() && styles.sendButtonDisabled,
+                        ]}
+                        onPress={() => handleSubmitComment(post.id)}
+                        disabled={!(commentInputs[post.id] ?? '').trim()}
+                      >
+                        <Ionicons name="send" size={16} color="#000" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
               </View>
             ))
           )}

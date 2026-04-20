@@ -165,4 +165,70 @@ export default StyleSheet.create({
   },
   feedActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   feedActionCount: { color: '#888', fontSize: 13 },
+
+  // Comments
+  commentSection: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#2C2C2C',
+  },
+  noCommentText: {
+    color: '#888',
+    fontSize: 13,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    paddingVertical: 8,
+  },
+  commentRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    marginBottom: 8,
+  },
+  commentAvatar: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#2C2C2C',
+  },
+  commentBubble: {
+    flex: 1,
+    backgroundColor: '#0a1812',
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  commentUsername: { color: '#FFFFFF', fontSize: 12, fontWeight: 'bold' },
+  commentText: { color: '#DDDDDD', fontSize: 13, lineHeight: 18, marginTop: 2 },
+
+  commentInputRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 8,
+    marginTop: 8,
+  },
+  commentInput: {
+    flex: 1,
+    backgroundColor: '#0a1812',
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    color: '#FFFFFF',
+    fontSize: 13,
+    maxHeight: 80,
+    borderWidth: 1,
+    borderColor: '#2C2C2C',
+  },
+  sendButton: {
+    backgroundColor: '#2ECC71',
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sendButtonDisabled: {
+    backgroundColor: '#2C2C2C',
+  },
 });
