@@ -258,7 +258,7 @@ export default function AddMeal({ route, navigation }: Props) {
           body: JSON.stringify({
             date: selectedDate,
             meal_category: type,
-            food_id: item.food_id,
+            food_id: item.food_id ?? undefined,
             p_count: item.portionValue || 1,
             food_name: item.food_name,
             p_calorie: item.p_calorie,
