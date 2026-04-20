@@ -103,6 +103,13 @@ export class FoodController {
             const t_fat = fetchedFood.p_fat * p_count;
             const t_carb_val = fetchedFood.p_carb * p_count;
 
+            if (t_calorie > 5000) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Meal calorie total cannot exceed 5000 kcal per entry.'
+                });
+            }
+
             const added_food = await foodModel.addFoodToMealLog(user_id, parsedDate, meal_category, p_count, fetchedFood.food_id, fetchedFood.food_name, fetchedFood.p_unit, t_amount, t_calorie, t_protein, t_fat, t_carb_val, entry_method ?? 'manual', scan_image_url ?? null);
             if (!added_food) {
                 res.status(400).json({ success: false, message: 'Food could not be added to the meal log.' });

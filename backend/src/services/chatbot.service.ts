@@ -74,6 +74,17 @@ const rateLimitCache = new Map<string, { count: number; windowStart: number }>()
 
 let genAI: GoogleGenerativeAI | null | undefined;
 
+type ProviderErrorDetail = {
+  '@type'?: string;
+  retryDelay?: string;
+};
+
+type ProviderError = Error & {
+  status?: number;
+  statusText?: string;
+  errorDetails?: ProviderErrorDetail[];
+};
+
 function cleanupExpiredSessions() {
   const now = Date.now();
   for (const [chatId, session] of sessionCache.entries()) {
@@ -93,6 +104,58 @@ function createHttpError(message: string, statusCode: number, retryAfterMs?: num
     error.retryAfterMs = retryAfterMs;
   }
   return error;
+}
+
+function parseRetryDelayToMs(retryDelay: string | undefined): number | undefined {
+  if (!retryDelay) {
+    return undefined;
+  }
+
+  const match = retryDelay.trim().match(/^(\d+(?:\.\d+)?)(ms|s|m)?$/i);
+  if (!match) {
+    return undefined;
+  }
+
+  const value = Number(match[1]);
+  const unit = (match[2] ?? 's').toLowerCase();
+
+  if (!Number.isFinite(value)) {
+    return undefined;
+  }
+
+  if (unit === 'ms') {
+    return Math.max(1, Math.round(value));
+  }
+
+  if (unit === 'm') {
+    return Math.max(1, Math.round(value * 60_000));
+  }
+
+  return Math.max(1, Math.round(value * 1000));
+}
+
+function extractRetryAfterMs(error: ProviderError): number | undefined {
+  const retryInfo = error.errorDetails?.find((detail) => detail['@type']?.includes('RetryInfo'));
+  const fromDetail = parseRetryDelayToMs(retryInfo?.retryDelay);
+  if (fromDetail !== undefined) {
+    return fromDetail;
+  }
+
+  const messageMatch = error.message?.match(/retry in\s+(\d+(?:\.\d+)?)s/i);
+  if (messageMatch) {
+    return Math.max(1, Math.round(Number(messageMatch[1]) * 1000));
+  }
+
+  return undefined;
+}
+
+function isProviderQuotaError(error: ProviderError): boolean {
+  if (error.status === 429) {
+    return true;
+  }
+
+  const message = `${error.statusText ?? ''} ${error.message ?? ''}`.toLowerCase();
+  return message.includes('quota') || message.includes('too many requests') || message.includes('rate limit');
 }
 
 function sanitizeText(text: string): string {
@@ -271,6 +334,16 @@ export async function chat(
       response = normalizeReply(result.response.text());
     } catch (error) {
       console.error('[chatbot.service] Gemini request failed:', error);
+
+      const providerError = error as ProviderError;
+      if (isProviderQuotaError(providerError)) {
+        throw createHttpError(
+          'NutriCoach is temporarily unavailable because the AI quota has been reached. Please try again shortly.',
+          429,
+          extractRetryAfterMs(providerError),
+        );
+      }
+
       response = buildFallbackReply(message);
     }
   }

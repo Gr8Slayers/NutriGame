@@ -165,6 +165,22 @@ describe('🔗 Integration Tests — Manual Meal Logging', () => {
             expect(res.status).toBe(404);
             expect(res.body.success).toBe(false);
         });
+
+        it('returns 400 when a single meal entry exceeds 5000 kcal', async () => {
+            const res = await request(app)
+                .post('/api/food/add_to_meal')
+                .set('Authorization', `Bearer ${userToken}`)
+                .send({
+                    date: '2026-03-10',
+                    meal_category: 'Breakfast',
+                    food_id: testFood.food_id,
+                    p_count: 53,
+                });
+
+            expect(res.status).toBe(400);
+            expect(res.body.success).toBe(false);
+            expect(res.body.message).toContain('5000 kcal');
+        });
     });
 
     describe('GET /api/food/get_weekly_summary', () => {
@@ -545,4 +561,3 @@ describe('🔬 Nutritional Accuracy Tests — Fallback Food Data (TC-02)', () =>
         });
     });
 });
-
