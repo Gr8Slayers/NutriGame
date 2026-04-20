@@ -73,14 +73,19 @@ export class FoodController {
                 return res.status(400).json({ success: false, message: 'Invalid calendar date.' });
             }
 
-            // 3. Block future dates
+            // 3. Block future dates (server UTC bugüne göre +1 gün tolerans;
+            // kullanıcı UTC+N timezone'daysa local "bugün" server UTC'den
+            // bir gün ileri olabilir — bu geçerli bir kayıt sayılır)
             const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            today.setUTCHours(0, 0, 0, 0);
+
+            const maxAllowed = new Date(today);
+            maxAllowed.setUTCDate(maxAllowed.getUTCDate() + 1);
 
             const targetDate = new Date(parsedDate);
-            targetDate.setHours(0, 0, 0, 0);
+            targetDate.setUTCHours(0, 0, 0, 0);
 
-            if (targetDate > today) {
+            if (targetDate > maxAllowed) {
                 return res.status(400).json({ success: false, message: 'Future dates are not allowed for logging.' });
             }
 
@@ -262,14 +267,19 @@ export class FoodController {
                 return res.status(400).json({ success: false, message: 'Invalid calendar date.' });
             }
 
-            // 3. Block future dates
+            // 3. Block future dates (server UTC bugüne göre +1 gün tolerans;
+            // kullanıcı UTC+N timezone'daysa local "bugün" server UTC'den
+            // bir gün ileri olabilir — bu geçerli bir kayıt sayılır)
             const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            today.setUTCHours(0, 0, 0, 0);
+
+            const maxAllowed = new Date(today);
+            maxAllowed.setUTCDate(maxAllowed.getUTCDate() + 1);
 
             const targetDate = new Date(parsedDate);
-            targetDate.setHours(0, 0, 0, 0);
+            targetDate.setUTCHours(0, 0, 0, 0);
 
-            if (targetDate > today) {
+            if (targetDate > maxAllowed) {
                 return res.status(400).json({ success: false, message: 'Future dates are not allowed for logging.' });
             }
 
