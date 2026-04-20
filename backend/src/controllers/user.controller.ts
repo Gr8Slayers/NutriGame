@@ -180,12 +180,9 @@ export class UserController {
                 return;
             }
 
-            if (!expoPushToken) {
-                res.status(400).json({ success: false, message: 'Push token is required.' });
-                return;
-            }
-
-            const updatedUser = await userModel.updateUser(userId, { expoPushToken });
+            // null/empty string → logout sırasında token'ı temizlemek için kullanılır
+            const tokenValue = expoPushToken || null;
+            const updatedUser = await userModel.updateUser(userId, { expoPushToken: tokenValue });
             res.status(200).json({ success: true, message: 'Push token updated successfully.' });
         } catch (error) {
             console.error('Error updating push token:', error);

@@ -118,6 +118,15 @@ export default function Menu() {
 
     const handleLogout = async () => {
         try {
+            const token = await getItem('userToken');
+            if (token) {
+                // Push token'ı backend'den temizle; hata olursa yine de logout yap
+                fetch(`${API_URL}/api/user/push-token`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                    body: JSON.stringify({ expoPushToken: null }),
+                }).catch(() => {});
+            }
             await removeItem('userToken');
             await removeItem('rememberMeFlag');
             navigation.reset({
