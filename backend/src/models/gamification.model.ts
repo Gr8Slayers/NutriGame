@@ -188,8 +188,8 @@ export class GamificationModel {
         });
     }
 
-    public async calculateProgress(challengeId: number, userId: number): Promise<number> {
-        const challenge = await this.getChallengeById(challengeId);
+    public async calculateProgress(challengeId: number, userId: number, existingChallenge?: any): Promise<number> {
+        const challenge = existingChallenge ?? await this.getChallengeById(challengeId);
         if (!challenge) return 0;
 
         const startDate = new Date(challenge.startDate);
@@ -255,8 +255,8 @@ export class GamificationModel {
         return Math.min(progress, 100);
     }
 
-    public async calculateDailyCurrent(challengeId: number, userId: number): Promise<number> {
-        const challenge = await this.getChallengeById(challengeId);
+    public async calculateDailyCurrent(challengeId: number, userId: number, existingChallenge?: any): Promise<number> {
+        const challenge = existingChallenge ?? await this.getChallengeById(challengeId);
         if (!challenge) return 0;
 
         // Günün başını ve sonunu belirliyoruz

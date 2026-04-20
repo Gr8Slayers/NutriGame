@@ -205,11 +205,23 @@ export class GamificationController {
                 gamificationModel.getUserInvites(userId),
             ]);
 
-            // Progress'i hesapla
+            // Tüm invite creator ID'lerini topla → tek sorguda username'leri çek (N+1 önleme)
+            const creatorIds = invites
+                .map((c: any) => c.participants.find((p: ChallengeParticipant) => p.role === 'creator')?.userId)
+                .filter((id: number | undefined): id is number => !!id);
+            const uniqueCreatorIds = [...new Set(creatorIds)];
+            const creatorUsers = uniqueCreatorIds.length > 0
+                ? await prisma.user.findMany({ where: { id: { in: uniqueCreatorIds } }, select: { id: true, username: true } })
+                : [];
+            const creatorMap = new Map(creatorUsers.map(u => [u.id, u.username]));
+
+            // Progress'i hesapla — challenge objesini geçirerek getChallengeById sorgusunu önle
             const activeWithProgress = await Promise.all(
                 activeChallenges.map(async (c: any) => {
-                    const progress = await gamificationModel.calculateProgress(c.id, userId);
-                    const todayCurrent = await gamificationModel.calculateDailyCurrent(c.id, userId);
+                    const [progress, todayCurrent] = await Promise.all([
+                        gamificationModel.calculateProgress(c.id, userId, c),
+                        gamificationModel.calculateDailyCurrent(c.id, userId, c),
+                    ]);
                     const myParticipant = c.participants.find((p: ChallengeParticipant) => p.userId === userId);
                     return {
                         id: String(c.id),
@@ -226,13 +238,8 @@ export class GamificationController {
                 })
             );
 
-            const inviteList = await Promise.all(invites.map(async (c: any) => {
+            const inviteList = invites.map((c: any) => {
                 const creator = c.participants.find((p: ChallengeParticipant) => p.role === 'creator');
-                let senderUsername = '';
-                if (creator) {
-                    const user = await prisma.user.findUnique({ where: { id: creator.userId }, select: { username: true } });
-                    senderUsername = user?.username ?? '';
-                }
                 return {
                     id: String(c.id),
                     title: c.title,
@@ -241,9 +248,9 @@ export class GamificationController {
                     goalValue: c.goalValue,
                     endDate: c.endDate,
                     senderId: creator ? String(creator.userId) : '',
-                    senderUsername,
+                    senderUsername: creator ? (creatorMap.get(creator.userId) ?? '') : '',
                 };
-            }));
+            });
 
             res.status(200).json({
                 success: true,
