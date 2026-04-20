@@ -59,6 +59,7 @@ export type RootStackParamList = {
       height: number;
       reason_to_diet?: string;
       target_weight?: number;
+      activity_level?: string;
 
     }
   };

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, Alert, Modal } from 'react-native';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useFocusEffect, useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { setItem, getItem, removeItem } from '../storage';
 import { Ionicons } from '@expo/vector-icons';
 import LottieView from 'lottie-react-native';
@@ -60,8 +60,36 @@ export default function ProfileSettingsMenu() {
     const { t } = useLanguage();
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const route = useRoute<RouteProp<RootStackParamList, 'ProfileSettingsMenu'>>();
-    const userData = route.params;
+    const [userData, setUserData] = useState(route.params);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+    const fetchLatestProfile = useCallback(async () => {
+        try {
+            const token = await getItem('userToken');
+            if (!token) return;
+
+            const res = await fetch(`${API_URL}/api/user/profile`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            if (!res.ok) return;
+
+            const data = await res.json();
+            if (data.success && data.data) {
+                setUserData(data.data);
+            }
+        } catch (error) {
+            console.error('Fetch latest profile error', error);
+        }
+    }, []);
+
+    useFocusEffect(
+        useCallback(() => {
+            void fetchLatestProfile();
+        }, [fetchLatestProfile])
+    );
 
     const handleDeleteAccount = async () => {
         try {

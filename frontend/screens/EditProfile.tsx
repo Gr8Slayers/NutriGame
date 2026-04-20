@@ -112,7 +112,7 @@ export default function EditProfile() {
     const [height, setHeight] = useState(userData.height ? String(userData.height) : '');
     const [selectedAvatar, setSelectedAvatar] = useState(userData.avatar_url || '');
     const [reasonToDiet, setReasonToDiet] = useState(userData.reason_to_diet || 'Maintain Weight');
-    const [activityLevel, setActivityLevel] = useState('Moderately Active'); // Assuming default or mapping if it was stored
+    const [activityLevel, setActivityLevel] = useState(userData.activity_level || 'Moderately Active');
     const [showAvatarModal, setShowAvatarModal] = useState(false);
     const [saving, setSaving] = useState(false);
 
@@ -154,6 +154,7 @@ export default function EditProfile() {
                 email,
                 avatar_url: finalAvatarUrl,
                 reason_to_diet: reasonToDiet,
+                activity_level: activityLevel,
             };
 
             if (currentWeight) {
