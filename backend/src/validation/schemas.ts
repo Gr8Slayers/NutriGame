@@ -5,9 +5,18 @@ const optionalTrimmedStringSchema = z.preprocess(
   z.string().trim().optional(),
 );
 
-const optionalUrlSchema = z.preprocess(
+// Avatar URL'leri tam URL (https://...) veya backend'in döndürdüğü
+// relatif yol (/api/images/...) olabilir; ikisini de kabul et.
+const optionalAvatarUrlSchema = z.preprocess(
   (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
-  z.string().trim().url().optional(),
+  z
+    .string()
+    .trim()
+    .refine(
+      (v) => /^https?:\/\//i.test(v) || v.startsWith('/'),
+      'Geçerli bir avatar URL veya yolu giriniz.',
+    )
+    .optional(),
 );
 
 const optionalPositiveNumberSchema = z.preprocess(
@@ -50,7 +59,7 @@ export const authRegisterSchema = z.object({
   target_weight: optionalPositiveNumberSchema,
   reason_to_diet: optionalTrimmedStringSchema,
   activity_level: optionalTrimmedStringSchema,
-  avatar_url: optionalUrlSchema,
+  avatar_url: optionalAvatarUrlSchema,
 });
 
 export const authLoginSchema = z.object({

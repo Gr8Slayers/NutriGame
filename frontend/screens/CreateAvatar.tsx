@@ -115,7 +115,11 @@ function CreateAvatar({ navigation, route }: Props) {
       if (!avatarObj) throw new Error('Avatar bulunamadı.');
 
       const asset = Asset.fromModule(avatarObj.src);
-      await asset.downloadAsync();
+      try {
+        await asset.downloadAsync();
+      } catch (_) {
+        // ignore — fall back to asset.uri below
+      }
       const uri = asset.localUri ?? asset.uri;
       if (!uri) throw new Error('Avatar URI alınamadı.');
 

@@ -78,9 +78,9 @@ function SignUpEnterData({ navigation, route }: Props) {
       weight: parseFloat(weight),
       height: parseFloat(height_box),
       reason_to_diet: goal,
-      target_weight: target_weight ? parseFloat(target_weight) : 0,
+      ...(target_weight ? { target_weight: parseFloat(target_weight) } : {}),
       activity_level,
-      goal_duration_months: goal_duration_months ? parseInt(goal_duration_months) : null,
+      ...(goal_duration_months ? { goal_duration_months: parseInt(goal_duration_months) } : {}),
     }
     navigation.navigate('CreateAvatar', { finalData: secondData });
     setLoading(false);
