@@ -8,6 +8,8 @@ import {
   deleteSession,
 } from '../services/chatbot.service';
 import { chatbotModel } from '../models/chatbot.model';
+import { chatIdParamSchema, chatbotSendSchema } from '../validation/schemas';
+import { getValidationErrors, getValidationMessage } from '../validation/utils';
 
 /**
  * POST /api/chat
@@ -17,14 +19,20 @@ import { chatbotModel } from '../models/chatbot.model';
 export async function handleChat(req: any, res: Response) {
   try {
     const userId = parseInt(req.user?.id || req.userId);
-    const { message, chatId } = req.body;
+    const parsed = chatbotSendSchema.safeParse(req.body);
 
     if (!userId) {
       return res.status(401).json({ success: false, message: 'Kimlik doğrulama hatası (User ID bulunamadı).' });
     }
-    if (!message) {
-      return res.status(400).json({ success: false, message: 'message is required.' });
+    if (!parsed.success) {
+      return res.status(400).json({
+        success: false,
+        message: getValidationMessage(parsed.error, 'message is required.'),
+        errors: getValidationErrors(parsed.error),
+      });
     }
+
+    const { message, chatId } = parsed.data;
 
     let currentChatId = chatId;
 
@@ -74,10 +82,15 @@ export async function handleGetAllHistory(req: Request, res: Response) {
  */
 export async function handleGetHistory(req: Request, res: Response) {
   try {
-    const { chatId } = req.params;
-    if (!chatId) {
-      return res.status(400).json({ success: false, message: 'chatId is required.' });
+    const parsed = chatIdParamSchema.safeParse(req.params);
+    if (!parsed.success) {
+      return res.status(400).json({
+        success: false,
+        message: getValidationMessage(parsed.error, 'chatId is required.'),
+        errors: getValidationErrors(parsed.error),
+      });
     }
+    const { chatId } = parsed.data;
     const rawMessages = await chatbotModel.getSessionMessages(chatId);
 
     const formattedMessages = rawMessages.map((msg) => ({
@@ -129,8 +142,15 @@ export async function handleNewSession(_req: Request, res: Response) {
  */
 export async function handleDeleteSession(req: Request, res: Response) {
   try {
-    const { chatId } = req.params;
-    if (!chatId) return res.status(400).json({ success: false, message: 'Chat ID is required' });
+    const parsed = chatIdParamSchema.safeParse(req.params);
+    if (!parsed.success) {
+      return res.status(400).json({
+        success: false,
+        message: getValidationMessage(parsed.error, 'Chat ID is required'),
+        errors: getValidationErrors(parsed.error),
+      });
+    }
+    const { chatId } = parsed.data;
 
     await chatbotModel.deleteSession(chatId);
 

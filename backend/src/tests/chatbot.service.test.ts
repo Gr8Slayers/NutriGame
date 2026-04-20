@@ -127,4 +127,47 @@ describe('chatbot.service provider error handling', () => {
         expect(contents[contents.length - 1].role).toBe('user');
         expect(contents[contents.length - 1].parts[0].text).toBe('Peki öğle yemeğinde?');
     });
+
+    it('masks email, phone, card, and address PII before sending to Gemini', async () => {
+        const generateContent = jest
+            .fn()
+            .mockResolvedValueOnce({
+                response: { text: () => 'Tamam.' },
+            });
+
+        jest.doMock('uuid', () => ({
+            v4: () => 'mock-chat-id',
+        }));
+
+        jest.doMock('@google/generative-ai', () => ({
+            GoogleGenerativeAI: jest.fn().mockImplementation(() => ({
+                getGenerativeModel: () => ({
+                    generateContent,
+                }),
+            })),
+        }));
+
+        jest.doMock('../models/chatbot.model', () => ({
+            chatbotModel: {
+                getSessionMessages: jest.fn().mockResolvedValue([]),
+            },
+        }));
+
+        const service = await import('../services/chatbot.service');
+
+        await service.chat(
+            'pii-user',
+            'pii-chat',
+            'Emailim test@example.com, telefonum +90 555 123 45 67, kartim 4111 1111 1111 1111, adresim 123 Main Street.'
+        );
+
+        const firstCallArgs = generateContent.mock.calls[0][0];
+        const contents = firstCallArgs.contents as Array<{ parts: Array<{ text: string }> }>;
+        const sanitized = contents[0].parts[0].text;
+
+        expect(sanitized).toContain('[PII_REMOVED]');
+        expect(sanitized).not.toContain('test@example.com');
+        expect(sanitized).not.toContain('4111 1111 1111 1111');
+        expect(sanitized).not.toContain('123 Main Street');
+    });
 });

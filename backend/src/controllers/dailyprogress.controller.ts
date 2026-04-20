@@ -1,16 +1,22 @@
 import { Request, Response, NextFunction } from 'express';
 import { dailyProgressModel } from '../models/dailyprogress.model';
 import { notificationService } from '../services/notification.service';
+import { dailyProgressUpsertSchema } from '../validation/schemas';
+import { getValidationErrors, getValidationMessage } from '../validation/utils';
 
 export class DailyProgressController {
     async upsert_progress(req: Request, res: Response, next: NextFunction) {
         try {
             const user_id = req.user!.id;
-            const { date, currentWeight, mood, totalCaloriesConsumed, calorieGoal, goalAchieved, movement } = req.body;
-
-            if (!date) {
-                return res.status(400).json({ success: false, message: 'Please provide a date.' });
+            const parsed = dailyProgressUpsertSchema.safeParse(req.body);
+            if (!parsed.success) {
+                return res.status(400).json({
+                    success: false,
+                    message: getValidationMessage(parsed.error, 'Please provide a date.'),
+                    errors: getValidationErrors(parsed.error),
+                });
             }
+            const { date, currentWeight, mood, totalCaloriesConsumed, calorieGoal, goalAchieved, movement } = parsed.data;
 
             // FIX: date string'i direkt parse et, timezone kaymasını önle.
             // Frontend'den "YYYY-MM-DD" formatında geliyor, bunu UTC noon olarak
@@ -26,19 +32,13 @@ export class DailyProgressController {
                 return res.status(400).json({ success: false, message: 'Invalid calendar date.' });
             }
 
-            let weightNum: number | undefined;
-            if (currentWeight !== undefined) {
-                weightNum = parseFloat(currentWeight);
-                if (isNaN(weightNum)) weightNum = undefined;
-            }
-
             const updated = await dailyProgressModel.upsertProgress(user_id, parsedDate, {
-                currentWeight: weightNum,
+                currentWeight,
                 mood,
                 totalCaloriesConsumed,
                 calorieGoal,
                 goalAchieved,
-                movement: movement !== undefined ? parseInt(movement) : undefined,
+                movement,
             });
 
             // Notify user when daily goal is achieved

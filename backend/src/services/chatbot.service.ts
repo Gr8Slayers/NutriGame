@@ -2,6 +2,13 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { ServerResponse } from 'http';
 import { v4 as uuidv4 } from 'uuid';
 import { chatbotModel } from '../models/chatbot.model';
+const {
+  filterPersonalInformation,
+  filterHistoryPersonalInformation,
+} = require('../../ai_service/ai_service/src/chatbot/privacyUtils.js') as {
+  filterPersonalInformation: (message: string) => string;
+  filterHistoryPersonalInformation: (history: ChatHistoryItem[]) => ChatHistoryItem[];
+};
 
 type ChatRole = 'user' | 'model';
 type ChatHistoryItem = { role: ChatRole; parts: Array<{ text: string }> };
@@ -162,11 +169,17 @@ function isProviderQuotaError(error: ProviderError): boolean {
 }
 
 function sanitizeText(text: string): string {
-  return text
-    .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, '[redacted-email]')
-    .replace(/\b(?:\+?\d[\d\s().-]{8,}\d)\b/g, '[redacted-phone]')
-    .replace(/\b\d{11}\b/g, '[redacted-id]')
-    .trim();
+  return filterPersonalInformation(text).trim();
+}
+
+function sanitizeHistory(history: ChatHistoryItem[]): ChatHistoryItem[] {
+  return filterHistoryPersonalInformation(history).map((entry) => ({
+    ...entry,
+    parts: entry.parts.map((part) => ({
+      ...part,
+      text: part.text.trim(),
+    })),
+  }));
 }
 
 function isNutritionRelated(message: string): boolean {
@@ -224,7 +237,7 @@ async function loadHistory(chatId: string, latestMessage: string): Promise<ChatH
       ...cached.history,
       { role: 'user', parts: [{ text: sanitizeText(latestMessage) }] },
     ];
-    return nextHistory.slice(-MAX_CONTEXT_MESSAGES);
+    return sanitizeHistory(nextHistory.slice(-MAX_CONTEXT_MESSAGES));
   }
 
   try {
@@ -238,8 +251,9 @@ async function loadHistory(chatId: string, latestMessage: string): Promise<ChatH
         };
       });
 
-      sessionCache.set(chatId, { updatedAt: Date.now(), history });
-      return history;
+      const sanitizedHistory = sanitizeHistory(history);
+      sessionCache.set(chatId, { updatedAt: Date.now(), history: sanitizedHistory });
+      return sanitizedHistory;
     }
   } catch (error) {
     console.error('[chatbot.service] Failed to load DB chat history:', error);
@@ -248,8 +262,9 @@ async function loadHistory(chatId: string, latestMessage: string): Promise<ChatH
   const initialHistory: ChatHistoryItem[] = [
     { role: 'user', parts: [{ text: sanitizeText(latestMessage) }] },
   ];
-  sessionCache.set(chatId, { updatedAt: Date.now(), history: initialHistory });
-  return initialHistory;
+  const sanitizedInitialHistory = sanitizeHistory(initialHistory);
+  sessionCache.set(chatId, { updatedAt: Date.now(), history: sanitizedInitialHistory });
+  return sanitizedInitialHistory;
 }
 
 async function generateModelResponse(model: GenerativeModelLike, history: ChatHistoryItem[]): Promise<string> {

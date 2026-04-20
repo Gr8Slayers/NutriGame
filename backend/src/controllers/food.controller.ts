@@ -4,6 +4,15 @@ import { Request, Response, NextFunction } from 'express';
 import { foodModel } from '../models/food.model';
 import { foodService } from '../services/food.service';
 import prisma from '../config/prisma';
+import {
+    addToMealSchema,
+    addToWaterSchema,
+    deleteMealSchema,
+    foodSearchQuerySchema,
+    mealLogQuerySchema,
+    waterTotalQuerySchema,
+} from '../validation/schemas';
+import { getValidationErrors, getValidationMessage } from '../validation/utils';
 
 // ─── Sabitler ──────────────────────────────────────────────
 const OFF_TIMEOUT_MS = 3000;   // Open Food Facts API timeout: 3 saniye
@@ -14,11 +23,15 @@ export class FoodController {
 
     search_food = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { food_name } = req.query as { food_name: string };
-
-            if (!food_name) {
-                return res.status(400).json({ success: false, message: 'Food name is not provided.' });
+            const parsed = foodSearchQuerySchema.safeParse(req.query);
+            if (!parsed.success) {
+                return res.status(400).json({
+                    success: false,
+                    message: getValidationMessage(parsed.error, 'Food name is not provided.'),
+                    errors: getValidationErrors(parsed.error),
+                });
             }
+            const { food_name } = parsed.data;
 
             const searchResult = await foodService.searchAcrossAllSources(food_name);
 
@@ -43,17 +56,17 @@ export class FoodController {
     async add_to_meal(req: Request, res: Response, next: NextFunction) {
         try {
             const user_id = req.user!.id;
-            const { date, meal_category, food_id, p_count, food_name, p_calorie, p_protein, p_fat, p_carb, p_unit, p_amount, entry_method, scan_image_url } = req.body;
-
-            if (!date || !meal_category || !p_count) {
-                return res.status(400).json({ success: false, message: 'Please provide required information { date, meal_category, p_count }.' });
+            const parsed = addToMealSchema.safeParse(req.body);
+            if (!parsed.success) {
+                return res.status(400).json({
+                    success: false,
+                    message: getValidationMessage(parsed.error, 'Please provide required information { date, meal_category, p_count }.'),
+                    errors: getValidationErrors(parsed.error),
+                });
             }
+            const { date, meal_category, food_id, p_count, food_name, p_calorie, p_protein, p_fat, p_carb, p_unit, p_amount, entry_method, scan_image_url } = parsed.data;
 
             // 1. Check format (YYYY-MM-DD)
-            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-            if (!date || !dateRegex.test(date)) {
-                return res.status(400).json({ success: false, message: 'Invalid format. Use YYYY-MM-DD.' });
-            }
             // 2. Check if it's a valid calendar date
             const parsedDate = new Date(date);
             if (isNaN(parsedDate.getTime())) {
@@ -124,11 +137,15 @@ export class FoodController {
     async delete_from_meal(req: Request, res: Response, next: NextFunction) {
         try {
             const user_id = req.user!.id; // Assuming jwt/auth middleware sets req.user
-            const { meal_log_id } = req.body;
-
-            if (!meal_log_id) {
-                return res.status(400).json({ success: false, message: 'Please provide required information { meal_log_id }.' });
+            const parsed = deleteMealSchema.safeParse(req.body);
+            if (!parsed.success) {
+                return res.status(400).json({
+                    success: false,
+                    message: getValidationMessage(parsed.error, 'Please provide required information { meal_log_id }.'),
+                    errors: getValidationErrors(parsed.error),
+                });
             }
+            const { meal_log_id } = parsed.data;
 
             const deleted_food = await foodModel.deleteFoodFromMealLog(user_id, meal_log_id);
 
@@ -146,17 +163,16 @@ export class FoodController {
     async get_meal_log(req: Request, res: Response, next: NextFunction) {
         try {
             const user_id = req.user!.id; // Assuming jwt/auth middleware sets req.user
-            const { date, meal_category } = req.query as { date: string, meal_category: string };
-
-            if (!date || !meal_category) {
-                return res.status(400).json({ success: false, message: 'Please provide required information { date, meal_category }.' });
+            const parsed = mealLogQuerySchema.safeParse(req.query);
+            if (!parsed.success) {
+                return res.status(400).json({
+                    success: false,
+                    message: getValidationMessage(parsed.error, 'Please provide required information { date, meal_category }.'),
+                    errors: getValidationErrors(parsed.error),
+                });
             }
+            const { date, meal_category } = parsed.data;
 
-            // 1. Check format (YYYY-MM-DD)
-            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-            if (!date || !dateRegex.test(date)) {
-                return res.status(400).json({ success: false, message: 'Invalid format. Use YYYY-MM-DD.' });
-            }
             // 2. Check if it's a valid calendar date
             const parsedDate = new Date(date);
             if (isNaN(parsedDate.getTime())) {
@@ -187,17 +203,16 @@ export class FoodController {
     async get_meal_total(req: Request, res: Response, next: NextFunction) {
         try {
             const user_id = req.user!.id; // Assuming jwt/auth middleware sets req.user
-            const { date, meal_category } = req.query as { date: string, meal_category: string };
-
-            if (!date || !meal_category) {
-                return res.status(400).json({ success: false, message: 'Please provide required information { date, meal_category }.' });
+            const parsed = mealLogQuerySchema.safeParse(req.query);
+            if (!parsed.success) {
+                return res.status(400).json({
+                    success: false,
+                    message: getValidationMessage(parsed.error, 'Please provide required information { date, meal_category }.'),
+                    errors: getValidationErrors(parsed.error),
+                });
             }
+            const { date, meal_category } = parsed.data;
 
-            // 1. Check format (YYYY-MM-DD)
-            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-            if (!date || !dateRegex.test(date)) {
-                return res.status(400).json({ success: false, message: 'Invalid format. Use YYYY-MM-DD.' });
-            }
             // 2. Check if it's a valid calendar date
             const parsedDate = new Date(date);
             if (isNaN(parsedDate.getTime())) {
@@ -231,18 +246,16 @@ export class FoodController {
     async add_to_water(req: Request, res: Response, next: NextFunction) {
         try {
             const user_id = req.user!.id; // Assuming jwt/auth middleware sets req.user
-            const { date, entries } = req.body;
-
-
-            if (!date || !entries || !Array.isArray(entries) || entries.length === 0) {
-                return res.status(400).json({ success: false, message: 'Please provide required information { date, entries[name, amount] }.' });
+            const parsed = addToWaterSchema.safeParse(req.body);
+            if (!parsed.success) {
+                return res.status(400).json({
+                    success: false,
+                    message: getValidationMessage(parsed.error, 'Please provide required information { date, entries[name, amount] }.'),
+                    errors: getValidationErrors(parsed.error),
+                });
             }
+            const { date, entries } = parsed.data;
 
-            // 1. Check format (YYYY-MM-DD)
-            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-            if (!date || !dateRegex.test(date)) {
-                return res.status(400).json({ success: false, message: 'Invalid format. Use YYYY-MM-DD.' });
-            }
             // 2. Check if it's a valid calendar date
             const parsedDate = new Date(date);
             if (isNaN(parsedDate.getTime())) {
@@ -299,17 +312,16 @@ export class FoodController {
         try {
             const user_id = req.user!.id; // Assuming jwt/auth middleware sets req.user
 
-            const { date } = req.query as { date: string };
-
-            if (!date) {
-                return res.status(400).json({ success: false, message: 'Please provide required information { date }.' });
+            const parsed = waterTotalQuerySchema.safeParse(req.query);
+            if (!parsed.success) {
+                return res.status(400).json({
+                    success: false,
+                    message: getValidationMessage(parsed.error, 'Please provide required information { date }.'),
+                    errors: getValidationErrors(parsed.error),
+                });
             }
+            const { date } = parsed.data;
 
-            // 1. Check format (YYYY-MM-DD)
-            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-            if (!date || !dateRegex.test(date)) {
-                return res.status(400).json({ success: false, message: 'Invalid format. Use YYYY-MM-DD.' });
-            }
             // 2. Check if it's a valid calendar date
             const parsedDate = new Date(date);
             if (isNaN(parsedDate.getTime())) {

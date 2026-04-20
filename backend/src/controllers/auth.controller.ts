@@ -4,6 +4,8 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { userModel } from '../models/user.model';
+import { authLoginSchema, authRegisterSchema } from '../validation/schemas';
+import { getValidationErrors, getValidationMessage } from '../validation/utils';
 
 // .env dosyasından JWT secret al
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
@@ -12,10 +14,16 @@ export class AuthController {
     async register(req: Request, res: Response, next: NextFunction) {
         console.log('POST api/auth/register')
         try {
-            const { username, email, password, age, gender, height, weight, target_weight, reason_to_diet, avatar_url } = req.body;
-            if (!username || !email || !password || !age || !gender || !height || !weight) {
-                return res.status(400).json({ success: false, message: 'Zorunlu alanları doldurunuz.' });
+            const parsed = authRegisterSchema.safeParse(req.body);
+            if (!parsed.success) {
+                return res.status(400).json({
+                    success: false,
+                    message: getValidationMessage(parsed.error, 'Zorunlu alanları doldurunuz.'),
+                    errors: getValidationErrors(parsed.error),
+                });
             }
+
+            const { username, email, password, age, gender, height, weight, target_weight, reason_to_diet, avatar_url } = parsed.data;
 
             const existingUser = await userModel.findUser(email, username);
             if (existingUser) {
@@ -23,7 +31,18 @@ export class AuthController {
             }
 
             const hashedPassword = await bcrypt.hash(password, 10);
-            await userModel.createUser(username, email, hashedPassword, age, gender, height, weight, target_weight, reason_to_diet, avatar_url);
+            await userModel.createUser(
+                username,
+                email,
+                hashedPassword,
+                age,
+                gender,
+                height,
+                weight,
+                target_weight ?? weight,
+                reason_to_diet ?? '',
+                avatar_url ?? ''
+            );
             return res.status(201).json({ success: true, message: 'Kayıt başarılı.' });
         } catch (error) {
             next(error);
@@ -33,12 +52,18 @@ export class AuthController {
     async login(req: Request, res: Response, next: NextFunction) {
         console.log('POST api/auth/login')
         try {
-            const { email, username, password } = req.body;
-            console.log(req.body);
-            if (!(email || username) || !password) {
-                return res.status(400).json({ success: false, message: 'Email/username ve şifre gerekli.' });
+            const parsed = authLoginSchema.safeParse(req.body);
+            if (!parsed.success) {
+                return res.status(400).json({
+                    success: false,
+                    message: getValidationMessage(parsed.error, 'Email/username ve şifre gerekli.'),
+                    errors: getValidationErrors(parsed.error),
+                });
             }
-            const user = await userModel.findUser(email, username);
+
+            const { email, username, password } = parsed.data;
+            console.log(req.body);
+            const user = await userModel.findUser(email ?? '', username ?? '');
             if (!user) {
                 return res.status(401).json({ success: false, message: 'Geçersiz email/username veya şifre.' });
             }
