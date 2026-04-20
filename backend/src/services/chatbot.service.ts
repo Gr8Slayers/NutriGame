@@ -2,13 +2,10 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { ServerResponse } from 'http';
 import { v4 as uuidv4 } from 'uuid';
 import { chatbotModel } from '../models/chatbot.model';
-const {
-  filterPersonalInformation,
+import {
   filterHistoryPersonalInformation,
-} = require('../../ai_service/ai_service/src/chatbot/privacyUtils.js') as {
-  filterPersonalInformation: (message: string) => string;
-  filterHistoryPersonalInformation: (history: ChatHistoryItem[]) => ChatHistoryItem[];
-};
+  filterPersonalInformation,
+} from '../utils/privacyUtils';
 
 type ChatRole = 'user' | 'model';
 type ChatHistoryItem = { role: ChatRole; parts: Array<{ text: string }> };
