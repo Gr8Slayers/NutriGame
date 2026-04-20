@@ -60,6 +60,12 @@ export const translations = {
     signup_next: 'Next',
     signup_have_account: 'Already have an account?',
     signup_login: 'Log In',
+    signup_fill_all: 'Please fill all fields.',
+    signup_username_invalid: 'Username must be 3–30 characters, letters, numbers, dot (.) or underscore (_).',
+    signup_email_invalid: 'Please enter a valid email address.',
+    signup_password_invalid: 'Password must be at least 8 characters and include uppercase, lowercase, and a number.',
+    signup_password_hint: 'At least 8 characters · uppercase, lowercase & number',
+    signup_username_hint: '3–30 characters · letters, numbers, . or _',
 
     // ── MainPage ────────────────────────────────────────────
     main_title: 'Main Page',
@@ -436,6 +442,12 @@ export const translations = {
     signup_next: 'Devam',
     signup_have_account: 'Zaten hesabın var mı?',
     signup_login: 'Giriş Yap',
+    signup_fill_all: 'Lütfen tüm alanları doldurun.',
+    signup_username_invalid: 'Kullanıcı adı 3–30 karakter olmalı ve sadece harf, rakam, nokta (.) veya alt çizgi (_) içerebilir.',
+    signup_email_invalid: 'Lütfen geçerli bir e-posta adresi girin.',
+    signup_password_invalid: 'Şifre en az 8 karakter olmalı; büyük harf, küçük harf ve rakam içermelidir.',
+    signup_password_hint: 'En az 8 karakter · büyük harf, küçük harf ve rakam',
+    signup_username_hint: '3–30 karakter · harf, rakam, . veya _',
 
     // ── MainPage ────────────────────────────────────────────
     main_title: 'Ana Sayfa',

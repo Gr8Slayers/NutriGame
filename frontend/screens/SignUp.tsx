@@ -39,8 +39,31 @@ function SignUp({ navigation }: Props) {
 
   const handleSignUp = async () => {
     if (loading) return;
-    if (!name || !email || !password) {
-      Alert.alert(t('error'), 'Please fill all fields.');
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+    if (!trimmedName || !trimmedEmail || !password) {
+      Alert.alert(t('error'), t('signup_fill_all'));
+      setLoading(false);
+      return;
+    }
+    if (!/^[a-zA-Z0-9._]{3,30}$/.test(trimmedName)) {
+      Alert.alert(t('error'), t('signup_username_invalid'));
+      setLoading(false);
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      Alert.alert(t('error'), t('signup_email_invalid'));
+      setLoading(false);
+      return;
+    }
+    if (
+      password.length < 8 ||
+      password.length > 64 ||
+      !/[a-z]/.test(password) ||
+      !/[A-Z]/.test(password) ||
+      !/[0-9]/.test(password)
+    ) {
+      Alert.alert(t('error'), t('signup_password_invalid'));
       setLoading(false);
       return;
     }
@@ -102,7 +125,13 @@ function SignUp({ navigation }: Props) {
                 placeholder={t('signup_username')}
                 value={name}
                 onChangeText={setName}
+                autoCapitalize="none"
+                autoCorrect={false}
+                maxLength={30}
               />
+              <Text style={{ fontSize: 12, color: '#6b6357', marginTop: 4 }}>
+                {t('signup_username_hint')}
+              </Text>
             </View>
             <View style={styles.inputContainer}>
               <Text style={styles.label}>{t('signup_email')} *</Text>
@@ -123,7 +152,13 @@ function SignUp({ navigation }: Props) {
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={true}
+                autoCapitalize="none"
+                autoCorrect={false}
+                maxLength={64}
               />
+              <Text style={{ fontSize: 12, color: '#6b6357', marginTop: 4 }}>
+                {t('signup_password_hint')}
+              </Text>
             </View>
 
             <View style={styles.checkboxContainer}>

@@ -21,10 +21,28 @@ export const isoDateSchema = z
 
 export const nonEmptyStringSchema = z.string().trim().min(1);
 
+export const usernameSchema = z
+  .string()
+  .trim()
+  .min(3, 'Kullanıcı adı en az 3 karakter olmalı.')
+  .max(30, 'Kullanıcı adı en fazla 30 karakter olabilir.')
+  .regex(
+    /^[a-zA-Z0-9._]+$/,
+    'Kullanıcı adı sadece harf, rakam, nokta (.) ve alt çizgi (_) içerebilir.',
+  );
+
+export const passwordSchema = z
+  .string()
+  .min(8, 'Şifre en az 8 karakter olmalı.')
+  .max(64, 'Şifre en fazla 64 karakter olabilir.')
+  .regex(/[a-z]/, 'Şifre en az bir küçük harf içermeli.')
+  .regex(/[A-Z]/, 'Şifre en az bir büyük harf içermeli.')
+  .regex(/[0-9]/, 'Şifre en az bir rakam içermeli.');
+
 export const authRegisterSchema = z.object({
-  username: nonEmptyStringSchema,
-  email: z.string().trim().email(),
-  password: z.string().min(1),
+  username: usernameSchema,
+  email: z.string().trim().email('Geçerli bir e-posta adresi giriniz.'),
+  password: passwordSchema,
   age: z.coerce.number().positive(),
   gender: nonEmptyStringSchema,
   height: z.coerce.number().positive(),
