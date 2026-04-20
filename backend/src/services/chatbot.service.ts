@@ -5,6 +5,9 @@ import { chatbotModel } from '../models/chatbot.model';
 
 type ChatRole = 'user' | 'model';
 type ChatHistoryItem = { role: ChatRole; parts: Array<{ text: string }> };
+type GenerativeModelLike = {
+  generateContent: (args: { contents: ChatHistoryItem[] }) => Promise<{ response: { text: () => string | undefined } }>;
+};
 
 const MAX_MESSAGES_PER_MINUTE = parseInt(process.env.MAX_MESSAGES_PER_MINUTE ?? '10', 10);
 const MAX_MESSAGE_LENGTH = parseInt(process.env.MAX_MESSAGE_LENGTH ?? '2000', 10);
@@ -208,7 +211,7 @@ function getGenerativeModel() {
 function normalizeReply(text: string | undefined): string {
   const normalized = text?.trim();
   if (!normalized) {
-    return 'Su an anlamli bir yanit uretemedim. Sorunu biraz daha acik yazarsan yardimci olayim.';
+    return '';
   }
 
   return normalized;
@@ -217,7 +220,11 @@ function normalizeReply(text: string | undefined): string {
 async function loadHistory(chatId: string, latestMessage: string): Promise<ChatHistoryItem[]> {
   const cached = sessionCache.get(chatId);
   if (cached && Date.now() - cached.updatedAt <= CONVERSATION_TTL_MS) {
-    return cached.history;
+    const nextHistory: ChatHistoryItem[] = [
+      ...cached.history,
+      { role: 'user', parts: [{ text: sanitizeText(latestMessage) }] },
+    ];
+    return nextHistory.slice(-MAX_CONTEXT_MESSAGES);
   }
 
   try {
@@ -243,6 +250,24 @@ async function loadHistory(chatId: string, latestMessage: string): Promise<ChatH
   ];
   sessionCache.set(chatId, { updatedAt: Date.now(), history: initialHistory });
   return initialHistory;
+}
+
+async function generateModelResponse(model: GenerativeModelLike, history: ChatHistoryItem[]): Promise<string> {
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    const result = await model.generateContent({ contents: history });
+    const normalized = normalizeReply(result.response.text());
+
+    if (normalized) {
+      return normalized;
+    }
+
+    console.warn(`[chatbot.service] Gemini returned an empty response on attempt ${attempt}.`);
+  }
+
+  throw createHttpError(
+    'NutriCoach could not generate a usable response right now. Please try again.',
+    503,
+  );
 }
 
 export function validateMessage(message: string): { valid: boolean; error?: string } {
@@ -330,10 +355,13 @@ export async function chat(
         systemInstruction: CHATBOT_SYSTEM_PROMPT,
       });
 
-      const result = await model.generateContent({ contents: history });
-      response = normalizeReply(result.response.text());
+      response = await generateModelResponse(model, history);
     } catch (error) {
       console.error('[chatbot.service] Gemini request failed:', error);
+
+      if ((error as { statusCode?: number }).statusCode) {
+        throw error;
+      }
 
       const providerError = error as ProviderError;
       if (isProviderQuotaError(providerError)) {

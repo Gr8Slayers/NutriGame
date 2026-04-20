@@ -52,4 +52,79 @@ describe('chatbot.service provider error handling', () => {
             retryAfterMs: 20000,
         });
     });
+
+    it('retries once and then throws 503 when Gemini keeps returning empty text', async () => {
+        const generateContent = jest
+            .fn()
+            .mockResolvedValueOnce({
+                response: { text: () => '   ' },
+            })
+            .mockResolvedValueOnce({
+                response: { text: () => '' },
+            });
+
+        jest.doMock('uuid', () => ({
+            v4: () => 'mock-chat-id',
+        }));
+
+        jest.doMock('@google/generative-ai', () => ({
+            GoogleGenerativeAI: jest.fn().mockImplementation(() => ({
+                getGenerativeModel: () => ({
+                    generateContent,
+                }),
+            })),
+        }));
+
+        jest.doMock('../models/chatbot.model', () => ({
+            chatbotModel: {
+                getSessionMessages: jest.fn().mockResolvedValue([]),
+            },
+        }));
+
+        const service = await import('../services/chatbot.service');
+
+        await expect(service.chat('empty-user', 'empty-chat', 'Bugün ne yemeliyim?')).rejects.toMatchObject({
+            statusCode: 503,
+        });
+        expect(generateContent).toHaveBeenCalledTimes(2);
+    });
+
+    it('includes the latest user message when using cached conversation history', async () => {
+        const generateContent = jest
+            .fn()
+            .mockResolvedValueOnce({
+                response: { text: () => 'İlk yanıt' },
+            })
+            .mockResolvedValueOnce({
+                response: { text: () => 'İkinci yanıt' },
+            });
+
+        jest.doMock('uuid', () => ({
+            v4: () => 'mock-chat-id',
+        }));
+
+        jest.doMock('@google/generative-ai', () => ({
+            GoogleGenerativeAI: jest.fn().mockImplementation(() => ({
+                getGenerativeModel: () => ({
+                    generateContent,
+                }),
+            })),
+        }));
+
+        jest.doMock('../models/chatbot.model', () => ({
+            chatbotModel: {
+                getSessionMessages: jest.fn().mockResolvedValue([]),
+            },
+        }));
+
+        const service = await import('../services/chatbot.service');
+
+        await service.chat('ctx-user', 'ctx-chat', 'Yağ kaybı için kahvaltı öner.');
+        await service.chat('ctx-user', 'ctx-chat', 'Peki öğle yemeğinde?');
+
+        const secondCallArgs = generateContent.mock.calls[1][0];
+        const contents = secondCallArgs.contents as Array<{ role: string; parts: Array<{ text: string }> }>;
+        expect(contents[contents.length - 1].role).toBe('user');
+        expect(contents[contents.length - 1].parts[0].text).toBe('Peki öğle yemeğinde?');
+    });
 });
