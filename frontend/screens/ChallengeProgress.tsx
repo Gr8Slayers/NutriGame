@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
@@ -9,6 +9,27 @@ import { API_URL } from '../env';
 import { setItem, getItem, removeItem } from '../storage';
 import BadgeAwardModal from '../components/BadgeAwardModal';
 import { useLanguage } from '../i18n/LanguageContext';
+
+const DEFAULT_AVATAR = require('../assets/default_avatar.png');
+
+const getFeedImageUrl = (url: string | null | undefined) => {
+  if (!url) return null;
+  if (url.startsWith('http')) return url;
+  return `${API_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+};
+
+interface ChallengePost {
+  id: string;
+  userId: string;
+  username: string;
+  userAvatar: string | null;
+  imageUrl: string | null;
+  caption: string;
+  likesCount: number;
+  commentsCount: number;
+  createdAt: string;
+  isLikedByCurrentUser: boolean;
+}
 
 const BASE_URL = `${API_URL}/api`;
 
@@ -30,6 +51,40 @@ const ChallengeProgress: React.FC<Props> = ({ navigation, route }) => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isBadgeModalVisible, setIsBadgeModalVisible] = useState(false);
   const [earnedBadge, setEarnedBadge] = useState<any | null>(null);
+  const [feedPosts, setFeedPosts] = useState<ChallengePost[]>([]);
+  const [feedLoading, setFeedLoading] = useState(false);
+
+  const fetchFeed = useCallback(async () => {
+    const { challengeId } = route.params;
+    setFeedLoading(true);
+    try {
+      const token = await getItem('userToken');
+      const response = await fetch(`${BASE_URL}/social/challenge_feed/${challengeId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const res = await response.json();
+      if (res.success) setFeedPosts(res.data ?? []);
+    } catch (e) {
+      console.error('Challenge feed yüklenemedi:', e);
+    } finally {
+      setFeedLoading(false);
+    }
+  }, [route.params]);
+
+  const toggleLike = async (post: ChallengePost) => {
+    setFeedPosts(prev => prev.map(p => p.id === post.id ? {
+      ...p,
+      isLikedByCurrentUser: !p.isLikedByCurrentUser,
+      likesCount: p.isLikedByCurrentUser ? p.likesCount - 1 : p.likesCount + 1,
+    } : p));
+    try {
+      const token = await getItem('userToken');
+      await fetch(`${BASE_URL}/social/like/${post.id}`, {
+        method: post.isLikedByCurrentUser ? 'DELETE' : 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      });
+    } catch (e) { console.error('Like hatası:', e); }
+  };
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -39,14 +94,16 @@ const ChallengeProgress: React.FC<Props> = ({ navigation, route }) => {
     fetchUserId();
 
     fetchProgress();
+    fetchFeed();
     const unsubscribe = navigation.addListener('focus', () => {
       fetchProgress();
+      fetchFeed();
     });
 
     return () => {
       unsubscribe();
     };
-  }, [navigation]);
+  }, [navigation, fetchFeed]);
 
   const fetchProgress = async (): Promise<void> => {
     const { challengeId } = route.params;
@@ -298,6 +355,61 @@ const ChallengeProgress: React.FC<Props> = ({ navigation, route }) => {
           <Text style={{ color: '#CCCCCC', fontSize: 14, lineHeight: 22 }}>
             {challengeData.description || t('challenge_progress_no_desc')}
           </Text>
+        </View>
+
+        <View style={styles.feedSection}>
+          <View style={styles.feedHeader}>
+            <Text style={styles.feedTitle}>{t('challenge_feed_title')}</Text>
+            <TouchableOpacity
+              style={styles.feedShareBtn}
+              onPress={() => navigation.navigate('NewPost', { challengeId: route.params.challengeId })}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="add" size={16} color="#000" />
+              <Text style={styles.feedShareBtnText}>{t('share_to_challenge')}</Text>
+            </TouchableOpacity>
+          </View>
+
+          {feedLoading ? (
+            <ActivityIndicator color="#2ECC71" style={{ marginVertical: 20 }} />
+          ) : feedPosts.length === 0 ? (
+            <Text style={styles.feedEmpty}>{t('no_challenge_posts')}</Text>
+          ) : (
+            feedPosts.map(post => (
+              <View key={post.id} style={styles.feedCard}>
+                <View style={styles.feedCardHeader}>
+                  <Image
+                    source={post.userAvatar ? { uri: post.userAvatar.startsWith('http') ? post.userAvatar : `${API_URL}${post.userAvatar}` } : DEFAULT_AVATAR}
+                    style={styles.feedAvatar}
+                  />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.feedUsername}>{post.username}</Text>
+                    <Text style={styles.feedTimestamp}>
+                      {new Date(post.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </Text>
+                  </View>
+                </View>
+                {post.imageUrl ? (
+                  <Image source={{ uri: getFeedImageUrl(post.imageUrl) as string }} style={styles.feedImage} />
+                ) : null}
+                {post.caption ? <Text style={styles.feedCaption}>{post.caption}</Text> : null}
+                <View style={styles.feedFooter}>
+                  <TouchableOpacity style={styles.feedActionBtn} onPress={() => toggleLike(post)} activeOpacity={0.7}>
+                    <Ionicons
+                      name={post.isLikedByCurrentUser ? 'heart' : 'heart-outline'}
+                      size={20}
+                      color={post.isLikedByCurrentUser ? '#e55353' : '#888'}
+                    />
+                    <Text style={styles.feedActionCount}>{post.likesCount}</Text>
+                  </TouchableOpacity>
+                  <View style={styles.feedActionBtn}>
+                    <Ionicons name="chatbubble-outline" size={18} color="#888" />
+                    <Text style={styles.feedActionCount}>{post.commentsCount}</Text>
+                  </View>
+                </View>
+              </View>
+            ))
+          )}
         </View>
       </ScrollView>
 

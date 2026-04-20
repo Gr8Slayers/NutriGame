@@ -13,6 +13,7 @@ export const socialModel = {
         recipeInstructions?: string,
         recipeCalories?: number,
         recipePrepTime?: number,
+        challengeId?: number,
     ) => {
         return await prisma.post.create({
             data: {
@@ -25,6 +26,7 @@ export const socialModel = {
                 recipeInstructions,
                 recipeCalories,
                 recipePrepTime,
+                challengeId,
             }
         });
     },
@@ -44,7 +46,8 @@ export const socialModel = {
 
         const posts = await prisma.post.findMany({
             where: {
-                userId: { in: allowedUserIds }
+                userId: { in: allowedUserIds },
+                challengeId: null,
             },
             orderBy: { createdAt: 'desc' },
             include: {
@@ -154,7 +157,7 @@ export const socialModel = {
     // Kullanıcının postlarını getir
     getUserPosts: async (userId: number, currentUserId: number) => {
         const posts = await prisma.post.findMany({
-            where: { userId },
+            where: { userId, challengeId: null },
             orderBy: { createdAt: 'desc' },
             include: { likes: true, comments: true }
         });
@@ -220,6 +223,52 @@ export const socialModel = {
                 id: String(f.followerId),
                 username: user?.username ?? 'Unknown',
                 avatarUrl: profile?.avatar_url ?? null,
+            };
+        }));
+    },
+
+    // Challenge katılımcısı mı kontrol
+    isChallengeParticipant: async (challengeId: number, userId: number): Promise<boolean> => {
+        const participant = await prisma.challengeParticipant.findUnique({
+            where: { challengeId_userId: { challengeId, userId } },
+        });
+        return !!participant && participant.status === 'accepted';
+    },
+
+    // Challenge'a ait post feed (sadece katılımcılara)
+    getChallengePosts: async (challengeId: number, currentUserId: number) => {
+        const posts = await prisma.post.findMany({
+            where: { challengeId },
+            orderBy: { createdAt: 'desc' },
+            include: { likes: true, comments: true },
+        });
+
+        return await Promise.all(posts.map(async (post) => {
+            const user = await prisma.user.findUnique({ where: { id: post.userId } });
+            const profile = await prisma.userProfile.findUnique({ where: { userId: post.userId } });
+
+            const isLikedByCurrentUser = post.likes.some(l => l.userId === currentUserId);
+
+            return {
+                id: String(post.id),
+                userId: String(post.userId),
+                username: user?.username ?? 'Unknown',
+                userAvatar: profile?.avatar_url ?? null,
+                imageUrl: post.imageUrl ?? null,
+                caption: post.caption,
+                likesCount: post.likes.length,
+                commentsCount: post.comments.length,
+                createdAt: post.createdAt.toISOString(),
+                isLikedByCurrentUser,
+                isRecipe: post.isRecipe,
+                recipeDetails: post.isRecipe ? {
+                    title: post.recipeTitle ?? '',
+                    ingredients: post.recipeIngredients ?? '',
+                    instructions: post.recipeInstructions ?? '',
+                    calories: post.recipeCalories ?? 0,
+                    preparationTime: post.recipePrepTime ?? undefined,
+                } : null,
+                challengeId: post.challengeId != null ? String(post.challengeId) : null,
             };
         }));
     },

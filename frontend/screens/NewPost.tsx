@@ -22,8 +22,11 @@ import { useLanguage } from '../i18n/LanguageContext';
 import { createUploadFormData } from '../utils/uploadHelper';
 type Props = NativeStackScreenProps<RootStackParamList, 'NewPost'>;
 
-function NewPost({ navigation }: Props) {
+function NewPost({ navigation, route }: Props) {
     const { t } = useLanguage();
+    const challengeId = route.params?.challengeId;
+    const isChallengePost = !!challengeId;
+
     const [caption, setCaption] = useState('');
     const [imageUri, setImageUri] = useState<string | null>(null);
 
@@ -52,12 +55,13 @@ function NewPost({ navigation }: Props) {
         }
     }, []);
 
-    const isValid =
-        title.trim().length > 0 &&
-        ingredients.trim().length > 0 &&
-        instructions.trim().length > 0 &&
-        !isNaN(Number(calories)) &&
-        Number(calories) > 0;
+    const isValid = isChallengePost
+        ? (caption.trim().length > 0 || !!imageUri)
+        : (title.trim().length > 0 &&
+            ingredients.trim().length > 0 &&
+            instructions.trim().length > 0 &&
+            !isNaN(Number(calories)) &&
+            Number(calories) > 0);
 
     const handleSubmit = useCallback(async () => {
         if (!isValid) return;
@@ -82,18 +86,25 @@ function NewPost({ navigation }: Props) {
                 }
             }
 
-            const body = {
-                caption,
-                isRecipe: true,
-                imageUrl: uploadedImageUrl,
-                recipeDetails: {
-                    title: title.trim(),
-                    ingredients: ingredients.trim(),
-                    instructions: instructions.trim(),
-                    calories: Number(calories),
-                    preparationTime: prepTime ? Number(prepTime) : undefined,
-                },
-            };
+            const body: any = isChallengePost
+                ? {
+                    caption,
+                    isRecipe: false,
+                    imageUrl: uploadedImageUrl,
+                    challengeId,
+                }
+                : {
+                    caption,
+                    isRecipe: true,
+                    imageUrl: uploadedImageUrl,
+                    recipeDetails: {
+                        title: title.trim(),
+                        ingredients: ingredients.trim(),
+                        instructions: instructions.trim(),
+                        calories: Number(calories),
+                        preparationTime: prepTime ? Number(prepTime) : undefined,
+                    },
+                };
 
             const res = await fetch(`${API_URL}/api/social/create_post`, {
                 method: 'POST',
@@ -105,9 +116,11 @@ function NewPost({ navigation }: Props) {
             });
 
             if (res.ok) {
-                Alert.alert(t('success'), t('recipe_shared'), [
-                    { text: t('ok'), onPress: () => navigation.goBack() },
-                ]);
+                Alert.alert(
+                    t('success'),
+                    isChallengePost ? t('challenge_post_shared') : t('recipe_shared'),
+                    [{ text: t('ok'), onPress: () => navigation.goBack() }],
+                );
             } else {
                 const err = await res.text();
                 console.error('Post hatası:', err);
@@ -119,7 +132,7 @@ function NewPost({ navigation }: Props) {
         } finally {
             setSubmitting(false);
         }
-    }, [isValid, caption, imageUri, title, ingredients, instructions, calories, prepTime, navigation]);
+    }, [isValid, caption, imageUri, title, ingredients, instructions, calories, prepTime, navigation, isChallengePost, challengeId, t]);
 
     return (
         <KeyboardAvoidingView
@@ -132,7 +145,7 @@ function NewPost({ navigation }: Props) {
                     <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                         <Ionicons name="arrow-back" size={24} color="#333" />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>{t('new_recipe_post')}</Text>
+                    <Text style={styles.headerTitle}>{isChallengePost ? t('new_challenge_post') : t('new_recipe_post')}</Text>
                     <TouchableOpacity
                         style={[styles.shareButton, !isValid && styles.shareButtonDisabled]}
                         onPress={handleSubmit}
@@ -184,6 +197,8 @@ function NewPost({ navigation }: Props) {
                         />
                     </View>
 
+                    {!isChallengePost && (
+                    <>
                     <View style={styles.sectionDivider}>
                         <Ionicons name="restaurant-outline" size={16} color="#c8a96e" />
                         <Text style={styles.sectionDividerText}>{t('recipe_details_label')}</Text>
@@ -260,6 +275,8 @@ function NewPost({ navigation }: Props) {
                             textAlignVertical="top"
                         />
                     </View>
+                    </>
+                    )}
 
                     <TouchableOpacity
                         style={[styles.submitButton, (!isValid || submitting) && styles.submitButtonDisabled]}
@@ -271,7 +288,7 @@ function NewPost({ navigation }: Props) {
                             ? <ActivityIndicator color="#fff" />
                             : <>
                                 <Ionicons name="share-social-outline" size={20} color="#fff" />
-                                <Text style={styles.submitButtonText}>{t('new_post_recipe')}</Text>
+                                <Text style={styles.submitButtonText}>{isChallengePost ? t('share_post') : t('new_post_recipe')}</Text>
                             </>
                         }
                     </TouchableOpacity>

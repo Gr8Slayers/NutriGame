@@ -342,6 +342,12 @@ export const translations = {
 
     // ── NewPost (extra) ──────────────────────────────────────
     new_recipe_post: 'New Recipe Post',
+    new_challenge_post: 'New Challenge Post',
+    challenge_post_shared: 'Your post has been shared with the challenge!',
+    share_post: 'Share Post',
+    challenge_feed_title: 'Challenge Community',
+    no_challenge_posts: 'No posts yet. Be the first to share!',
+    share_to_challenge: 'Share a post',
     gallery_permission_msg: 'Gallery access is required to pick a photo.',
     recipe_shared: 'Your recipe has been shared!',
     post_share_error: 'Could not share your post. Please try again.',
@@ -701,6 +707,12 @@ export const translations = {
 
     // ── NewPost (extra) ──────────────────────────────────────
     new_recipe_post: 'Yeni Tarif Gönderisi',
+    new_challenge_post: 'Yeni Challenge Gönderisi',
+    challenge_post_shared: 'Gönderiniz challenge ile paylaşıldı!',
+    share_post: 'Gönderiyi Paylaş',
+    challenge_feed_title: 'Challenge Topluluğu',
+    no_challenge_posts: 'Henüz gönderi yok. İlk paylaşan sen ol!',
+    share_to_challenge: 'Gönderi paylaş',
     gallery_permission_msg: 'Fotoğraf seçmek için galeri erişimi gereklidir.',
     recipe_shared: 'Tarifiniz paylaşıldı!',
     post_share_error: 'Gönderiniz paylaşılamadı. Lütfen tekrar deneyin.',

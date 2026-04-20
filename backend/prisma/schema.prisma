@@ -133,9 +133,13 @@ model Post {
   recipeInstructions String?
   recipeCalories     Float?
   recipePrepTime     Int?
+  challengeId        Int?
   createdAt          DateTime      @default(now())
+  challenge          Challenge?    @relation(fields: [challengeId], references: [id], onDelete: Cascade)
   comments           PostComment[]
   likes              PostLike[]
+
+  @@index([challengeId])
 }
 
 model PostLike {
@@ -177,6 +181,7 @@ model Challenge {
   description  String?
   goalValue    Float?
   participants ChallengeParticipant[]
+  posts        Post[]
 }
 
 model ChallengeParticipant {

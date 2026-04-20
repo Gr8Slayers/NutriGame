@@ -7,6 +7,7 @@ const router = Router();
 // Post işlemleri
 router.post('/create_post', authMiddleware, socialController.create_post.bind(socialController));
 router.get('/get_feed', authMiddleware, socialController.get_feed.bind(socialController));
+router.get('/challenge_feed/:challengeId', authMiddleware, socialController.get_challenge_feed.bind(socialController));
 router.delete('/post/:postId', authMiddleware, socialController.delete_post.bind(socialController));
 router.get('/posts/:userId', authMiddleware, socialController.get_user_posts.bind(socialController));
 

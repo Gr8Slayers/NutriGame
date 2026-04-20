@@ -72,7 +72,7 @@ export type RootStackParamList = {
   Chatbot: undefined;
   ScanFood: undefined;
   SocialFeed: undefined;
-  NewPost: undefined;
+  NewPost: { challengeId?: string } | undefined;
   FindFriends: { selectMode?: boolean; onSelectUser?: (userId: string, username: string) => void } | undefined;
   Challenges: undefined;
   CreateChallenge: undefined;

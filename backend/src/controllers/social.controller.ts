@@ -9,10 +9,28 @@ export class SocialController {
     async create_post(req: Request, res: Response, next: NextFunction) {
         try {
             const userId = req.user!.id;
-            const { caption, imageUrl, isRecipe, recipeDetails } = req.body;
+            const { caption, imageUrl, isRecipe, recipeDetails, challengeId } = req.body;
 
             if (isRecipe && (!recipeDetails?.title || !recipeDetails?.ingredients || !recipeDetails?.instructions || !recipeDetails?.calories)) {
                 return res.status(400).json({ success: false, message: 'Tarif postu için title, ingredients, instructions ve calories zorunludur.' });
+            }
+
+            let parsedChallengeId: number | undefined;
+            if (challengeId !== undefined && challengeId !== null && challengeId !== '') {
+                parsedChallengeId = Number(challengeId);
+                if (isNaN(parsedChallengeId)) {
+                    return res.status(400).json({ success: false, message: 'Geçersiz challengeId.' });
+                }
+
+                const isParticipant = await socialModel.isChallengeParticipant(parsedChallengeId, userId);
+                if (!isParticipant) {
+                    return res.status(403).json({ success: false, message: 'Bu challenge\'a post ekleme yetkiniz yok.' });
+                }
+
+                const hasContent = (caption && String(caption).trim().length > 0) || imageUrl;
+                if (!hasContent) {
+                    return res.status(400).json({ success: false, message: 'Post için metin veya görsel gerekli.' });
+                }
             }
 
             const post = await socialModel.createPost(
@@ -25,9 +43,55 @@ export class SocialController {
                 recipeDetails?.instructions,
                 recipeDetails?.calories ? Number(recipeDetails.calories) : undefined,
                 recipeDetails?.preparationTime ? Number(recipeDetails.preparationTime) : undefined,
+                parsedChallengeId,
             );
 
+            if (parsedChallengeId) {
+                const [author, challenge, participants] = await Promise.all([
+                    prisma.user.findUnique({ where: { id: userId }, select: { username: true } }),
+                    prisma.challenge.findUnique({ where: { id: parsedChallengeId }, select: { title: true } }),
+                    prisma.challengeParticipant.findMany({
+                        where: { challengeId: parsedChallengeId, status: 'accepted', userId: { not: userId } },
+                        select: { userId: true },
+                    }),
+                ]);
+
+                const authorName = author?.username ?? 'Someone';
+                const challengeTitle = challenge?.title ?? 'the challenge';
+
+                await Promise.all(participants.map(p =>
+                    notificationService.sendPushNotification(
+                        p.userId,
+                        'New Challenge Post',
+                        `${authorName} shared a new post in "${challengeTitle}".`
+                    )
+                ));
+            }
+
             return res.status(201).json({ success: true, message: 'Post oluşturuldu.', data: post });
+
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    // GET /api/social/challenge_feed/:challengeId
+    async get_challenge_feed(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = req.user!.id;
+            const challengeId = parseInt(req.params.challengeId);
+
+            if (isNaN(challengeId)) {
+                return res.status(400).json({ success: false, message: 'Geçersiz challengeId.' });
+            }
+
+            const isParticipant = await socialModel.isChallengeParticipant(challengeId, userId);
+            if (!isParticipant) {
+                return res.status(403).json({ success: false, message: 'Bu challenge\'ı görüntüleme yetkiniz yok.' });
+            }
+
+            const posts = await socialModel.getChallengePosts(challengeId, userId);
+            return res.status(200).json({ success: true, data: posts });
 
         } catch (err) {
             next(err);
