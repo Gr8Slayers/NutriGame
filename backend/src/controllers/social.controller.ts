@@ -125,6 +125,17 @@ export class SocialController {
             }
 
             await socialModel.addLike(postId, userId);
+
+            if (post.userId !== userId) {
+                const liker = await prisma.user.findUnique({ where: { id: userId }, select: { username: true } });
+                const likerName = liker?.username ?? 'Someone';
+                notificationService.sendPushNotification(
+                    post.userId,
+                    'New Like ❤️',
+                    `${likerName} liked your post.`
+                ).catch(err => console.error('[like_post] notification error:', err));
+            }
+
             return res.status(200).json({ success: true, message: 'Beğeni eklendi.' });
 
         } catch (err) {
@@ -171,6 +182,18 @@ export class SocialController {
             }
 
             const comment = await socialModel.addComment(postId, userId, String(text).trim());
+
+            if (post.userId !== userId) {
+                const commenter = await prisma.user.findUnique({ where: { id: userId }, select: { username: true } });
+                const commenterName = commenter?.username ?? 'Someone';
+                const preview = String(text).trim().slice(0, 60);
+                notificationService.sendPushNotification(
+                    post.userId,
+                    'New Comment 💬',
+                    `${commenterName}: ${preview}`
+                ).catch(err => console.error('[add_comment] notification error:', err));
+            }
+
             return res.status(201).json({ success: true, message: 'Yorum eklendi.', data: comment });
 
         } catch (err) {
