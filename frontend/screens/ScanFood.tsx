@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import * as ImagePicker from 'expo-image-picker';
 import styles from '../styles/ScanFood';
 import { setItem, getItem, removeItem } from '../storage';
 import { API_URL } from '../env';
@@ -394,6 +395,27 @@ export default function ScanFood() {
         setManualSearchTempId(null);
     };
 
+    const pickFromLibrary = async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert(t('warning'), t('scan_library_permission'));
+            return;
+        }
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            quality: 0.7,
+            allowsMultipleSelection: true,
+            selectionLimit: 10,
+        });
+        if (!result.canceled && result.assets.length > 0) {
+            const uris = result.assets.map(a => a.uri);
+            setPhotos(prev => [...prev, ...uris].slice(0, 10));
+            setDetections(null);
+            setAnnotatedImage(null);
+            setIsCameraActive(false);
+        }
+    };
+
     const resetAll = () => {
         setPhotos([]);
         setDetections(null);
@@ -769,6 +791,12 @@ export default function ScanFood() {
                 </View>
                 <TouchableOpacity style={styles.captureButton} onPress={takePicture}>
                     <View style={styles.captureInner} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={pickFromLibrary}
+                    style={{ width: 55, height: 55, borderRadius: 12, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#fc8500' }}
+                >
+                    <Text style={{ color: 'white', fontSize: 11, fontWeight: 'bold', textAlign: 'center' }}>{t('scan_pick_library')}</Text>
                 </TouchableOpacity>
             </View>
 
