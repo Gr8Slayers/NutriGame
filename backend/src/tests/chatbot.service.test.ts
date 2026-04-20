@@ -14,7 +14,7 @@ describe('chatbot.service provider error handling', () => {
         }
     });
 
-    it('throws an HTTP 429 with retryAfterMs when Gemini quota is exceeded', async () => {
+    it('returns a rule-based reply when Gemini quota is exceeded', async () => {
         const generateContent = jest.fn().mockRejectedValue({
             status: 429,
             statusText: 'Too Many Requests',
@@ -47,13 +47,14 @@ describe('chatbot.service provider error handling', () => {
 
         const service = await import('../services/chatbot.service');
 
-        await expect(service.chat('quota-user', 'quota-chat', 'Protein ağırlıklı kahvaltı öner.')).rejects.toMatchObject({
-            statusCode: 429,
-            retryAfterMs: 20000,
-        });
+        const result = await service.chat('quota-user', 'quota-chat', 'Protein agirlikli kahvalti oner.');
+
+        expect(result.chatId).toBe('quota-chat');
+        expect(result.response.toLocaleLowerCase('tr-TR')).toContain('temel modda');
+        expect(result.response.toLocaleLowerCase('tr-TR')).toContain('protein');
     });
 
-    it('retries once and then throws 503 when Gemini keeps returning empty text', async () => {
+    it('retries once and then falls back when Gemini keeps returning empty text', async () => {
         const generateContent = jest
             .fn()
             .mockResolvedValueOnce({
@@ -83,10 +84,11 @@ describe('chatbot.service provider error handling', () => {
 
         const service = await import('../services/chatbot.service');
 
-        await expect(service.chat('empty-user', 'empty-chat', 'Bugün ne yemeliyim?')).rejects.toMatchObject({
-            statusCode: 503,
-        });
+        const result = await service.chat('empty-user', 'empty-chat', 'Bugun ne yemeliyim?');
+
         expect(generateContent).toHaveBeenCalledTimes(2);
+        expect(result.response.toLocaleLowerCase('tr-TR')).toContain('temel modda');
+        expect(result.response.toLocaleLowerCase('tr-TR')).toContain('ogun');
     });
 
     it('includes the latest user message when using cached conversation history', async () => {
@@ -126,6 +128,42 @@ describe('chatbot.service provider error handling', () => {
         const contents = secondCallArgs.contents as Array<{ role: string; parts: Array<{ text: string }> }>;
         expect(contents[contents.length - 1].role).toBe('user');
         expect(contents[contents.length - 1].parts[0].text).toBe('Peki öğle yemeğinde?');
+    });
+
+    it('uses previous context to answer follow-up meal questions in fallback mode', async () => {
+        delete process.env.GEMINI_API_KEY;
+
+        jest.doMock('../models/chatbot.model', () => ({
+            chatbotModel: {
+                getSessionMessages: jest.fn().mockResolvedValue([]),
+            },
+        }));
+
+        const service = await import('../services/chatbot.service');
+
+        await service.chat('fallback-user', 'fallback-chat', 'Yag kaybi icin kahvaltida ne yemeliyim?');
+        const result = await service.chat('fallback-user', 'fallback-chat', 'Peki ogle yemeginde?');
+
+        expect(result.response.toLocaleLowerCase('tr-TR')).toContain('ogle');
+        expect(result.response.toLocaleLowerCase('tr-TR')).toContain('yag kaybi');
+    });
+
+    it('keeps fallback replies in English when the user writes in English', async () => {
+        delete process.env.GEMINI_API_KEY;
+
+        jest.doMock('../models/chatbot.model', () => ({
+            chatbotModel: {
+                getSessionMessages: jest.fn().mockResolvedValue([]),
+            },
+        }));
+
+        const service = await import('../services/chatbot.service');
+
+        const result = await service.chat('english-user', 'english-chat', 'What should I eat for lunch after a workout?');
+
+        expect(result.response).toContain('lunch');
+        expect(result.response).toContain('protein');
+        expect(result.response).not.toContain('ogun');
     });
 
     it('masks email, phone, card, and address PII before sending to Gemini', async () => {

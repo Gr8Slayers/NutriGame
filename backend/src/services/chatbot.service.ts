@@ -9,6 +9,9 @@ import {
 
 type ChatRole = 'user' | 'model';
 type ChatHistoryItem = { role: ChatRole; parts: Array<{ text: string }> };
+type SupportedLanguage = 'tr' | 'en';
+type MealSlot = 'breakfast' | 'lunch' | 'dinner' | 'snack' | null;
+type UserGoal = 'fat_loss' | 'muscle_gain' | 'weight_gain' | 'general';
 type GenerativeModelLike = {
   generateContent: (args: { contents: ChatHistoryItem[] }) => Promise<{ response: { text: () => string | undefined } }>;
 };
@@ -187,28 +190,261 @@ function isNutritionRelated(message: string): boolean {
   return TOPIC_KEYWORDS.some((keyword) => normalized.includes(keyword));
 }
 
-function buildFallbackReply(message: string): string {
-  const prefix = '';
+function detectLanguage(text: string): SupportedLanguage {
+  const normalized = text.toLocaleLowerCase('tr-TR');
+  const turkishSignal = /\b(merhaba|bana|tasarla|kahvalti|ogle|öğle|aksam|akşam|beslenme|ogun|öğün|kilo|yag|yağ|protein|su|uyku|egzersiz|ne|nasil|nasıl|bugun|bugün|oner|öner|peki|yemeliyim)\b/.test(
+    normalized,
+  );
+  const englishSignal = /\b(hello|breakfast|lunch|dinner|snack|nutrition|meal|protein|water|sleep|exercise|weight|what|should|after|workout|plan)\b/.test(
+    normalized,
+  );
 
-  if (!isNutritionRelated(message)) {
-    return `${prefix}Ben daha cok beslenme, su tuketimi, ogun planlama, kilo yonetimi ve saglikli yasam konularinda yardimci olabiliyorum. Istersen bu hedeflerden biriyle ilgili sorunu yaz.`;
+  if (/[çğıöşü]/i.test(text) || turkishSignal) {
+    return 'tr';
   }
 
-  const normalized = message.toLocaleLowerCase('tr-TR');
+  if (englishSignal) {
+    return 'en';
+  }
+
+  return 'en';
+}
+
+function getRecentUserContext(history: ChatHistoryItem[], currentMessage: string): string {
+  const previousUserMessages = history
+    .filter((entry) => entry.role === 'user')
+    .flatMap((entry) => entry.parts.map((part) => part.text.trim()))
+    .filter((text) => text && text !== currentMessage)
+    .slice(-3);
+
+  return [previousUserMessages.join(' '), currentMessage].filter(Boolean).join(' ').trim();
+}
+
+function detectMealSlot(text: string): MealSlot {
+  const normalized = text.toLocaleLowerCase('tr-TR');
+
+  if (/(kahvalti|breakfast|morning)/.test(normalized)) {
+    return 'breakfast';
+  }
+
+  if (/(ogle|ögle|ogle|öğle|lunch|noon)/.test(normalized)) {
+    return 'lunch';
+  }
+
+  if (/(aksam|akşam|dinner|evening|gece yemegi|supper)/.test(normalized)) {
+    return 'dinner';
+  }
+
+  if (/(ara ogun|ara ogün|atistirm|atıştırm|snack)/.test(normalized)) {
+    return 'snack';
+  }
+
+  return null;
+}
+
+function detectGoal(text: string): UserGoal {
+  const normalized = text.toLocaleLowerCase('tr-TR');
+
+  if (/(yag yak|yağ yak|yag kay|yağ kay|zayifla|zayıfla|kilo ver|fat loss|lose fat|cut)/.test(normalized)) {
+    return 'fat_loss';
+  }
+
+  if (/(kas kazan|kas yap|muscle gain|build muscle|hypertrophy|bulk)/.test(normalized)) {
+    return 'muscle_gain';
+  }
+
+  if (/(kilo al|weight gain|gain weight)/.test(normalized)) {
+    return 'weight_gain';
+  }
+
+  return 'general';
+}
+
+function isFollowUpMessage(text: string): boolean {
+  const normalized = text.toLocaleLowerCase('tr-TR').trim();
+  return /^(peki|tamam|ya|ee|then|what about|and|ok\b|okay\b|so\b)/.test(normalized);
+}
+
+function getMealLabel(mealSlot: MealSlot, language: SupportedLanguage): string {
+  const labels = {
+    tr: {
+      breakfast: 'kahvaltida',
+      lunch: 'ogle yemeginde',
+      dinner: 'aksam yemeginde',
+      snack: 'ara ogunde',
+    },
+    en: {
+      breakfast: 'breakfast',
+      lunch: 'lunch',
+      dinner: 'dinner',
+      snack: 'a snack',
+    },
+  } as const;
+
+  if (!mealSlot) {
+    return language === 'tr' ? 'bir ogunde' : 'a balanced meal';
+  }
+
+  return labels[language][mealSlot];
+}
+
+function buildHydrationReply(language: SupportedLanguage): string {
+  if (language === 'tr') {
+    return 'Gun icine suyu yaymak icin her ana ogune 1 bardak su ekleyip yaninda tasinabilir bir sise bulundurabilirsin. Egzersiz yapiyorsan veya hava sicaksa ihtiyacin artabilir; idrar renginin acik sari kalmasi iyi bir pratik kontroldur.';
+  }
+
+  return 'A practical hydration habit is to pair each main meal with a glass of water and keep a refillable bottle nearby. If you are training hard or the weather is hot, your needs can rise, so pale-yellow urine is a simple hydration check.';
+}
+
+function buildProteinReply(language: SupportedLanguage, mealSlot: MealSlot, goal: UserGoal): string {
+  const mealLabel = getMealLabel(mealSlot, language);
+
+  if (language === 'tr') {
+    if (goal === 'muscle_gain') {
+      return `${mealLabel} yumurta, yogurt, kefir, tavuk, balik veya kurubaklagil gibi protein kaynaklarini ana oge yapmaya calis. Yanina tam tahil ya da meyve eklemek toparlanmayi ve gunluk enerji dengesini destekler.`;
+    }
+
+    if (goal === 'fat_loss') {
+      return `${mealLabel} proteini onceleyip yanina sebze ve olculu kompleks karbonhidrat eklemek daha tok kalmana yardimci olur. Ornek olarak yumurta-yogurt, tavuk-salata veya mercimek-cacik gibi kombinasyonlar iyi baslangictir.`;
+    }
+
+    return `${mealLabel} yumurta, yogurt, peynir, kefir, tavuk, balik veya kurubaklagil gibi bir protein kaynagi bulundurmaya calis. Proteini gun icine yaymak hem toklugu hem de gunluk toparlanmayi destekler.`;
+  }
+
+  if (goal === 'muscle_gain') {
+    return `For ${mealLabel}, make protein the anchor of the meal with options like eggs, Greek yogurt, chicken, fish, tofu, or beans. Adding fruit or whole grains on the side can support recovery and help you reach your energy needs.`;
+  }
+
+  if (goal === 'fat_loss') {
+    return `For ${mealLabel}, keep protein high and pair it with vegetables plus a measured portion of complex carbs to stay fuller for longer. Simple combinations like eggs and yogurt, chicken with salad, or lentils with yogurt work well.`;
+  }
+
+  return `For ${mealLabel}, include a clear protein source such as eggs, yogurt, cheese, chicken, fish, tofu, or beans. Spreading protein across the day usually helps with fullness and steady energy.`;
+}
+
+function buildWeightReply(language: SupportedLanguage, goal: UserGoal): string {
+  if (language === 'tr') {
+    if (goal === 'muscle_gain') {
+      return 'Kas kazanimi icin her ana ogunde protein, yaninda kompleks karbonhidrat ve duzenli ara ogun plani iyi bir baslangictir. Antrenman sonrasi yogurt-meyve, sutlu yulaf veya tavuk-pilav gibi kombinasyonlar toparlanmayi destekler.';
+    }
+
+    if (goal === 'weight_gain') {
+      return 'Saglikli kilo almak icin ogun atlamamaya, ana ogunlere kuruyemis, yogurt, peynir, zeytinyagi veya tahin gibi enerji yogun eklemeler yapmaya odaklanabilirsin. Sivida kalori almak icin sut, kefir veya meyveli yogurtlu icecekler de pratik olur.';
+    }
+
+    return 'Surdurulebilir kilo yonetiminde tabagin yarisini sebze, ceyregini protein, ceyregini kompleks karbonhidrat yapisi ile kurmak iyi bir baslangictir. Porsiyon takibi, duzenli uyku ve sekerli icecekleri azaltmak genelde en hizli fark yaratan adimlardandir.';
+  }
+
+  if (goal === 'muscle_gain') {
+    return 'For muscle gain, build meals around protein, add structured carbs, and avoid skipping meals. Post-workout options like yogurt with fruit, oats with milk, or chicken with rice are practical ways to support recovery.';
+  }
+
+  if (goal === 'weight_gain') {
+    return 'For healthy weight gain, focus on consistent meals and add energy-dense extras like nuts, yogurt, cheese, olive oil, or tahini. Milk-based smoothies and yogurt-fruit drinks can also make it easier to increase intake without forcing huge meals.';
+  }
+
+  return 'A sustainable weight-management plate is usually half vegetables, a quarter protein, and a quarter high-fiber carbs. Portion awareness, regular sleep, and cutting back on sugary drinks tend to create the fastest consistent progress.';
+}
+
+function buildCalorieReply(language: SupportedLanguage): string {
+  if (language === 'tr') {
+    return 'Kalori hedefini yonetirken sadece toplam miktara degil, ogunun protein ve lif icermesine de bakmak faydalidir. Paketli atistirmaliklari azaltip ayni kaloriyi yogurt, meyve, yumurta veya kurubaklagil gibi daha tok tutan kaynaklardan almak genelde daha iyi sonuc verir.';
+  }
+
+  return 'When you manage calories, focus on meal quality as well as the total number. Replacing packaged snacks with more filling choices like yogurt, fruit, eggs, or beans usually makes calorie control much easier.';
+}
+
+function buildMealReply(language: SupportedLanguage, mealSlot: MealSlot, goal: UserGoal, followUp: boolean): string {
+  const mealLabel = getMealLabel(mealSlot, language);
+
+  if (language === 'tr') {
+    const opener = followUp
+      ? `${mealLabel.charAt(0).toUpperCase()}${mealLabel.slice(1)} protein agirlikli bir tabak kurup yanina sebze eklemeyi dusunebilirsin.`
+      : `${mealLabel.charAt(0).toUpperCase()} protein, lifli karbonhidrat ve saglikli yag dengesini kurmak iyi baslangictir.`;
+
+    if (goal === 'fat_loss') {
+      return `${opener} Yag kaybi hedefinde yumurta-yogurt-yulaf, tavuk-salata-bulgur veya corba-izgara yogurt gibi sade kombinasyonlar hem tok tutar hem de kaloriyi kontrol etmeyi kolaylastirir.`;
+    }
+
+    if (goal === 'muscle_gain') {
+      return `${opener} Kas kazanimi icin tavuk-pilav-sebze, omlet-ekmek-meyve veya yogurt-yulaf-muz gibi kombinasyonlarla hem proteini hem enerjiyi destekleyebilirsin.`;
+    }
+
+    return `${opener} Ornek olarak omlet ve tam bugday ekmegi, tavuklu salata yanina yogurt veya mercimek corbasi yanina ayran gibi kombinasyonlar gunluk duzeni kurmana yardimci olur.`;
+  }
+
+  const opener = followUp
+    ? `For ${mealLabel}, start with a protein-focused plate and add vegetables on the side.`
+    : `For ${mealLabel}, aim for protein, fiber-rich carbs, and a modest amount of healthy fat.`;
+
+  if (goal === 'fat_loss') {
+    return `${opener} For fat loss, simple combinations like eggs with yogurt and oats, chicken with salad and bulgur, or soup with grilled protein tend to be filling while keeping calories easier to manage.`;
+  }
+
+  if (goal === 'muscle_gain') {
+    return `${opener} For muscle gain, combinations like chicken with rice, an omelet with bread and fruit, or yogurt with oats and banana can support both protein intake and energy needs.`;
+  }
+
+  return `${opener} Practical examples are eggs with whole-grain toast, chicken salad with yogurt, or lentil soup with ayran so the meal feels balanced and easy to repeat.`;
+}
+
+function buildGenericNutritionReply(language: SupportedLanguage): string {
+  if (language === 'tr') {
+    return 'Dengeli bir ogun icin once protein, sonra sebze veya meyve, sonra da lifli karbonhidrat eklemeyi dusunebilirsin. Hedefini yazarsan kahvalti, ara ogun, kilo verme veya kas kazanimi icin daha net bir oneriyi daraltabilirim.';
+  }
+
+  return 'A balanced meal usually gets easier when you anchor it with protein, then add produce, then a fiber-rich carb. If you share your goal, I can narrow this into a more specific breakfast, snack, fat-loss, or muscle-gain suggestion.';
+}
+
+function buildFallbackReply(
+  message: string,
+  history: ChatHistoryItem[] = [],
+  options?: { limitedMode?: boolean },
+): string {
+  const context = getRecentUserContext(history, message);
+  const language = detectLanguage(context || message);
+  const mealSlot = detectMealSlot(message) ?? detectMealSlot(context);
+  const goal = detectGoal(context);
+  const followUp = isFollowUpMessage(message);
+  const limitedModeLead = options?.limitedMode
+    ? language === 'tr'
+      ? 'NutriCoach su an temel modda calisiyor; bu yuzden en pratik oneriden basliyorum. '
+      : "NutriCoach is in a limited mode right now, so I'll start with the most practical advice. "
+    : '';
+  const normalized = context.toLocaleLowerCase('tr-TR');
+
+  if (!isNutritionRelated(context || message)) {
+    return language === 'tr'
+      ? `${limitedModeLead}Ben daha cok beslenme, su tuketimi, ogun planlama, kilo yonetimi ve saglikli yasam konularinda yardimci olabiliyorum. Istersen bu hedeflerden biriyle ilgili sorunu yaz.`
+      : `${limitedModeLead}I can help most with nutrition, hydration, meal planning, weight management, and healthy routines. If you want, send a question about one of those goals and I will narrow it down.`;
+  }
 
   if (normalized.includes('su') || normalized.includes('hydration') || normalized.includes('water')) {
-    return `${prefix}Gun icinde duzenli su icmek icin her ogune 1 bardak su eklemeyi, yaninda tasinabilir bir sise bulundurmayi ve idrar renginin acik sari olmasini takip etmeyi deneyebilirsin. Yogun egzersiz yapiyorsan veya hava sicaksa ihtiyacin artabilir.`;
+    return `${limitedModeLead}${buildHydrationReply(language)}`;
   }
 
   if (normalized.includes('protein')) {
-    return `${prefix}Protein alimini dengelemek icin yumurta, yogurt, kefir, kurubaklagil, tavuk, balik veya peynir gibi kaynaklari ana ogunlerine yaymak faydali olur. Hedefin yag kaybiysa proteini sebze ve tam tahillarla birlestirmek tok kalmana yardimci olabilir.`;
+    return `${limitedModeLead}${buildProteinReply(language, mealSlot, goal)}`;
   }
 
-  if (normalized.includes('kilo') || normalized.includes('weight') || normalized.includes('diyet')) {
-    return `${prefix}Surdurulebilir kilo yonetiminde tabagin yarisini sebze, ceyregini protein, ceyregini kompleks karbonhidrat yapisi ile kurmak iyi bir baslangictir. Porsiyon takibi, duzenli uyku ve sekerli icecekleri azaltmak da genelde en hizli fark yaratan adimlardandir.`;
+  if (normalized.includes('kalori') || normalized.includes('calorie')) {
+    return `${limitedModeLead}${buildCalorieReply(language)}`;
   }
 
-  return `${prefix}Dengeli bir ogun icin protein, lifli karbonhidrat ve saglikli yag kombinasyonu kurmayi deneyebilirsin. Istersen hedefini yaz; kahvalti, ara ogun, kilo verme veya kas kazanimi icin daha net bir plan onerebilirim.`;
+  if (
+    normalized.includes('kilo') ||
+    normalized.includes('weight') ||
+    normalized.includes('diyet') ||
+    normalized.includes('diet')
+  ) {
+    return `${limitedModeLead}${buildWeightReply(language, goal)}`;
+  }
+
+  if (mealSlot || followUp) {
+    return `${limitedModeLead}${buildMealReply(language, mealSlot, goal, followUp)}`;
+  }
+
+  return `${limitedModeLead}${buildGenericNutritionReply(language)}`;
 }
 
 function getGenerativeModel() {
@@ -363,7 +599,7 @@ export async function chat(
   const resolvedChatId = chatId ?? createNewSession();
   const history = await loadHistory(resolvedChatId, message);
 
-  let response = buildFallbackReply(message);
+  let response = buildFallbackReply(message, history);
   const aiClient = getGenerativeModel();
 
   if (aiClient) {
@@ -377,21 +613,22 @@ export async function chat(
     } catch (error) {
       console.error('[chatbot.service] Gemini request failed:', error);
 
-      if ((error as { statusCode?: number }).statusCode) {
-        throw error;
-      }
-
       const providerError = error as ProviderError;
       if (isProviderQuotaError(providerError)) {
-        throw createHttpError(
-          'NutriCoach is temporarily unavailable because the AI quota has been reached. Please try again shortly.',
-          429,
-          extractRetryAfterMs(providerError),
-          'AI_QUOTA_EXCEEDED',
+        console.warn(
+          '[chatbot.service] Falling back to rule-based reply because Gemini quota is unavailable.',
+          {
+            retryAfterMs: extractRetryAfterMs(providerError),
+            model: GEMINI_MODEL,
+          },
         );
+        response = buildFallbackReply(message, history, { limitedMode: true });
+      } else if ((error as { code?: string }).code === 'AI_UNAVAILABLE') {
+        console.warn('[chatbot.service] Falling back to rule-based reply because Gemini returned no usable text.');
+        response = buildFallbackReply(message, history, { limitedMode: true });
+      } else {
+        response = buildFallbackReply(message, history, { limitedMode: true });
       }
-
-      response = buildFallbackReply(message);
     }
   }
 
