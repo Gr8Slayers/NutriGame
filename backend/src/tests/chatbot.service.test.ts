@@ -14,7 +14,7 @@ describe('chatbot.service provider error handling', () => {
         }
     });
 
-    it('returns a rule-based reply when Gemini quota is exceeded', async () => {
+    it('asks for user consent before using the fallback reply when Gemini quota is exceeded', async () => {
         const generateContent = jest.fn().mockRejectedValue({
             status: 429,
             statusText: 'Too Many Requests',
@@ -47,14 +47,16 @@ describe('chatbot.service provider error handling', () => {
 
         const service = await import('../services/chatbot.service');
 
-        const result = await service.chat('quota-user', 'quota-chat', 'Protein agirlikli kahvalti oner.');
-
-        expect(result.chatId).toBe('quota-chat');
-        expect(result.response.toLocaleLowerCase('tr-TR')).toContain('temel modda');
-        expect(result.response.toLocaleLowerCase('tr-TR')).toContain('protein');
+        await expect(service.chat('quota-user', 'quota-chat', 'Protein agirlikli kahvalti oner.')).rejects.toMatchObject({
+            statusCode: 429,
+            code: 'AI_FALLBACK_CONFIRMATION_REQUIRED',
+            fallbackAvailable: true,
+            fallbackReason: 'quota',
+            chatId: 'quota-chat',
+        });
     });
 
-    it('retries once and then falls back when Gemini keeps returning empty text', async () => {
+    it('retries once and then asks for consent when Gemini keeps returning empty text', async () => {
         const generateContent = jest
             .fn()
             .mockResolvedValueOnce({
@@ -84,11 +86,56 @@ describe('chatbot.service provider error handling', () => {
 
         const service = await import('../services/chatbot.service');
 
-        const result = await service.chat('empty-user', 'empty-chat', 'Bugun ne yemeliyim?');
-
+        await expect(service.chat('empty-user', 'empty-chat', 'Bugun ne yemeliyim?')).rejects.toMatchObject({
+            statusCode: 503,
+            code: 'AI_FALLBACK_CONFIRMATION_REQUIRED',
+            fallbackAvailable: true,
+            fallbackReason: 'unavailable',
+            chatId: 'empty-chat',
+        });
         expect(generateContent).toHaveBeenCalledTimes(2);
+    });
+
+    it('returns a rule-based reply after the user explicitly allows fallback mode', async () => {
+        const generateContent = jest.fn().mockRejectedValue({
+            status: 429,
+            statusText: 'Too Many Requests',
+            message: 'Quota exceeded for model. Please retry in 20.851271357s.',
+            errorDetails: [
+                {
+                    '@type': 'type.googleapis.com/google.rpc.RetryInfo',
+                    retryDelay: '20s',
+                },
+            ],
+        });
+
+        jest.doMock('uuid', () => ({
+            v4: () => 'mock-chat-id',
+        }));
+
+        jest.doMock('@google/generative-ai', () => ({
+            GoogleGenerativeAI: jest.fn().mockImplementation(() => ({
+                getGenerativeModel: () => ({
+                    generateContent,
+                }),
+            })),
+        }));
+
+        jest.doMock('../models/chatbot.model', () => ({
+            chatbotModel: {
+                getSessionMessages: jest.fn().mockResolvedValue([]),
+            },
+        }));
+
+        const service = await import('../services/chatbot.service');
+
+        const result = await service.chat('quota-user', 'quota-chat', 'Protein agirlikli kahvalti oner.', {
+            allowFallback: true,
+        });
+
+        expect(result.chatId).toBe('quota-chat');
         expect(result.response.toLocaleLowerCase('tr-TR')).toContain('temel modda');
-        expect(result.response.toLocaleLowerCase('tr-TR')).toContain('ogun');
+        expect(result.response.toLocaleLowerCase('tr-TR')).toContain('protein');
     });
 
     it('includes the latest user message when using cached conversation history', async () => {

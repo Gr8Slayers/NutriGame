@@ -12,6 +12,7 @@ type ChatHistoryItem = { role: ChatRole; parts: Array<{ text: string }> };
 type SupportedLanguage = 'tr' | 'en';
 type MealSlot = 'breakfast' | 'lunch' | 'dinner' | 'snack' | null;
 type UserGoal = 'fat_loss' | 'muscle_gain' | 'weight_gain' | 'general';
+type ChatOptions = { allowFallback?: boolean };
 type GenerativeModelLike = {
   generateContent: (args: { contents: ChatHistoryItem[] }) => Promise<{ response: { text: () => string | undefined } }>;
 };
@@ -108,7 +109,14 @@ const cleanupTimer = setInterval(cleanupExpiredSessions, 60_000);
 cleanupTimer.unref();
 
 function createHttpError(message: string, statusCode: number, retryAfterMs?: number, code?: string) {
-  const error = new Error(message) as Error & { statusCode: number; retryAfterMs?: number; code?: string };
+  const error = new Error(message) as Error & {
+    statusCode: number;
+    retryAfterMs?: number;
+    code?: string;
+    fallbackAvailable?: boolean;
+    fallbackReason?: 'quota' | 'unavailable';
+    chatId?: string;
+  };
   error.statusCode = statusCode;
   if (retryAfterMs !== undefined) {
     error.retryAfterMs = retryAfterMs;
@@ -116,6 +124,26 @@ function createHttpError(message: string, statusCode: number, retryAfterMs?: num
   if (code) {
     error.code = code;
   }
+  return error;
+}
+
+function createFallbackConsentError(
+  chatId: string,
+  reason: 'quota' | 'unavailable',
+  retryAfterMs?: number,
+) {
+  const error = createHttpError(
+    reason === 'quota'
+      ? 'NutriCoach can continue with backup nutrition guidance if you approve it.'
+      : 'NutriCoach can continue with backup nutrition guidance because the AI reply was unavailable.',
+    reason === 'quota' ? 429 : 503,
+    retryAfterMs,
+    'AI_FALLBACK_CONFIRMATION_REQUIRED',
+  );
+
+  error.fallbackAvailable = true;
+  error.fallbackReason = reason;
+  error.chatId = chatId;
   return error;
 }
 
@@ -469,9 +497,16 @@ function normalizeReply(text: string | undefined): string {
 async function loadHistory(chatId: string, latestMessage: string): Promise<ChatHistoryItem[]> {
   const cached = sessionCache.get(chatId);
   if (cached && Date.now() - cached.updatedAt <= CONVERSATION_TTL_MS) {
+    const sanitizedLatestMessage = sanitizeText(latestMessage);
+    const lastEntry = cached.history[cached.history.length - 1];
+
+    if (lastEntry?.role === 'user' && lastEntry.parts[0]?.text === sanitizedLatestMessage) {
+      return sanitizeHistory(cached.history.slice(-MAX_CONTEXT_MESSAGES));
+    }
+
     const nextHistory: ChatHistoryItem[] = [
       ...cached.history,
-      { role: 'user', parts: [{ text: sanitizeText(latestMessage) }] },
+      { role: 'user', parts: [{ text: sanitizedLatestMessage }] },
     ];
     return sanitizeHistory(nextHistory.slice(-MAX_CONTEXT_MESSAGES));
   }
@@ -580,6 +615,7 @@ export async function chat(
   userId: string,
   chatId: string | null,
   message: string,
+  options: ChatOptions = {},
 ): Promise<{ chatId: string; response: string }> {
   const validation = validateMessage(message);
   if (!validation.valid) {
@@ -615,18 +651,28 @@ export async function chat(
 
       const providerError = error as ProviderError;
       if (isProviderQuotaError(providerError)) {
-        console.warn(
-          '[chatbot.service] Falling back to rule-based reply because Gemini quota is unavailable.',
-          {
-            retryAfterMs: extractRetryAfterMs(providerError),
-            model: GEMINI_MODEL,
-          },
-        );
+        const retryAfterMs = extractRetryAfterMs(providerError);
+        if (!options.allowFallback) {
+          throw createFallbackConsentError(resolvedChatId, 'quota', retryAfterMs);
+        }
+
+        console.warn('[chatbot.service] Falling back to rule-based reply because Gemini quota is unavailable.', {
+          retryAfterMs,
+          model: GEMINI_MODEL,
+        });
         response = buildFallbackReply(message, history, { limitedMode: true });
       } else if ((error as { code?: string }).code === 'AI_UNAVAILABLE') {
+        if (!options.allowFallback) {
+          throw createFallbackConsentError(resolvedChatId, 'unavailable');
+        }
+
         console.warn('[chatbot.service] Falling back to rule-based reply because Gemini returned no usable text.');
         response = buildFallbackReply(message, history, { limitedMode: true });
       } else {
+        if (!options.allowFallback) {
+          throw createFallbackConsentError(resolvedChatId, 'unavailable');
+        }
+
         response = buildFallbackReply(message, history, { limitedMode: true });
       }
     }

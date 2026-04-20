@@ -63,7 +63,7 @@ describe('Chatbot API and safety coverage', () => {
         expect(mockCreateSession).toHaveBeenCalledWith(42, expect.stringContaining('Kahvalti icin'));
         expect(mockAddMessage).toHaveBeenNthCalledWith(1, 'chat_1', 'user', 'Kahvalti icin ne yemeliyim?');
         expect(mockAddMessage).toHaveBeenNthCalledWith(2, 'chat_1', 'model', 'Protein ve lif iceren bir kahvalti deneyebilirsin.');
-        expect(mockChat).toHaveBeenCalledWith('42', 'chat_1', 'Kahvalti icin ne yemeliyim?');
+        expect(mockChat).toHaveBeenCalledWith('42', 'chat_1', 'Kahvalti icin ne yemeliyim?', { allowFallback: false });
     });
 
     it('returns 429 and Retry-After when the service rate limit is hit', async () => {
@@ -84,6 +84,30 @@ describe('Chatbot API and safety coverage', () => {
         expect(res.headers['retry-after']).toBe('2');
         expect(res.body.success).toBe(false);
         expect(res.body.retryAfterMs).toBe(1500);
+    });
+
+    it('returns fallback confirmation metadata without persisting messages when consent is required', async () => {
+        const error = Object.assign(new Error('NutriCoach can continue with backup nutrition guidance if you approve it.'), {
+            statusCode: 429,
+            code: 'AI_FALLBACK_CONFIRMATION_REQUIRED',
+            fallbackAvailable: true,
+            fallbackReason: 'quota',
+            chatId: 'chat_confirm',
+        });
+
+        mockCreateSession.mockResolvedValue({ id: 'chat_confirm' });
+        mockChat.mockRejectedValue(error);
+
+        const res = await request(app)
+            .post('/api/chat/send')
+            .send({ message: 'Bugun ne yemeliyim?' });
+
+        expect(res.status).toBe(429);
+        expect(res.body.code).toBe('AI_FALLBACK_CONFIRMATION_REQUIRED');
+        expect(res.body.fallbackAvailable).toBe(true);
+        expect(res.body.fallbackReason).toBe('quota');
+        expect(res.body.chatId).toBe('chat_confirm');
+        expect(mockAddMessage).not.toHaveBeenCalled();
     });
 
     it('returns formatted and reversed history for the chat screen', async () => {

@@ -98,6 +98,7 @@ export default function Chatbot() {
 
         const userMessage = newMessages[0]?.text;
         if (!userMessage) return;
+        const pendingMessageId = newMessages[0]?._id;
 
         // Update local history state
         setHistory(prevHistory => {
@@ -115,14 +116,37 @@ export default function Chatbot() {
 
         // Show typing indicator
         setIsTyping(true);
+        let awaitingFallbackDecision = false;
 
-        try {
+        const removePendingMessage = () => {
+            setMessages(previousMessages => previousMessages.filter((message) => message._id !== pendingMessageId));
+        };
+
+        const discardPendingSession = async (sessionId: string) => {
+            try {
+                const token = await getItem('userToken');
+                if (!token) return;
+
+                await fetch(`${API_URL}/api/chat/${sessionId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+            } catch (error) {
+                console.error('Failed to discard pending fallback session:', error);
+            }
+        };
+
+        const submitMessage = async (allowFallback: boolean = false, overrideChatId: string | null = null) => {
             const token = await getItem('userToken');
             if (!token) {
                 Alert.alert(t('error'), t('chatbot_login_required'));
                 setIsTyping(false);
                 return;
             }
+
+            const activeChatId = overrideChatId ?? chatID;
 
             const response = await fetch(`${API_URL}/api/chat/send`, {
                 method: 'POST',
@@ -131,9 +155,9 @@ export default function Chatbot() {
                     'Authorization': `Bearer ${token}`,
                 },
                 body: JSON.stringify(
-                    chatID
-                        ? { message: userMessage, chatId: chatID }
-                        : { message: userMessage }
+                    activeChatId
+                        ? { message: userMessage, chatId: activeChatId, allowFallback }
+                        : { message: userMessage, allowFallback }
                 ),
             });
 
@@ -141,6 +165,47 @@ export default function Chatbot() {
             console.log("Sunucudan Gelen Saf Yanıt:", data);
 
             if (!response.ok) {
+                if (data.code === 'AI_FALLBACK_CONFIRMATION_REQUIRED' && data.fallbackAvailable) {
+                    const fallbackChatId = data.chatId || activeChatId || null;
+                    const promptMessage = data.fallbackReason === 'quota'
+                        ? t('chatbot_fallback_prompt_quota')
+                        : t('chatbot_fallback_prompt_unavailable');
+
+                    awaitingFallbackDecision = true;
+                    setIsTyping(false);
+                    Alert.alert(
+                        t('chatbot_fallback_prompt_title'),
+                        promptMessage,
+                        [
+                            {
+                                text: t('cancel'),
+                                style: 'cancel',
+                                onPress: () => {
+                                    if (fallbackChatId && !chatID) {
+                                        void discardPendingSession(fallbackChatId);
+                                    }
+                                    removePendingMessage();
+                                },
+                            },
+                            {
+                                text: t('chatbot_fallback_confirm'),
+                                onPress: () => {
+                                    setIsTyping(true);
+                                    void submitMessage(true, fallbackChatId)
+                                        .catch((error: any) => {
+                                            console.error('Chatbot fallback API error:', error);
+                                            Alert.alert(t('chatbot_connection_error_title'), t('chatbot_connection_error'));
+                                        })
+                                        .finally(() => {
+                                            setIsTyping(false);
+                                        });
+                                },
+                            },
+                        ],
+                    );
+                    return;
+                }
+
                 // Handle rate limit error
                 if (response.status === 429) {
                     const title = data.code === 'AI_QUOTA_EXCEEDED'
@@ -181,13 +246,17 @@ export default function Chatbot() {
             };
 
             setMessages(previousMessages => GiftedChat.append(previousMessages, [aiMessage]));
+        };
 
-
+        try {
+            await submitMessage();
         } catch (error: any) {
             console.error('Chatbot API error:', error);
             Alert.alert(t('chatbot_connection_error_title'), t('chatbot_connection_error'));
         } finally {
-            setIsTyping(false);
+            if (!awaitingFallbackDecision) {
+                setIsTyping(false);
+            }
         }
     }, [chatID]);
 

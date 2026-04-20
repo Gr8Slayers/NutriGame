@@ -32,7 +32,7 @@ export async function handleChat(req: any, res: Response) {
       });
     }
 
-    const { message, chatId } = parsed.data;
+    const { message, chatId, allowFallback } = parsed.data;
 
     let currentChatId = chatId;
 
@@ -42,10 +42,9 @@ export async function handleChat(req: any, res: Response) {
       currentChatId = newSession.id;
     }
 
+    const result = await chat(String(userId), currentChatId, message, { allowFallback });
+
     await chatbotModel.addMessage(currentChatId, 'user', message);
-
-    const result = await chat(String(userId), currentChatId, message);
-
     await chatbotModel.addMessage(currentChatId, 'model', result.response);
 
     return res.status(200).json({
@@ -179,6 +178,15 @@ function handleChatError(err: any, res: Response) {
     const body: any = { success: false, message: err.message };
     if (err.code) {
       body.code = err.code;
+    }
+    if (err.chatId) {
+      body.chatId = err.chatId;
+    }
+    if (err.fallbackAvailable) {
+      body.fallbackAvailable = true;
+    }
+    if (err.fallbackReason) {
+      body.fallbackReason = err.fallbackReason;
     }
     if (err.retryAfterMs) {
       body.retryAfterMs = err.retryAfterMs;

@@ -55,6 +55,7 @@ export const chatbotSendSchema = z.object({
     (value) => (value === null || value === '' ? undefined : value),
     z.string().trim().min(1).optional(),
   ),
+  allowFallback: z.boolean().optional().default(false),
 });
 
 export const chatIdParamSchema = z.object({
