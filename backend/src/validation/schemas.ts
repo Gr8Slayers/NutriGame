@@ -51,7 +51,10 @@ export const authLoginSchema = z.object({
 
 export const chatbotSendSchema = z.object({
   message: z.string().trim().min(1, 'message is required.'),
-  chatId: z.string().trim().min(1).optional(),
+  chatId: z.preprocess(
+    (value) => (value === null || value === '' ? undefined : value),
+    z.string().trim().min(1).optional(),
+  ),
 });
 
 export const chatIdParamSchema = z.object({

@@ -130,10 +130,11 @@ export default function Chatbot() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                 },
-                body: JSON.stringify({
-                    message: userMessage,
-                    chatId: chatID,
-                }),
+                body: JSON.stringify(
+                    chatID
+                        ? { message: userMessage, chatId: chatID }
+                        : { message: userMessage }
+                ),
             });
 
             const data = await response.json();
