@@ -152,7 +152,9 @@ export class FoodRecognitionController {
 
         try {
             // Dinamik import (CommonJS/ESM uyumu için)
-            const { analyzeFoodFromHF } = await import('../../ai_service/ai_service/src/object_detection/huggingface/hf-gradio-api.js');
+            // Path is relative to compiled dist/src/controllers/, not source
+            const hfApiPath = '../../../ai_service/ai_service/src/object_detection/huggingface/hf-gradio-api.js';
+            const { analyzeFoodFromHF } = await import(hfApiPath);
 
             const timeoutPromise = new Promise((_, reject) => {
                 setTimeout(() => {
@@ -265,7 +267,9 @@ export class FoodRecognitionController {
             const files = req.files as Express.Multer.File[];
             console.log(`Processing ${files.length} images for user ${userId} (${mealCategory})`);
 
-            const { analyzeFoodFromHF } = await import('../../ai_service/ai_service/src/object_detection/huggingface/hf-gradio-api.js');
+            // Path is relative to compiled dist/src/controllers/, not source
+            const hfApiPath = '../../../ai_service/ai_service/src/object_detection/huggingface/hf-gradio-api.js';
+            const { analyzeFoodFromHF } = await import(hfApiPath);
 
             const detectionPromises = files.map(async (file) => {
                 try {
