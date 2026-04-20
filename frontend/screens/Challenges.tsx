@@ -98,16 +98,28 @@ const Challenges = ({ navigation }: Props) => {
   };
 
   const respondToInvite = async (challengeId: string, accept: boolean) => {
+    const originalInvite = invites.find(i => i.id === challengeId);
+    setInvites(prev => prev.filter(i => i.id !== challengeId));
+
     try {
       const token = await getItem('userToken');
-      await fetch(`${BASE_URL}/gamification/challenge/respond`, {
+      const res = await fetch(`${BASE_URL}/gamification/challenge/respond`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ challengeId, accept }),
       });
-      fetchData();
+      const data = await res.json();
+
+      if (!data.success) {
+        if (originalInvite) setInvites(prev => [originalInvite, ...prev]);
+        return;
+      }
+
+      await fetchData();
+      if (accept) setActiveTab('active');
     } catch (e) {
       console.error(e);
+      if (originalInvite) setInvites(prev => [originalInvite, ...prev]);
     }
   };
 

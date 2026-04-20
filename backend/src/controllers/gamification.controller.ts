@@ -413,7 +413,28 @@ export class GamificationController {
                 return;
             }
 
-            const updated = await gamificationModel.respondToChallenge(Number(challengeId), userId, Boolean(accept));
+            const challengeIdNum = Number(challengeId);
+            const updated = await gamificationModel.respondToChallenge(challengeIdNum, userId, Boolean(accept));
+
+            if (updated) {
+                const [responder, challenge] = await Promise.all([
+                    prisma.user.findUnique({ where: { id: userId }, select: { username: true } }),
+                    prisma.challenge.findUnique({ where: { id: challengeIdNum }, select: { creatorId: true, title: true } }),
+                ]);
+
+                if (challenge && challenge.creatorId !== userId) {
+                    const responderName = responder?.username ?? 'Someone';
+                    const title = challenge.title;
+                    await notificationService.sendPushNotification(
+                        challenge.creatorId,
+                        accept ? 'Challenge Accepted! 🎉' : 'Challenge Declined',
+                        accept
+                            ? `${responderName} accepted your "${title}" challenge.`
+                            : `${responderName} declined your "${title}" challenge.`
+                    );
+                }
+            }
+
             res.status(200).json({ success: true, data: updated });
         } catch (error) {
             console.error('Error in respondToChallenge:', error);
