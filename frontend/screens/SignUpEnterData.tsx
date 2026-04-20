@@ -39,8 +39,13 @@ function SignUpEnterData({ navigation, route }: Props) {
   const [loading, setLoading] = useState<boolean>(false);
   const dataContainerRef = useRef<RNView>(null);
   const handleBackButton = () => {
-    navigation.goBack();
-  }
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+
+    navigation.navigate('SignUp');
+  };
 
 
 

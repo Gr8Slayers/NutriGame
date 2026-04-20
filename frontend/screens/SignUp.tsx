@@ -33,9 +33,18 @@ function SignUp({ navigation }: Props) {
   const { t } = useLanguage();
   const dataContainerRef = useRef<RNView>(null);
 
+  const goToLogin = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+
+    navigation.navigate('Login');
+  };
+
   const handleBackButton = () => {
-    navigation.goBack();
-  }
+    goToLogin();
+  };
 
   const handleSignUp = async () => {
     if (loading) return;
@@ -206,7 +215,7 @@ function SignUp({ navigation }: Props) {
               </Text>
             </TouchableOpacity>
             <View style={styles.divider} />
-            <TouchableOpacity onPress={() => navigation.goBack()}>
+            <TouchableOpacity onPress={goToLogin}>
               <Text style={styles.linkText}>{t('signup_have_account')} <Text style={styles.signUpLinkText}>{t('signup_login')}</Text></Text>
             </TouchableOpacity>
           </ScrollView>

@@ -72,8 +72,19 @@ function CreateAvatar({ navigation, route }: Props) {
   ];
 
   const handleBackButton = () => {
-    navigation.goBack();
-  }
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+
+    navigation.navigate('SignUpEnterData', {
+      initialData: {
+        username: finalData.username,
+        email: finalData.email,
+        password: finalData.password,
+      },
+    });
+  };
 
 
 
