@@ -202,6 +202,55 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#0a1812',
     },
+    listModalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.75)',
+        justifyContent: 'flex-end',
+    },
+    listModalSheet: {
+        backgroundColor: '#14281d',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        paddingBottom: 30,
+        maxHeight: '70%',
+    },
+    listModalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 18,
+        borderBottomWidth: 1,
+        borderBottomColor: '#2a3d33',
+    },
+    listModalTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: '#f7e5c5',
+    },
+    userListItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 12,
+        paddingHorizontal: 18,
+    },
+    userListAvatar: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        marginRight: 12,
+        backgroundColor: '#2a3d33',
+    },
+    userListName: {
+        fontSize: 15,
+        color: '#f7e5c5',
+        fontWeight: '500',
+    },
+    emptyListText: {
+        textAlign: 'center',
+        color: '#8e8e8e',
+        marginTop: 24,
+        fontSize: 14,
+    },
 });
 
 export default styles;

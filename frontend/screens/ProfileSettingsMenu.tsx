@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, Alert, Modal } from 'react-native';
+import { View, Text, Image, TouchableOpacity, Alert, Modal, FlatList, ActivityIndicator } from 'react-native';
 import { useFocusEffect, useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { setItem, getItem, removeItem } from '../storage';
 import { Ionicons } from '@expo/vector-icons';
@@ -62,6 +62,10 @@ export default function ProfileSettingsMenu() {
     const route = useRoute<RouteProp<RootStackParamList, 'ProfileSettingsMenu'>>();
     const [userData, setUserData] = useState(route.params);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [listModalVisible, setListModalVisible] = useState(false);
+    const [listModalTitle, setListModalTitle] = useState('');
+    const [listModalUsers, setListModalUsers] = useState<{ id: string; username: string; avatarUrl: string | null }[]>([]);
+    const [listModalLoading, setListModalLoading] = useState(false);
 
     const fetchLatestProfile = useCallback(async () => {
         try {
@@ -90,6 +94,27 @@ export default function ProfileSettingsMenu() {
             void fetchLatestProfile();
         }, [fetchLatestProfile])
     );
+
+    const fetchUserList = async (type: 'followers' | 'following') => {
+        const userId = userData?.id;
+        if (!userId) return;
+        setListModalTitle(type === 'followers' ? (t('profile_followers') || 'Followers') : (t('profile_following') || 'Following'));
+        setListModalUsers([]);
+        setListModalVisible(true);
+        setListModalLoading(true);
+        try {
+            const token = await getItem('userToken');
+            const res = await fetch(`${API_URL}/api/social/${type}/${userId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await res.json();
+            if (data.success) setListModalUsers(data.data);
+        } catch (e) {
+            console.error(`Fetch ${type} error:`, e);
+        } finally {
+            setListModalLoading(false);
+        }
+    };
 
     const handleDeleteAccount = async () => {
         try {
@@ -147,14 +172,14 @@ export default function ProfileSettingsMenu() {
                     <Text style={styles.statValue}>{userData?.badgeCount || 0}</Text>
                     <Text style={styles.statLabel}>{t('profile_badges') || 'Badges'}</Text>
                 </View>
-                <View style={styles.statCard}>
+                <TouchableOpacity style={styles.statCard} onPress={() => fetchUserList('followers')}>
                     <Text style={styles.statValue}>{userData?.followerCount || 0}</Text>
                     <Text style={styles.statLabel}>{t('profile_followers') || 'Followers'}</Text>
-                </View>
-                <View style={styles.statCard}>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.statCard} onPress={() => fetchUserList('following')}>
                     <Text style={styles.statValue}>{userData?.followingCount || 0}</Text>
                     <Text style={styles.statLabel}>{t('profile_following') || 'Following'}</Text>
-                </View>
+                </TouchableOpacity>
             </View>
 
             {/* Menu Items */}
@@ -184,6 +209,46 @@ export default function ProfileSettingsMenu() {
                     <Text style={[styles.menuItemText, { color: '#ff4d4d' }]}>{t('delete_account') || 'Delete Account'}</Text>
                 </TouchableOpacity>
             </View>
+
+            {/* Followers / Following List Modal */}
+            <Modal
+                visible={listModalVisible}
+                animationType="slide"
+                transparent
+                onRequestClose={() => setListModalVisible(false)}
+            >
+                <View style={styles.listModalOverlay}>
+                    <View style={styles.listModalSheet}>
+                        <View style={styles.listModalHeader}>
+                            <Text style={styles.listModalTitle}>{listModalTitle}</Text>
+                            <TouchableOpacity onPress={() => setListModalVisible(false)}>
+                                <Ionicons name="close" size={24} color="#f7e5c5" />
+                            </TouchableOpacity>
+                        </View>
+                        {listModalLoading ? (
+                            <ActivityIndicator size="large" color="#47dd7c" style={{ marginVertical: 24 }} />
+                        ) : (
+                            <FlatList
+                                data={listModalUsers}
+                                keyExtractor={item => item.id}
+                                renderItem={({ item }) => (
+                                    <TouchableOpacity
+                                        style={styles.userListItem}
+                                        onPress={() => {
+                                            setListModalVisible(false);
+                                            navigation.navigate('UserProfile', { userId: item.id });
+                                        }}
+                                    >
+                                        <Image source={getAvatarSource(item.avatarUrl ?? undefined)} style={styles.userListAvatar} />
+                                        <Text style={styles.userListName}>{item.username}</Text>
+                                    </TouchableOpacity>
+                                )}
+                                ListEmptyComponent={<Text style={styles.emptyListText}>Henüz kimse yok</Text>}
+                            />
+                        )}
+                    </View>
+                </View>
+            </Modal>
 
             {/* Delete Account Modal */}
             <Modal

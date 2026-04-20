@@ -75,6 +75,7 @@ export class UserController {
                 success: true,
                 message: 'User is fetched successfully.',
                 data: {
+                    id: fetchedUser.id.toString(),
                     username: fetchedUser.username,
                     email: fetchedUser.email,
                     age: fetchedUser.profile?.age,
