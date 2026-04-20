@@ -374,27 +374,50 @@ export class GamificationController {
                 });
             }
 
-            // MEYDAN OKUMA TAMAMLANDI - VERİTABANINDAN SİL
-            await prisma.challenge.delete({
-                where: { id }
-            });
-
-            // Push Notification to the opponent
-            const opponent = challenge.participants.find((p: ChallengeParticipant) => p.userId !== userId);
-            if (opponent) {
-                const winnerInfo = await prisma.user.findUnique({ where: { id: userId } });
-                if (winnerInfo) {
-                    await notificationService.sendPushNotification(opponent.userId, "Challenge Completed!", `${winnerInfo.username} won the "${challenge.title}" challenge you participated in!`);
-                }
+            // Diğer katılımcılara "X tamamladı" bildirimi
+            const completerInfo = await prisma.user.findUnique({ where: { id: userId }, select: { username: true } });
+            const others = challenge.participants.filter((p: ChallengeParticipant) => p.userId !== userId);
+            for (const other of others) {
+                notificationService.sendPushNotification(
+                    other.userId,
+                    "Challenge Completed! 🏁",
+                    `${completerInfo?.username ?? 'A participant'} completed the "${challenge.title}" challenge!`
+                ).catch(() => {});
             }
 
             res.status(200).json({
                 success: true,
-                message: 'Reward claimed! Badge earned & +50 bonus points added. Challenge deleted.',
+                message: 'Reward claimed! Badge earned & +50 bonus points added.',
                 earnedBadge
             });
         } catch (error) {
             console.error('Error in completeChallenge:', error);
+            res.status(500).json({ success: false, message: 'Internal server error' });
+        }
+    }
+
+    public async leaveChallenge(req: Request, res: Response): Promise<void> {
+        try {
+            const userId = Number((req as any).user?.id);
+            const challengeId = Number(req.params.id);
+            if (!userId) { res.status(401).json({ success: false, message: 'Unauthorized' }); return; }
+            if (!challengeId || isNaN(challengeId)) { res.status(400).json({ success: false, message: 'Valid challengeId is required' }); return; }
+
+            const result = await gamificationModel.leaveChallenge(challengeId, userId);
+            if (!result.success) { res.status(403).json(result); return; }
+
+            if (result.creatorId) {
+                const leaverInfo = await prisma.user.findUnique({ where: { id: userId }, select: { username: true } });
+                notificationService.sendPushNotification(
+                    result.creatorId,
+                    'Participant Left 👋',
+                    `${leaverInfo?.username ?? 'A participant'} left your "${result.challengeTitle}" challenge.`
+                ).catch(() => {});
+            }
+
+            res.status(200).json(result);
+        } catch (error) {
+            console.error('Error in leaveChallenge:', error);
             res.status(500).json({ success: false, message: 'Internal server error' });
         }
     }

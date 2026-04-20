@@ -1,10 +1,11 @@
 import cron from 'node-cron';
 import prisma from '../config/prisma';
 import { notificationService } from '../services/notification.service';
+import { gamificationModel } from '../models/gamification.model';
 
 export const startCronJobs = () => {
-    // Run everyday at 00:00 (midnight server time)
-    cron.schedule('0 0 * * *', async () => {
+    // Run everyday at 00:00 Turkey time (UTC+3 = 21:00 UTC)
+    cron.schedule('0 21 * * *', async () => {
         console.log('[Cron] Checking for expiring challenges...');
         try {
             const today = new Date();
@@ -41,17 +42,42 @@ export const startCronJobs = () => {
                 }
             }
 
-            // Süresi dolmuş (deadline'ı geçmiş) tüm meydan okumaları tamamen sil
-            const deletionResult = await prisma.challenge.deleteMany({
-                where: {
-                    endDate: {
-                        lt: today
+            // Süresi dolmuş challenge'lara otomatik reward dağıt, sonra sil
+            const expiredChallenges = await prisma.challenge.findMany({
+                where: { endDate: { lt: today } },
+                include: { participants: { where: { status: 'accepted' } } },
+            });
+
+            for (const expired of expiredChallenges) {
+                for (const participant of expired.participants) {
+                    if (participant.rewardClaimed) continue;
+                    const progress = await gamificationModel.calculateProgress(expired.id, participant.userId);
+                    if (progress < 100) continue;
+
+                    await gamificationModel.claimReward(expired.id, participant.userId);
+                    const streak = await gamificationModel.getStreakByUserId(participant.userId);
+                    if (streak) {
+                        await gamificationModel.updateStreakData(participant.userId, {
+                            totalPoints: streak.totalPoints + 50,
+                        });
                     }
+                    const badge = await gamificationModel.awardBadge(participant.userId, expired.type);
+                    await notificationService.sendPushNotification(
+                        participant.userId,
+                        badge ? `Badge Earned! 🏅` : `Challenge Complete! 🎉`,
+                        badge
+                            ? `You completed "${expired.title}" and earned the "${badge.name}" badge!`
+                            : `You completed "${expired.title}"! +50 bonus points added.`
+                    );
                 }
+            }
+
+            const deletionResult = await prisma.challenge.deleteMany({
+                where: { endDate: { lt: today } },
             });
 
             if (deletionResult.count > 0) {
-                console.log(`[Cron] ${deletionResult.count} expired challenges were deleted.`);
+                console.log(`[Cron] ${deletionResult.count} expired challenges deleted after reward distribution.`);
             }
 
             console.log('[Cron] Expiring challenges check completed.');
@@ -60,8 +86,8 @@ export const startCronJobs = () => {
         }
     });
 
-    // Lunch reminder — every day at 12:00
-    cron.schedule('0 12 * * *', async () => {
+    // Lunch reminder — every day at 12:00 Turkey time (09:00 UTC)
+    cron.schedule('0 9 * * *', async () => {
         console.log('[Cron] Sending lunch reminders...');
         try {
             const today = new Date();
@@ -97,8 +123,8 @@ export const startCronJobs = () => {
         }
     });
 
-    // Dinner reminder — every day at 18:00
-    cron.schedule('0 18 * * *', async () => {
+    // Dinner reminder — every day at 18:00 Turkey time (15:00 UTC)
+    cron.schedule('0 15 * * *', async () => {
         console.log('[Cron] Sending dinner reminders...');
         try {
             const today = new Date();

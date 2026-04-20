@@ -112,6 +112,21 @@ export class GamificationModel {
         return { success: true, message: 'Challenge deleted successfully' };
     }
 
+    public async leaveChallenge(challengeId: number, userId: number): Promise<{ success: boolean; message: string; creatorId?: number; challengeTitle?: string }> {
+        const challenge = await this.getChallengeById(challengeId);
+        if (!challenge) return { success: false, message: 'Challenge not found' };
+        if (challenge.creatorId === userId) return { success: false, message: 'Creator cannot leave — delete the challenge instead' };
+
+        const participant = challenge.participants.find((p: any) => p.userId === userId);
+        if (!participant) return { success: false, message: 'Not a participant of this challenge' };
+
+        await prisma.challengeParticipant.delete({
+            where: { challengeId_userId: { challengeId, userId } },
+        });
+
+        return { success: true, message: 'Left challenge', creatorId: challenge.creatorId, challengeTitle: challenge.title };
+    }
+
     public async getUserActiveChallenges(userId: number) {
         return await prisma.challenge.findMany({
             where: {

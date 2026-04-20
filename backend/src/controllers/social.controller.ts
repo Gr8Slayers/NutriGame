@@ -124,9 +124,12 @@ export class SocialController {
                 return res.status(404).json({ success: false, message: 'Post bulunamadı.' });
             }
 
+            const existingLike = await prisma.postLike.findUnique({
+                where: { postId_userId: { postId, userId } },
+            });
             await socialModel.addLike(postId, userId);
 
-            if (post.userId !== userId) {
+            if (!existingLike && post.userId !== userId) {
                 const liker = await prisma.user.findUnique({ where: { id: userId }, select: { username: true } });
                 const likerName = liker?.username ?? 'Someone';
                 notificationService.sendPushNotification(

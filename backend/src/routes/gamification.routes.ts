@@ -15,6 +15,7 @@ router.get('/challenges', authMiddleware, (req, res) => gamificationController.g
 router.get('/challenge/progress', authMiddleware, (req, res) => gamificationController.getChallengeProgress(req, res));
 router.post('/challenge/complete', authMiddleware, (req, res) => gamificationController.completeChallenge(req, res));
 router.post('/challenge/respond', authMiddleware, (req, res) => gamificationController.respondToChallenge(req, res));
+router.delete('/challenge/:id/leave', authMiddleware, (req, res) => gamificationController.leaveChallenge(req, res));
 
 // Legacy stubs (eski frontend referansları için)
 router.post('/progress/event', authMiddleware, (req, res) => gamificationController.handleProgressEvent(req, res));

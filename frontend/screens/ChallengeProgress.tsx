@@ -249,6 +249,39 @@ const ChallengeProgress: React.FC<Props> = ({ navigation, route }) => {
     }
   };
 
+  const leaveChallenge = async (): Promise<void> => {
+    const { challengeId } = route.params;
+    Alert.alert(
+      t('warning'),
+      'Are you sure you want to leave this challenge?',
+      [
+        { text: t('cancel'), style: 'cancel' },
+        {
+          text: 'Leave',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const token = await getItem('userToken');
+              const response = await fetch(`${BASE_URL}/gamification/challenge/${challengeId}/leave`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` },
+              });
+              const res = await response.json();
+              if (res.success) {
+                navigation.goBack();
+              } else {
+                Alert.alert(t('error'), res.message || 'Could not leave challenge.');
+              }
+            } catch (e) {
+              console.error(e);
+              Alert.alert(t('error'), 'Connection error.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const deleteChallenge = async (): Promise<void> => {
     const { challengeId } = route.params;
 
@@ -315,11 +348,15 @@ const ChallengeProgress: React.FC<Props> = ({ navigation, route }) => {
           <Ionicons name="close" size={28} color="#FFFFFF" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('challenge_progress_title')}</Text>
-        {challengeData && currentUserId === String(challengeData.creatorId) && (
+        {challengeData && currentUserId === String(challengeData.creatorId) ? (
           <TouchableOpacity onPress={deleteChallenge}>
             <Ionicons name="trash-outline" size={24} color="#FF6B6B" />
           </TouchableOpacity>
-        )}
+        ) : challengeData ? (
+          <TouchableOpacity onPress={leaveChallenge}>
+            <Ionicons name="exit-outline" size={24} color="#FF6B6B" />
+          </TouchableOpacity>
+        ) : null}
       </View>
 
       <ScrollView
