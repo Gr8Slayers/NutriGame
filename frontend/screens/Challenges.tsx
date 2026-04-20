@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
@@ -18,14 +18,43 @@ const Challenges = ({ navigation }: Props) => {
   const [challenges, setChallenges] = useState<any[]>([]);
   const [invites, setInvites] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   React.useEffect(() => {
-    fetchData();
-    const unsubscribe = navigation.addListener('focus', () => {
+    let pollId: ReturnType<typeof setInterval> | null = null;
+
+    const startPolling = () => {
       fetchData();
-    });
-    return unsubscribe;
+      if (pollId) clearInterval(pollId);
+      pollId = setInterval(fetchData, 10000);
+    };
+
+    const stopPolling = () => {
+      if (pollId) {
+        clearInterval(pollId);
+        pollId = null;
+      }
+    };
+
+    startPolling();
+    const unsubFocus = navigation.addListener('focus', startPolling);
+    const unsubBlur = navigation.addListener('blur', stopPolling);
+
+    return () => {
+      stopPolling();
+      unsubFocus();
+      unsubBlur();
+    };
   }, [navigation]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await fetchData();
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
 
   const fetchData = async () => {
     try {
@@ -180,6 +209,14 @@ const Challenges = ({ navigation }: Props) => {
         renderItem={activeTab === 'active' ? renderActiveChallenge : renderInvite}
         contentContainerStyle={{ padding: 20 }}
         ListEmptyComponent={<Text style={styles.emptyText}>{activeTab === 'active' ? t('challenges_no_active') : t('challenges_no_pending')}</Text>}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#c8a96e"
+            colors={["#c8a96e"]}
+          />
+        }
       />
     </View>
   );
