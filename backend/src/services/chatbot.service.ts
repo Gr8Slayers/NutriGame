@@ -495,9 +495,9 @@ function normalizeReply(text: string | undefined): string {
 }
 
 async function loadHistory(chatId: string, latestMessage: string): Promise<ChatHistoryItem[]> {
+  const sanitizedLatestMessage = sanitizeText(latestMessage);
   const cached = sessionCache.get(chatId);
   if (cached && Date.now() - cached.updatedAt <= CONVERSATION_TTL_MS) {
-    const sanitizedLatestMessage = sanitizeText(latestMessage);
     const lastEntry = cached.history[cached.history.length - 1];
 
     if (lastEntry?.role === 'user' && lastEntry.parts[0]?.text === sanitizedLatestMessage) {
@@ -522,7 +522,13 @@ async function loadHistory(chatId: string, latestMessage: string): Promise<ChatH
         };
       });
 
-      const sanitizedHistory = sanitizeHistory(history);
+      const lastEntry = history[history.length - 1];
+      const historyWithLatestMessage: ChatHistoryItem[] =
+        lastEntry?.role === 'user' && lastEntry.parts[0]?.text === sanitizedLatestMessage
+          ? history
+          : [...history, { role: 'user', parts: [{ text: sanitizedLatestMessage }] }];
+
+      const sanitizedHistory = sanitizeHistory(historyWithLatestMessage.slice(-MAX_CONTEXT_MESSAGES));
       sessionCache.set(chatId, { updatedAt: Date.now(), history: sanitizedHistory });
       return sanitizedHistory;
     }
@@ -531,7 +537,7 @@ async function loadHistory(chatId: string, latestMessage: string): Promise<ChatH
   }
 
   const initialHistory: ChatHistoryItem[] = [
-    { role: 'user', parts: [{ text: sanitizeText(latestMessage) }] },
+    { role: 'user', parts: [{ text: sanitizedLatestMessage }] },
   ];
   const sanitizedInitialHistory = sanitizeHistory(initialHistory);
   sessionCache.set(chatId, { updatedAt: Date.now(), history: sanitizedInitialHistory });

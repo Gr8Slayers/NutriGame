@@ -177,6 +177,42 @@ describe('chatbot.service provider error handling', () => {
         expect(contents[contents.length - 1].parts[0].text).toBe('Peki öğle yemeğinde?');
     });
 
+    it('includes the latest user message when rebuilding history from the database', async () => {
+        const generateContent = jest.fn().mockResolvedValue({
+            response: { text: () => 'Yeni yanıt' },
+        });
+
+        jest.doMock('uuid', () => ({
+            v4: () => 'mock-chat-id',
+        }));
+
+        jest.doMock('@google/generative-ai', () => ({
+            GoogleGenerativeAI: jest.fn().mockImplementation(() => ({
+                getGenerativeModel: () => ({
+                    generateContent,
+                }),
+            })),
+        }));
+
+        jest.doMock('../models/chatbot.model', () => ({
+            chatbotModel: {
+                getSessionMessages: jest.fn().mockResolvedValue([
+                    { role: 'user', content: 'Kahvaltıda ne yemeliyim?' },
+                    { role: 'model', content: 'Yumurta ve yoğurt iyi olur.' },
+                ]),
+            },
+        }));
+
+        const service = await import('../services/chatbot.service');
+
+        await service.chat('db-user', 'db-chat', 'Peki öğle yemeğinde ne önerirsin?');
+
+        const firstCallArgs = generateContent.mock.calls[0][0];
+        const contents = firstCallArgs.contents as Array<{ role: string; parts: Array<{ text: string }> }>;
+        expect(contents[contents.length - 1].role).toBe('user');
+        expect(contents[contents.length - 1].parts[0].text).toBe('Peki öğle yemeğinde ne önerirsin?');
+    });
+
     it('uses previous context to answer follow-up meal questions in fallback mode', async () => {
         delete process.env.GEMINI_API_KEY;
 
