@@ -291,7 +291,7 @@ export default function ScanFood() {
             const dateStr = getLocalDateString(new Date());
 
             let successCount = 0;
-            let failCount = 0;
+            const failedItems: string[] = [];
 
             for (let i = 0; i < detections.length; i++) {
                 const item = detections[i];
@@ -325,27 +325,25 @@ export default function ScanFood() {
                         successCount++;
                     } else {
                         const errBody = await response.json().catch(() => ({}));
-                        console.error('[AddToLog] failed:', response.status, JSON.stringify(errBody));
-                        failCount++;
+                        failedItems.push(`${selected.food_name}: ${errBody.message || response.status}`);
                     }
                 } catch (e) {
-                    console.error('[AddToLog] fetch error:', e);
-                    failCount++;
+                    failedItems.push(`${selected.food_name}: network error`);
                 }
             }
 
             setAddToLogModalVisible(false);
 
-            if (successCount > 0 && failCount === 0) {
+            if (successCount > 0 && failedItems.length === 0) {
                 Alert.alert(t('success'), `${successCount} ${t('scan_success')}`, [
                     { text: 'OK', onPress: () => navigation.navigate('MainPage') }
                 ]);
             } else if (successCount > 0) {
-                Alert.alert(t('scan_partial_success'), `${successCount} ${t('scan_partial')}, ${failCount} ${t('scan_failed')}`, [
+                Alert.alert(t('scan_partial_success'), `${successCount} ${t('scan_partial')}, ${failedItems.length} ${t('scan_failed')}:\n${failedItems.join('\n')}`, [
                     { text: 'OK', onPress: () => navigation.navigate('MainPage') }
                 ]);
             } else {
-                Alert.alert(t('error'), t('scan_could_not_add'));
+                Alert.alert(t('error'), failedItems.length > 0 ? failedItems.join('\n') : t('scan_could_not_add'));
             }
         } catch {
             Alert.alert(t('error'), t('scan_connection_error'));
