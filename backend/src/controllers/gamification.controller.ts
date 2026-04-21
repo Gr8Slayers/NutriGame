@@ -137,6 +137,11 @@ export class GamificationController {
 
             const userIds = Array.isArray(targetUserIds) ? targetUserIds.map(Number).filter(id => !isNaN(id)) : [];
 
+            if (userIds.includes(creatorId)) {
+                res.status(400).json({ success: false, message: 'Kendinize challenge atamazsınız.' });
+                return;
+            }
+
             const end = new Date(endDate);
             if (isNaN(end.getTime())) {
                 res.status(400).json({ success: false, message: 'Invalid endDate format' });

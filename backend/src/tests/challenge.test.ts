@@ -17,7 +17,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/gamification', gamificationRoutes);
 
 const TEST_PREFIX = 'chall_test_';
-const uniqueSuffix = Date.now();
+const uniqueSuffix = Date.now().toString(36);
 
 const userA = {
     username: `${TEST_PREFIX}creator_${uniqueSuffix}`,
@@ -84,7 +84,7 @@ describe('🔬 Unit Tests — Challenge Validation', () => {
         const res = await request(app)
             .post('/api/gamification/challenge/create')
             .set('Authorization', `Bearer ${tokenA}`)
-            .send({ type: 'water', targetUserId: 999, endDate: '2026-12-31' });
+            .send({ type: 'water', targetUserIds: [999], endDate: '2026-12-31' });
 
         expect(res.status).toBe(400);
         expect(res.body.success).toBe(false);
@@ -94,7 +94,7 @@ describe('🔬 Unit Tests — Challenge Validation', () => {
         const res = await request(app)
             .post('/api/gamification/challenge/create')
             .set('Authorization', `Bearer ${tokenA}`)
-            .send({ title: 'Test', type: 'invalid_type', targetUserId: 999, endDate: '2026-12-31' });
+            .send({ title: 'Test', type: 'invalid_type', targetUserIds: [999], endDate: '2026-12-31' });
 
         expect(res.status).toBe(400);
         expect(res.body.success).toBe(false);
@@ -104,7 +104,7 @@ describe('🔬 Unit Tests — Challenge Validation', () => {
         const res = await request(app)
             .post('/api/gamification/challenge/create')
             .set('Authorization', `Bearer ${tokenA}`)
-            .send({ title: 'Self challenge', type: 'water', targetUserId: userIdA, endDate: '2026-12-31' });
+            .send({ title: 'Self challenge', type: 'water', targetUserIds: [userIdA], endDate: '2026-12-31' });
 
         expect(res.status).toBe(400);
         expect(res.body.success).toBe(false);
@@ -113,7 +113,7 @@ describe('🔬 Unit Tests — Challenge Validation', () => {
     it('TC-14.4: Token olmadan istek → 401', async () => {
         const res = await request(app)
             .post('/api/gamification/challenge/create')
-            .send({ title: 'No auth', type: 'water', targetUserId: 999, endDate: '2026-12-31' });
+            .send({ title: 'No auth', type: 'water', targetUserIds: [999], endDate: '2026-12-31' });
 
         expect(res.status).toBe(401);
     });
@@ -122,7 +122,7 @@ describe('🔬 Unit Tests — Challenge Validation', () => {
         const res = await request(app)
             .post('/api/gamification/challenge/create')
             .set('Authorization', `Bearer ${tokenA}`)
-            .send({ title: 'Bad Date', type: 'sugar', targetUserId: userIdB, endDate: 'not-a-date' });
+            .send({ title: 'Bad Date', type: 'sugar', targetUserIds: [userIdB], endDate: 'not-a-date' });
 
         expect(res.status).toBe(400);
         expect(res.body.success).toBe(false);
@@ -140,7 +140,7 @@ describe('🔗 Integration Tests — Challenge CRUD', () => {
         const res = await request(app)
             .post('/api/gamification/challenge/create')
             .set('Authorization', `Bearer ${tokenA}`)
-            .send({ title: 'Water Challenge', type: 'water', targetUserId: userIdB, endDate });
+            .send({ title: 'Water Challenge', type: 'water', targetUserIds: [userIdB], endDate });
 
         expect(res.status).toBe(201);
         expect(res.body.success).toBe(true);
@@ -209,7 +209,7 @@ describe('🌐 System Tests — E2E Challenge Flow (FR-14)', () => {
         const res = await request(app)
             .post('/api/gamification/challenge/create')
             .set('Authorization', `Bearer ${tokenA}`)
-            .send({ title: 'E2E Calorie Challenge', type: 'calorie', targetUserId: userIdB, endDate });
+            .send({ title: 'E2E Calorie Challenge', type: 'calorie', targetUserIds: [userIdB], endDate });
 
         expect(res.status).toBe(201);
         e2eChallengeId = String(res.body.data.id);
@@ -275,7 +275,7 @@ describe('🌐 System Tests — Challenge Decline Flow', () => {
         const res = await request(app)
             .post('/api/gamification/challenge/create')
             .set('Authorization', `Bearer ${tokenA}`)
-            .send({ title: 'Decline Test', type: 'sugar', targetUserId: userIdB, endDate });
+            .send({ title: 'Decline Test', type: 'sugar', targetUserIds: [userIdB], endDate });
 
         expect(res.status).toBe(201);
         declineChallengeId = String(res.body.data.id);
@@ -306,7 +306,7 @@ describe('⚡ Performance Tests — Challenge API Latency', () => {
         const res = await request(app)
             .post('/api/gamification/challenge/create')
             .set('Authorization', `Bearer ${tokenA}`)
-            .send({ title: 'Perf Test Challenge', type: 'step', targetUserId: userIdB, endDate });
+            .send({ title: 'Perf Test Challenge', type: 'step', targetUserIds: [userIdB], endDate });
         const elapsed = performance.now() - start;
 
         expect(res.status).toBe(201);
@@ -340,7 +340,7 @@ describe('👤 User Acceptance Tests — Challenge Scenarios', () => {
             const res = await request(app)
                 .post('/api/gamification/challenge/create')
                 .set('Authorization', `Bearer ${tokenA}`)
-                .send({ title: `${type} challenge`, type, targetUserId: userIdB, endDate });
+                .send({ title: `${type} challenge`, type, targetUserIds: [userIdB], endDate });
 
             expect(res.status).toBe(201);
             expect(res.body.data.type).toBe(type);
@@ -352,7 +352,7 @@ describe('👤 User Acceptance Tests — Challenge Scenarios', () => {
         const createRes = await request(app)
             .post('/api/gamification/challenge/create')
             .set('Authorization', `Bearer ${tokenA}`)
-            .send({ title: 'Progress Range Test', type: 'calorie', targetUserId: userIdB, endDate });
+            .send({ title: 'Progress Range Test', type: 'calorie', targetUserIds: [userIdB], endDate });
 
         const cId = String(createRes.body.data.id);
         const progressRes = await request(app)

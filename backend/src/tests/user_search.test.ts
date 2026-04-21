@@ -19,7 +19,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/social', socialRoutes);
 
 const TEST_PREFIX = 'search_test_';
-const uniqueSuffix = Date.now();
+const uniqueSuffix = Date.now().toString(36);
 
 const userA = {
     username: `${TEST_PREFIX}alice_${uniqueSuffix}`,

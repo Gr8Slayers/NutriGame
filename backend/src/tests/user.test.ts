@@ -26,7 +26,7 @@ let userToken = '';
 let testUserId: number;
 
 const testUser = {
-    username: `${TEST_PREFIX}user_${Date.now()}`,
+    username: `${TEST_PREFIX}u_${Date.now().toString(36)}`,
     email: `${TEST_PREFIX}${Date.now()}@testmail.com`,
     password: 'TestPassword123!',
     age: 25,
@@ -36,7 +36,7 @@ const testUser = {
     target_weight: 65,
     reason_to_diet: 'Weight Loss',
     avatar_url: 'https://example.com/avatar.png',
-    activity_level: 'Lightly Active'
+    activity_level: 'Moderately Active'
 };
 
 // ─── Setup & Teardown ─────────────────────────────────────────────────────────

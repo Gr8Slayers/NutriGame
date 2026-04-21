@@ -11,7 +11,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/social', socialRoutes);
 
 const TEST_PREFIX = 'social_test_';
-const uniqueSuffix = Date.now();
+const uniqueSuffix = Date.now().toString(36);
 
 const userA = {
     username: `${TEST_PREFIX}alice_${uniqueSuffix}`,
@@ -150,7 +150,16 @@ describe('🌐 System Tests — E2E Social & Recipe Flow', () => {
         sharedPostId = res.body.data.id;
     });
 
-    it('Step 2: User B fetches feed and sees User A\'s post (FR-11)', async () => {
+    it('Step 2: User B follows User A', async () => {
+        const res = await request(app)
+            .post(`/api/social/follow/${userIdA}`)
+            .set('Authorization', `Bearer ${tokenB}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body.success).toBe(true);
+    });
+
+    it('Step 3: User B fetches feed and sees User A\'s post (FR-11)', async () => {
         const res = await request(app)
             .get('/api/social/get_feed')
             .set('Authorization', `Bearer ${tokenB}`);
@@ -161,15 +170,6 @@ describe('🌐 System Tests — E2E Social & Recipe Flow', () => {
         expect(post.username).toBe(userA.username);
         expect(post.isRecipe).toBe(true);
         expect(post.recipeDetails.title).toBe('Super Green Salad');
-    });
-
-    it('Step 3: User B follows User A', async () => {
-        const res = await request(app)
-            .post(`/api/social/follow/${userIdA}`)
-            .set('Authorization', `Bearer ${tokenB}`);
-
-        expect(res.status).toBe(200);
-        expect(res.body.success).toBe(true);
     });
 
     it('Step 4: User B likes User A\'s post', async () => {

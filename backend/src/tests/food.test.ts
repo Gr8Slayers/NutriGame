@@ -26,8 +26,9 @@ let userToken = '';
 let testUserId: number;
 
 const uniqueSuffix = Date.now();
+const shortSuffix = Date.now().toString(36);
 const testUser = {
-    username: `${TEST_PREFIX}user_${uniqueSuffix}`,
+    username: `${TEST_PREFIX}u_${shortSuffix}`,
     email: `${TEST_PREFIX}${uniqueSuffix}@testmail.com`,
     password: 'TestPassword123!',
     age: 30,

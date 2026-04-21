@@ -7,4 +7,7 @@ module.exports = {
   transform: {
     '^.+\\.ts$': ['ts-jest', { tsconfig: 'tsconfig.json' }],
   },
+  moduleNameMapper: {
+    '^expo-server-sdk$': '<rootDir>/src/tests/__mocks__/expo-server-sdk.ts',
+  },
 };
