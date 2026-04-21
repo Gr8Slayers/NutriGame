@@ -230,9 +230,8 @@ export default function AddMeal({ route, navigation }: Props) {
       portionValue: stepperValue,
       calories: calculatedCalories //yeni kalori bilgisi
     };
-    const newList = [...selectedItems, newItemToAdd];
-    setSelectedItems(newList);
-    handleAddMeal(newList);
+    setSelectedItems(prev => [...prev, newItemToAdd]);
+    handleAddMeal([newItemToAdd]);
     handleStreakUpdate();
     setportionModalVisible(false);
     setSelectedMeal(null);
@@ -275,6 +274,7 @@ export default function AddMeal({ route, navigation }: Props) {
       const allSuccess = results.every(res => res.ok);
 
       if (allSuccess) {
+        await fetchDailyData();
         fetchMealTotal();
         await handleStreakUpdate();
       } else {

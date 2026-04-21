@@ -1,5 +1,6 @@
 import { View, Image, TouchableOpacity, Alert, StyleSheet, Text, ScrollView, Button, ActivityIndicator, View as RNView } from 'react-native';
 import { Asset } from 'expo-asset';
+import * as FileSystem from 'expo-file-system/legacy';
 import { useState, useEffect, useRef } from 'react';
 
 import { Menu } from 'react-native-paper';
@@ -120,16 +121,27 @@ function CreateAvatar({ navigation, route }: Props) {
       } catch (_) {
         // ignore — fall back to asset.uri below
       }
-      const uri = asset.localUri ?? asset.uri;
+      let uri = asset.localUri ?? asset.uri;
+      console.log('[signup] asset uri:', uri);
       if (!uri) throw new Error('Avatar URI alınamadı.');
 
-      const formData = await createUploadFormData(uri);
+      if (!uri.startsWith('file://') && !uri.startsWith('http://') && !uri.startsWith('https://')) {
+        const dest = `${FileSystem.cacheDirectory}avatar-upload-${Date.now()}.png`;
+        await FileSystem.copyAsync({ from: uri, to: dest });
+        uri = dest;
+        console.log('[signup] copied to file uri:', uri);
+      }
 
+      const formData = await createUploadFormData(uri);
+      console.log('[signup] formData ready, API_URL:', API_URL);
+
+      console.log('[signup] POST /api/upload start');
       const uploadRes = await fetch(`${API_URL}/api/upload`, {
         method: 'POST',
         body: formData,
         signal: controller.signal,
       });
+      console.log('[signup] /api/upload status:', uploadRes.status);
 
       if (!uploadRes.ok) {
         throw new Error('Avatar yüklenemedi.');
@@ -137,8 +149,10 @@ function CreateAvatar({ navigation, route }: Props) {
 
       const uploadData = await uploadRes.json();
       const finalAvatarUrl = uploadData.imageUrl;
+      console.log('[signup] uploaded avatar url:', finalAvatarUrl);
 
       // 2. Kayıt işlemini yap
+      console.log('[signup] POST /api/auth/register start');
       const res = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: {
@@ -152,6 +166,7 @@ function CreateAvatar({ navigation, route }: Props) {
       });
 
       clearTimeout(timeoutId);
+      console.log('[signup] /api/auth/register status:', res.status);
 
       const data = await res.json();
       if (res.ok) {
@@ -165,6 +180,7 @@ function CreateAvatar({ navigation, route }: Props) {
     }
     catch (error: any) {
       clearTimeout(timeoutId);
+      console.log('[signup] FAILED name:', error?.name, 'message:', error?.message);
       console.error(error);
       if (error.name === 'AbortError') {
         Alert.alert('Bağlantı Hatası', 'Zaman aşımı oluştu. Lütfen bağlantınızı kontrol edin.');
