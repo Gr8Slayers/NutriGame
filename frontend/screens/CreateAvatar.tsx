@@ -1,4 +1,4 @@
-import { View, Image, TouchableOpacity, Alert, StyleSheet, Text, ScrollView, Button, ActivityIndicator, View as RNView } from 'react-native';
+import { View, Image, TouchableOpacity, Alert, StyleSheet, Text, ScrollView, Button, ActivityIndicator, View as RNView, Platform } from 'react-native';
 import { Asset } from 'expo-asset';
 import * as FileSystem from 'expo-file-system/legacy';
 import { useState, useEffect, useRef } from 'react';
@@ -125,7 +125,14 @@ function CreateAvatar({ navigation, route }: Props) {
       console.log('[signup] asset uri:', uri);
       if (!uri) throw new Error('Avatar URI alınamadı.');
 
-      if (!uri.startsWith('file://') && !uri.startsWith('http://') && !uri.startsWith('https://')) {
+      // On web expo-file-system is not available; asset.uri is already an https:// URL
+      // which uploadHelper can fetch and convert to a Blob.
+      if (
+        Platform.OS !== 'web' &&
+        !uri.startsWith('file://') &&
+        !uri.startsWith('http://') &&
+        !uri.startsWith('https://')
+      ) {
         const dest = `${FileSystem.cacheDirectory}avatar-upload-${Date.now()}.png`;
         await FileSystem.copyAsync({ from: uri, to: dest });
         uri = dest;
