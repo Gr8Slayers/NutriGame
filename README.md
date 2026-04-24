@@ -14,7 +14,7 @@
 [![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)
 [![Google Gemini](https://img.shields.io/badge/Gemini-AI-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
 
-🌐 **[Visit the NutriGame Website](https://gr8slayers.github.io/nutrigame-website)** &nbsp;|&nbsp; 📱 **[Try the PWA](https://gr8slayers.github.io/nutrigame-website)**
+🌐 **[Visit the NutriGame Website](https://gr8slayers.github.io/nutrigame-website)** &nbsp;|&nbsp; 📱 **[Try the PWA](https://nutrigameweb.vercel.app)**
 
 </div>
 
