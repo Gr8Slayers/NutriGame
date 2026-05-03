@@ -23,6 +23,7 @@
 ##  Table of Contents
 
 - [About the Project](#-about-the-project)
+- [Screenshots](#-screenshots)
 - [Features](#-features)
 - [Architecture](#-architecture)
 - [Tech Stack](#-tech-stack)
@@ -53,6 +54,50 @@
 | Looking up food calories takes time |  Instant nutritional analysis from a photo |
 | Dietitian costs are high |  24/7 accessible AI dietitian |
 | Language barriers |  Full Turkish & English support |
+
+---
+
+##  Screenshots
+
+###  Onboarding & Navigation
+
+<div align="center">
+
+| Login | Main Page | Main Page (Alt) | Menu |
+|:-----:|:---------:|:---------------:|:----:|
+| <img src="docs/screenshots/mainpage.jpeg" width="180"/> | <img src="docs/screenshots/mainpage2.jpeg" width="180"/> | <img src="docs/screenshots/menu.jpeg" width="180"/> | <img src="docs/screenshots/menu_userprofile.jpeg" width="180"/> |
+
+</div>
+
+###  Meal Tracking & Food
+
+<div align="center">
+
+| Add Breakfast | Added Breakfast | Scan Food (1) | Scan Food (2) |
+|:-------------:|:---------------:|:-------------:|:-------------:|
+| <img src="docs/screenshots/addbreakfast.jpeg" width="180"/> | <img src="docs/screenshots/added breakfast.jpeg" width="180"/> | <img src="docs/screenshots/scanfood1.jpeg" width="180"/> | <img src="docs/screenshots/scanfood2.jpeg" width="180"/> |
+
+</div>
+
+###  Gamification & Progress
+
+<div align="center">
+
+| Challenges | Add Challenge | Challenge Progress | Badges |
+|:----------:|:-------------:|:-----------------:|:------:|
+| <img src="docs/screenshots/addchallange.jpeg" width="180"/> | <img src="docs/screenshots/challange progress.jpeg" width="180"/> | <img src="docs/screenshots/badge.jpeg" width="180"/> | <img src="docs/screenshots/dailycheckin.jpeg" width="180"/> |
+
+</div>
+
+###  AI, Social & Profile
+
+<div align="center">
+
+| AI Chatbot | Social Feed | User Profile | Weekly Summary |
+|:----------:|:-----------:|:------------:|:--------------:|
+| <img src="docs/screenshots/chatbot.jpeg" width="180"/> | <img src="docs/screenshots/socialfeed.jpeg" width="180"/> | <img src="docs/screenshots/userprofile.jpeg" width="180"/> | <img src="docs/screenshots/weeklysummary.jpeg" width="180"/> |
+
+</div>
 
 ---
 
