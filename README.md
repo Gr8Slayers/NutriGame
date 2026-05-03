@@ -55,9 +55,72 @@
 | Dietitian costs are high |  24/7 accessible AI dietitian |
 | Language barriers |  Full Turkish & English support |
 
+##  Food Detection AI Model
+
+The **ScanFood** feature is powered by a custom-trained object detection model capable of recognizing **60+ Turkish and international food categories** directly from photos.
+
+### Model Performance Summary
+
+| Metric | Score |
+|--------|-------|
+| mAP@0.5 | **0.820** |
+| F1 Score | **0.79** (at confidence 0.520) |
+| Precision | **0.99** |
+| Recall | **0.76** |
+| Classes | 60+ food categories (Turkish & international) |
+
+### Performance Curves
+
+<div align="center">
+
+| Precision-Recall Curve | F1-Confidence Curve |
+|:----------------------:|:-------------------:|
+| <img src="docs/ai_model/pr_curve.jpeg" width="430"/> | <img src="docs/ai_model/f1_confidence_curve.jpeg" width="430"/> |
+
+| Precision-Confidence Curve | Recall-Confidence Curve |
+|:--------------------------:|:-----------------------:|
+| <img src="docs/ai_model/precision_confidence_curve.jpeg" width="430"/> | <img src="docs/ai_model/recall_confidence_curve.jpeg" width="430"/> |
+
+</div>
+
+### Detection Results
+
+<div align="center">
+
+**Model Predictions — Confidence Scores**
+
+<img src="docs/ai_model/detection_results_1.jpeg" width="800"/>
+
+<br/>
+
+**Model Predictions — Class Labels**
+
+<img src="docs/ai_model/detection_results_2.jpeg" width="800"/>
+
+<br/>
+
+<img src="docs/ai_model/detection_results_3.jpeg" width="800"/>
+
+<br/>
+
+<img src="docs/ai_model/detection_results_4.jpeg" width="800"/>
+
+</div>
+
+### Confusion Matrix
+
+<div align="center">
+
+| Confusion Matrix | Confusion Matrix (Normalized) |
+|:----------------:|:-----------------------------:|
+| <img src="docs/ai_model/confusion_matrix.jpeg" width="450"/> | <img src="docs/ai_model/confusion_matrix_normalized.jpeg" width="450"/> |
+
+</div>
+
 ---
 
 ##  Screenshots
+
 
 ### Auth & Home
 
